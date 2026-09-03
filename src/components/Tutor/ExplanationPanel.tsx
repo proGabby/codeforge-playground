@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { BookOpen, Cpu, Sparkles, Code2, Info } from 'lucide-react';
+import { BookOpen, Cpu, Sparkles, Code2, Info, Lock } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { AiMentorPanel } from './AiMentorPanel';
 
 export const ExplanationPanel: React.FC = () => {
-  const { activeExercise, lineExplanation } = useApp();
-  const [activeTab, setActiveTab] = useState<'concept' | 'hood' | 'line'>('concept');
+  const { activeExercise, lineExplanation, hasAttemptedCurrentExercise } = useApp();
+  const [activeTab, setActiveTab] = useState<'concept' | 'hood' | 'line' | 'ai'>('concept');
 
   if (!activeExercise) return null;
 
@@ -13,21 +14,21 @@ export const ExplanationPanel: React.FC = () => {
   return (
     <div className="w-96 bg-slate-900 border-l border-slate-800 flex flex-col h-full select-none overflow-hidden">
       {/* Panel Navigation Header */}
-      <div className="h-11 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between px-3">
-        <div className="flex items-center space-x-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+      <div className="h-11 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between px-2">
+        <div className="flex items-center space-x-1 bg-slate-950 p-1 rounded-lg border border-slate-800 w-full overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab('concept')}
-            className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+            className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'concept'
                 ? 'bg-indigo-600 text-white shadow'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Concept Guide
+            Concept
           </button>
           <button
             onClick={() => setActiveTab('hood')}
-            className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+            className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'hood'
                 ? 'bg-indigo-600 text-white shadow'
                 : 'text-slate-400 hover:text-slate-200'
@@ -37,15 +38,31 @@ export const ExplanationPanel: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('line')}
-            className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all relative cursor-pointer ${
+            className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all relative cursor-pointer whitespace-nowrap ${
               activeTab === 'line'
                 ? 'bg-indigo-600 text-white shadow'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Line Breakdown
+            Line Info
             {lineExplanation && (
-              <span className="w-2 h-2 rounded-full bg-purple-400 absolute top-1 right-1 animate-pulse"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-400 absolute top-1 right-1 animate-pulse"></span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('ai')}
+            className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all flex items-center gap-1 cursor-pointer whitespace-nowrap ${
+              activeTab === 'ai'
+                ? 'bg-purple-600 text-white shadow'
+                : 'text-purple-400 hover:text-purple-300'
+            }`}
+          >
+            <Sparkles className="w-3 h-3 text-purple-300" />
+            AI Mentor
+            {hasAttemptedCurrentExercise ? (
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            ) : (
+              <Lock className="w-2.5 h-2.5 text-purple-400/80" />
             )}
           </button>
         </div>
@@ -162,6 +179,8 @@ export const ExplanationPanel: React.FC = () => {
             )}
           </div>
         )}
+
+        {activeTab === 'ai' && <AiMentorPanel />}
       </div>
     </div>
   );

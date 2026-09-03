@@ -125,3 +125,10 @@ export interface UserProgress {
   lastActiveTopicId: string;
   lastActiveExerciseId: string;
 }
+
+export interface ChatMessage {
+  id: string;
+  sender: 'user' | 'ai';
+  text: string;
+  timestamp: string;
+}

@@ -39,6 +39,10 @@ interface AppContextType {
   setShowCompletionModal: (show: boolean) => void;
   recommendations: { exerciseId: string; title: string; topicId: string; concept: string }[];
   weakConcepts: string[];
+  hasAttemptedCurrentExercise: boolean;
+  chatMessages: import('../types').ChatMessage[];
+  isAskingAi: boolean;
+  askAiMentor: (question: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -81,6 +85,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [weakConcepts, setWeakConcepts] = useState<string[]>([]);
+
+  // AI Mentor State
+  const [hasAttemptedCurrentExercise, setHasAttemptedCurrentExercise] = useState(false);
+  const [chatMessages, setChatMessages] = useState<import('../types').ChatMessage[]>([]);
+  const [isAskingAi, setIsAskingAi] = useState(false);
 
   // Fetch Curriculum & Sync Server Progress on Startup
   useEffect(() => {
@@ -163,6 +172,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setActiveHintLevel(0);
           setLineExplanation(null);
           setSelectedLineNumber(null);
+          setHasAttemptedCurrentExercise(false);
+          setChatMessages([]);
           break;
         }
       }
@@ -174,6 +185,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const runCode = async () => {
     if (!code) return;
     setIsExecuting(true);
+    setHasAttemptedCurrentExercise(true);
     try {
       const res = await fetch('/api/run', {
         method: 'POST',
@@ -198,6 +210,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const submitCode = async () => {
     if (!code || !activeExercise) return;
     setIsExecuting(true);
+    setHasAttemptedCurrentExercise(true);
     setActiveHintLevel(0);
     try {
       const res = await fetch('/api/submit', {
@@ -240,6 +253,54 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.error('Submission error:', err);
     } finally {
       setIsExecuting(false);
+    }
+  };
+
+  const askAiMentor = async (question: string) => {
+    if (!question.trim() || isAskingAi) return;
+    const userMsg: import('../types').ChatMessage = {
+      id: `msg-${Date.now()}`,
+      sender: 'user',
+      text: question,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    setChatMessages((prev) => [...prev, userMsg]);
+    setIsAskingAi(true);
+
+    try {
+      const res = await fetch('/api/ai-mentor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          exerciseTitle: activeExercise?.title || 'Go Exercise',
+          instructions: activeExercise?.instructions || '',
+          concept: activeExercise?.concept || 'Go',
+          userCode: code,
+          stdout: executionResult?.stdout || '',
+          stderr: executionResult?.stderr || '',
+          question,
+          chatHistory: chatMessages.map((m) => ({ sender: m.sender, text: m.text })),
+        }),
+      });
+      const data = await res.json();
+      const aiMsg: import('../types').ChatMessage = {
+        id: `ai-${Date.now()}`,
+        sender: 'ai',
+        text: data.answer || 'I am here to guide you!',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      setChatMessages((prev) => [...prev, aiMsg]);
+    } catch (err: any) {
+      const errorMsg: import('../types').ChatMessage = {
+        id: `err-${Date.now()}`,
+        sender: 'ai',
+        text: 'Sorry, I ran into a network issue. Please try asking again!',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      setChatMessages((prev) => [...prev, errorMsg]);
+    } finally {
+      setIsAskingAi(false);
     }
   };
 
@@ -290,6 +351,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setShowCompletionModal,
         recommendations,
         weakConcepts,
+        hasAttemptedCurrentExercise,
+        chatMessages,
+        isAskingAi,
+        askAiMentor,
       }}
     >
       {children}
