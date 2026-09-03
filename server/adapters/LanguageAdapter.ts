@@ -17,7 +17,8 @@ export interface LanguageAdapter {
   runTests(
     code: string,
     exerciseType: string,
-    testCases: TestCase[]
+    testCases: TestCase[],
+    exerciseConcept?: string
   ): Promise<SubmissionResult>;
 
   /**

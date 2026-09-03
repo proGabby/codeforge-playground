@@ -88,7 +88,7 @@ app.post('/api/submit', async (req, res) => {
   }
 
   try {
-    const result = await adapter.runTests(code, exercise.type, exercise.testCases || []);
+    const result = await adapter.runTests(code, exercise.type, exercise.testCases || [], exercise.concept);
     res.json(result);
   } catch (err: any) {
     res.status(500).json({ error: err.message || 'Submission evaluation error' });

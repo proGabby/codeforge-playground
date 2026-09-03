@@ -58,7 +58,8 @@ export class GoAdapter implements LanguageAdapter {
   public async runTests(
     code: string,
     exerciseType: string,
-    testCases: TestCase[]
+    testCases: TestCase[],
+    exerciseConcept?: string
   ): Promise<SubmissionResult> {
     // 1. Run standard execution first
     const execResult = await this.runCode(code);
@@ -77,6 +78,32 @@ export class GoAdapter implements LanguageAdapter {
         passedTestCount: 0,
         totalTestCount: testCases ? testCases.length : 1,
         correction,
+      };
+    }
+
+    // 2. Perform concept-specific syntax structure verification
+    if (exerciseConcept === 'constants' && !/\bconst\b/.test(code)) {
+      const failingCorrection = {
+        lineIndex: 0,
+        lineContent: code,
+        errorSummary: 'Missing `const` keyword for constant declaration',
+        guidance: 'You used short variable declaration (`:=`) or `var` instead of a constant. In Go, constants MUST be declared using the `const` keyword (e.g. `const MaxUsers = 500`). Short declaration `:=` creates a mutable variable, not a constant.',
+        suggestedFix: 'Use `const MaxUsers = 500` instead of `MaxUsers := 500`.',
+      };
+      return {
+        success: false,
+        execution: execResult,
+        passedTestCount: 0,
+        totalTestCount: testCases.length,
+        testDetails: [{
+          testId: 'concept-check',
+          passed: false,
+          input: '',
+          expected: 'Must use `const` keyword to declare constants.',
+          actual: 'Used variable declaration (`:=` or `var`) instead of `const`.',
+          description: 'Go Constant Syntax Check',
+        }],
+        correction: failingCorrection,
       };
     }
 
