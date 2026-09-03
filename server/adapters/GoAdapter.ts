@@ -104,10 +104,14 @@ export class GoAdapter implements LanguageAdapter {
 
       const failingCorrection: GuidedCorrection = {
         lineIndex: targetLineIndex + 1,
-        lineContent: targetLineContent,
-        errorSummary: 'Missing `const` keyword for constant declaration',
-        guidance: 'You used short variable declaration (`:=`) or `var` instead of a constant. In Go, constants MUST be declared using the `const` keyword (e.g. `const MaxUsers = 500`). Short declaration `:=` creates a mutable variable, not a constant.',
-        suggestedFix,
+        whatHappened: 'Missing `const` keyword for constant declaration',
+        whyItHappened: 'You used short variable declaration (`:=`) or `var` instead of a constant. In Go, constants MUST be declared using the `const` keyword (e.g. `const MaxUsers = 500`). Short declaration `:=` creates a mutable variable, not a constant.',
+        howToFix: `Change line ${targetLineIndex + 1} (\`${targetLineContent}\`) to use \`const\` (e.g. \`${suggestedFix}\`).`,
+        graduatedHints: [
+          'In Go, values declared with `:=` or `var` are mutable variables, not constants.',
+          'Use the `const` keyword instead of `:=` or `var` to declare a constant value.',
+          `Change \`${targetLineContent}\` to \`${suggestedFix}\`.`,
+        ],
       };
       return {
         success: false,
