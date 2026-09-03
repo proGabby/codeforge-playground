@@ -83,9 +83,14 @@ export class GoAdapter implements LanguageAdapter {
 
     // 2. Perform concept-specific syntax structure verification
     if (exerciseConcept === 'constants' && !/\bconst\b/.test(code)) {
-      const failingCorrection = {
-        lineIndex: 0,
-        lineContent: code,
+      const codeLines = code.split('\n');
+      let targetLineIndex = codeLines.findIndex((l) => l.includes('MaxUsers') || l.includes(':=') || l.includes('var'));
+      if (targetLineIndex === -1) targetLineIndex = 0;
+      const targetLineContent = codeLines[targetLineIndex] || code;
+
+      const failingCorrection: GuidedCorrection = {
+        lineIndex: targetLineIndex + 1,
+        lineContent: targetLineContent.trim(),
         errorSummary: 'Missing `const` keyword for constant declaration',
         guidance: 'You used short variable declaration (`:=`) or `var` instead of a constant. In Go, constants MUST be declared using the `const` keyword (e.g. `const MaxUsers = 500`). Short declaration `:=` creates a mutable variable, not a constant.',
         suggestedFix: 'Use `const MaxUsers = 500` instead of `MaxUsers := 500`.',
@@ -94,7 +99,7 @@ export class GoAdapter implements LanguageAdapter {
         success: false,
         execution: execResult,
         passedTestCount: 0,
-        totalTestCount: testCases.length,
+        totalTestCount: testCases && testCases.length > 0 ? testCases.length : 1,
         testDetails: [{
           testId: 'concept-check',
           passed: false,
