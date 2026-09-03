@@ -1,0 +1,33 @@
+{
+  "default-user": {
+    "completedExerciseIds": [
+      "go-hello-1",
+      "go-hello-2",
+      "go-vars-1",
+      "go-vars-2",
+      "go-types-1",
+      "go-hello-3",
+      "go-hello-4",
+      "go-hello-5",
+      "go-hello-6",
+      "go-hello-7"
+    ],
+    "failedAttemptsCount": {
+      "go-vars-2": 1,
+      "go-hello-3": 5
+    },
+    "hintsUsedCount": {},
+    "topicProgress": {},
+    "unlockedTopicIds": [
+      "go-hello-world",
+      "go-variables",
+      "go-data-types",
+      "go-operators"
+    ],
+    "streakDays": 3,
+    "totalTimeSpentSeconds": 1240,
+    "weakConcepts": [],
+    "lastActiveTopicId": "go-hello-world",
+    "lastActiveExerciseId": "go-hello-1"
+  }
+}
