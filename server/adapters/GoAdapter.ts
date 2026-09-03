@@ -2,7 +2,7 @@ import { exec } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { ExecutionResult, LineExplanation, SubmissionResult, TestCase } from '../../src/types';
+import { ExecutionResult, GuidedCorrection, LineExplanation, SubmissionResult, TestCase } from '../../src/types';
 import { CorrectionEngine } from '../engine/CorrectionEngine';
 import { LineExplanationEngine } from '../engine/LineExplanationEngine';
 import { LanguageAdapter } from './LanguageAdapter';
@@ -84,16 +84,30 @@ export class GoAdapter implements LanguageAdapter {
     // 2. Perform concept-specific syntax structure verification
     if (exerciseConcept === 'constants' && !/\bconst\b/.test(code)) {
       const codeLines = code.split('\n');
-      let targetLineIndex = codeLines.findIndex((l) => l.includes('MaxUsers') || l.includes(':=') || l.includes('var'));
+      let targetLineIndex = codeLines.findIndex(
+        (l) => l.includes(':=') || l.includes('var ') || (l.includes('=') && !l.trim().startsWith('//') && !l.trim().startsWith('package') && !l.trim().startsWith('import') && !l.trim().startsWith('func') && !l.trim().startsWith('}'))
+      );
+      if (targetLineIndex === -1) {
+        targetLineIndex = codeLines.findIndex((l) => l.trim().length > 0 && !l.trim().startsWith('//') && !l.trim().startsWith('package') && !l.trim().startsWith('import') && !l.trim().startsWith('func') && !l.trim().startsWith('{') && !l.trim().startsWith('}'));
+      }
       if (targetLineIndex === -1) targetLineIndex = 0;
-      const targetLineContent = codeLines[targetLineIndex] || code;
+      const rawTargetLine = codeLines[targetLineIndex] || code;
+      const targetLineContent = rawTargetLine.trim();
+
+      // Dynamically construct suggested fix from user line
+      let suggestedFix = targetLineContent
+        .replace(/^var\s+/, 'const ')
+        .replace(/([a-zA-Z0-9_]+)\s*:=/, 'const $1 =');
+      if (!suggestedFix.startsWith('const ')) {
+        suggestedFix = `const ${suggestedFix}`;
+      }
 
       const failingCorrection: GuidedCorrection = {
         lineIndex: targetLineIndex + 1,
-        lineContent: targetLineContent.trim(),
+        lineContent: targetLineContent,
         errorSummary: 'Missing `const` keyword for constant declaration',
         guidance: 'You used short variable declaration (`:=`) or `var` instead of a constant. In Go, constants MUST be declared using the `const` keyword (e.g. `const MaxUsers = 500`). Short declaration `:=` creates a mutable variable, not a constant.',
-        suggestedFix: 'Use `const MaxUsers = 500` instead of `MaxUsers := 500`.',
+        suggestedFix,
       };
       return {
         success: false,
