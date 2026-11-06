@@ -80,7 +80,7 @@ export const ExplanationPanel: React.FC = () => {
               <h3 className="text-sm font-bold text-slate-100 mt-1">
                 {activeExercise.title}
               </h3>
-              <p className="text-slate-300 mt-2 leading-relaxed">
+              <p className="text-slate-300 mt-2 leading-relaxed whitespace-pre-line">
                 {activeExercise.instructions}
               </p>
             </div>
