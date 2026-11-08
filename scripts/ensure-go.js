@@ -10,37 +10,90 @@ const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..');
 const goDir = path.join(projectRoot, '.go');
 const goBin = path.join(goDir, 'bin', process.platform === 'win32' ? 'go.exe' : 'go');
+const gocacheDir = path.join(projectRoot, '.gocache');
 
-function checkGo() {
-  // 1. Check if system go is available
-  try {
-    const version = execSync('go version', { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] });
-    console.log(`[CodeForge] System Go compiler found: ${version.trim()}`);
-    return true;
-  } catch {
-    // Not in PATH
+export function warmupCache(binPath) {
+  if (!fs.existsSync(gocacheDir)) {
+    fs.mkdirSync(gocacheDir, { recursive: true });
   }
 
-  // 2. Check if .go/bin/go exists in project root
+  const warmupSrc = `package main
+import (
+  "bufio"
+  "fmt"
+  "math"
+  "os"
+  "sort"
+  "strconv"
+  "strings"
+  "time"
+)
+func main() {
+  _ = fmt.Sprintf("%v %v %v %v", strings.ToUpper("codeforge"), strconv.Itoa(1), math.Pi, time.Now())
+  _ = bufio.NewReader(os.Stdin)
+  _ = sort.Ints
+}
+`;
+  const warmupFile = path.join(projectRoot, 'warmup_runner.go');
+  fs.writeFileSync(warmupFile, warmupSrc);
+
+  console.log('[CodeForge] Pre-compiling Go standard library into .gocache/...');
+  try {
+    const isCustomGo = fs.existsSync(goDir);
+    const env = {
+      ...process.env,
+      GOCACHE: gocacheDir,
+      CGO_ENABLED: '0',
+      GOPROXY: 'off',
+    };
+    if (isCustomGo) {
+      env.GOROOT = goDir;
+      env.PATH = `${path.join(goDir, 'bin')}:${process.env.PATH || ''}`;
+    }
+
+    execSync(`"${binPath}" run warmup_runner.go`, { cwd: projectRoot, env, stdio: 'inherit' });
+    console.log('[CodeForge] Go standard library pre-compiled and cached successfully!');
+  } catch (err) {
+    console.warn('[CodeForge] Note on cache warmup:', err.message);
+  } finally {
+    try {
+      fs.unlinkSync(warmupFile);
+    } catch { }
+  }
+}
+
+function checkGo() {
+  // Check if .go/bin/go exists in project root (prioritize persistent project toolchain)
   if (fs.existsSync(goBin)) {
     try {
       const version = execSync(`"${goBin}" version`, { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] });
       console.log(`[CodeForge] Local Go compiler found: ${version.trim()}`);
-      return true;
+      return goBin;
     } catch {
-      // Exists but failed to run
+      // Corrupt or failed
     }
   }
 
-  return false;
+  // Check system go
+  try {
+    const version = execSync('go version', { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] });
+    console.log(`[CodeForge] System Go compiler found: ${version.trim()}`);
+    return 'go';
+  } catch {
+    // Not in PATH
+  }
+
+  return null;
 }
 
 export function ensureGo() {
-  if (checkGo()) {
-    return goBin;
+  const existing = checkGo();
+  if (existing) {
+    warmupCache(existing);
+    return existing;
   }
 
-  console.log('[CodeForge] Go compiler not found. Automatically installing Go 1.22...');
+  console.log('[CodeForge] Go compiler not found. Automatically installing Go 1.22 into .go/...');
 
   const platform = process.platform;
   const arch = process.arch === 'arm64' ? 'arm64' : 'amd64';
@@ -71,6 +124,10 @@ export function ensureGo() {
 
     const version = execSync(`"${goBin}" version`, { encoding: 'utf-8' });
     console.log(`[CodeForge] Go successfully installed: ${version.trim()}`);
+
+    // Pre-warm the cache immediately
+    warmupCache(goBin);
+
     return goBin;
   } catch (err) {
     console.error('[CodeForge] Failed to auto-install Go:', err.message);
@@ -82,4 +139,3 @@ export function ensureGo() {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   ensureGo();
 }
-

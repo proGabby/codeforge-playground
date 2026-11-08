@@ -71,16 +71,23 @@ export class GoAdapter implements LanguageAdapter {
     const goRootDir = path.dirname(goBinDir);
 
     const startTime = Date.now();
-    const cacheDir = path.join(os.tmpdir(), 'codeforge-gocache');
-    const gopathDir = path.join(os.tmpdir(), 'codeforge-gopath');
+    const cacheDir = path.join(projectRoot, '.gocache');
+    const gopathDir = path.join(projectRoot, '.gopath');
+
+    if (!fs.existsSync(cacheDir)) {
+      try { fs.mkdirSync(cacheDir, { recursive: true }); } catch { }
+    }
+    if (!fs.existsSync(gopathDir)) {
+      try { fs.mkdirSync(gopathDir, { recursive: true }); } catch { }
+    }
 
     return new Promise((resolve) => {
-      // Run go run main.go with 12000ms timeout for shared cloud CPUs
+      // Run go run main.go with 25000ms timeout for throttled cloud environments
       const child = exec(
         `"${goCmd}" run main.go`,
         {
           cwd: tmpDir,
-          timeout: 12000,
+          timeout: 25000,
           maxBuffer: 1024 * 1024,
           env: {
             ...process.env,
