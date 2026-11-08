@@ -1,5 +1,5 @@
 import React from 'react';
-import { Code2, Flame, Moon, Sun, ShieldAlert, Cpu } from 'lucide-react';
+import { Code2, Flame, Moon, Sun, ShieldAlert, Cpu, Cloud } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export const Navbar: React.FC = () => {
@@ -10,6 +10,8 @@ export const Navbar: React.FC = () => {
     setLearningMode,
     userProgress,
     weakConcepts,
+    userEmail,
+    setShowEmailModal,
   } = useApp();
 
   return (
@@ -50,33 +52,30 @@ export const Navbar: React.FC = () => {
         <div className="flex items-center bg-slate-800/80 p-0.5 rounded-lg border border-slate-700/60">
           <button
             onClick={() => setLearningMode('guided')}
-            className={`px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
-              learningMode === 'guided'
-                ? 'bg-indigo-600 text-white shadow'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
+            className={`px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${learningMode === 'guided'
+              ? 'bg-indigo-600 text-white shadow'
+              : 'text-slate-400 hover:text-slate-200'
+              }`}
             title="Guided Mode: Progressive step-by-step hints and tutor guidance"
           >
             Guided Mode
           </button>
           <button
             onClick={() => setLearningMode('practice')}
-            className={`px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
-              learningMode === 'practice'
-                ? 'bg-indigo-600 text-white shadow'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
+            className={`px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${learningMode === 'practice'
+              ? 'bg-indigo-600 text-white shadow'
+              : 'text-slate-400 hover:text-slate-200'
+              }`}
             title="Practice Mode: Minimal hints on request"
           >
             Practice
           </button>
           <button
             onClick={() => setLearningMode('challenge')}
-            className={`px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
-              learningMode === 'challenge'
-                ? 'bg-indigo-600 text-white shadow'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
+            className={`px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${learningMode === 'challenge'
+              ? 'bg-indigo-600 text-white shadow'
+              : 'text-slate-400 hover:text-slate-200'
+              }`}
             title="Challenge Mode: Strict environment, hints locked until 3 fails"
           >
             Challenge
@@ -100,6 +99,27 @@ export const Navbar: React.FC = () => {
             <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
             <span>Weak: {weakConcepts[0]}</span>
           </div>
+        )}
+
+        {/* Cloud Sync / Email Status */}
+        {userEmail ? (
+          <button
+            onClick={() => setShowEmailModal(true)}
+            className="flex items-center space-x-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-500/50 px-2.5 py-1 rounded-lg text-emerald-300 text-xs font-medium transition-colors cursor-pointer"
+            title={`Synced with Turso as ${userEmail}. Click to switch or log out.`}
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="max-w-[130px] truncate font-mono">{userEmail}</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => setShowEmailModal(true)}
+            className="flex items-center space-x-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 px-2.5 py-1 rounded-lg text-indigo-300 text-xs font-semibold transition-colors cursor-pointer"
+            title="Sync your progress & solutions to Turso DB"
+          >
+            <Cloud className="w-3.5 h-3.5 text-indigo-400" />
+            <span>Sync Account</span>
+          </button>
         )}
 
         {/* Theme Toggle */}
