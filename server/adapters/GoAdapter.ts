@@ -1,11 +1,17 @@
-import { exec } from 'child_process';
+import { exec, execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import { fileURLToPath } from 'url';
 import { ExecutionResult, GuidedCorrection, LineExplanation, SubmissionResult, TestCase } from '../../src/types';
 import { CorrectionEngine } from '../engine/CorrectionEngine';
 import { LineExplanationEngine } from '../engine/LineExplanationEngine';
 import { LanguageAdapter } from './LanguageAdapter';
+import { ensureGo } from '../../scripts/ensure-go.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const projectRoot = path.resolve(__dirname, '../../');
 
 export class GoAdapter implements LanguageAdapter {
   public languageId = 'go';
@@ -17,11 +23,17 @@ export class GoAdapter implements LanguageAdapter {
     if (process.env.GO_BINARY && fs.existsSync(process.env.GO_BINARY)) {
       return process.env.GO_BINARY;
     }
+
+    const projectGo = path.join(projectRoot, '.go', 'bin', process.platform === 'win32' ? 'go.exe' : 'go');
+    const cwdGo = path.join(process.cwd(), '.go', 'bin', process.platform === 'win32' ? 'go.exe' : 'go');
+
     const candidates = [
       process.env.GO_BINARY,
-      '/tmp/go/bin/go',
+      projectGo,
+      cwdGo,
       '/usr/local/go/bin/go',
       '/usr/bin/go',
+      '/tmp/go/bin/go',
     ].filter(Boolean) as string[];
 
     for (const candidate of candidates) {
@@ -29,6 +41,23 @@ export class GoAdapter implements LanguageAdapter {
         return candidate;
       }
     }
+
+    // Check system PATH
+    try {
+      execSync('go version', { stdio: 'ignore' });
+      return 'go';
+    } catch { }
+
+    // Automatic on-demand download if missing in cloud environment
+    try {
+      const autoInstalled = ensureGo();
+      if (autoInstalled && fs.existsSync(autoInstalled)) {
+        return autoInstalled;
+      }
+    } catch (err: any) {
+      console.error('[GoAdapter] Error during ensureGo fallback:', err?.message);
+    }
+
     return 'go';
   }
 
@@ -38,12 +67,24 @@ export class GoAdapter implements LanguageAdapter {
     fs.writeFileSync(filePath, code);
 
     const goCmd = this.getGoBinary();
+    const goBinDir = path.dirname(goCmd);
+    const goRootDir = path.dirname(goBinDir);
+
     const startTime = Date.now();
     return new Promise((resolve) => {
-      // Run go run main.go with 3000ms timeout
+      // Run go run main.go with 4000ms timeout
       const child = exec(
-        `${goCmd} run main.go`,
-        { cwd: tmpDir, timeout: 3000, maxBuffer: 1024 * 1024 },
+        `"${goCmd}" run main.go`,
+        {
+          cwd: tmpDir,
+          timeout: 4000,
+          maxBuffer: 1024 * 1024,
+          env: {
+            ...process.env,
+            GOROOT: goRootDir,
+            PATH: `${goBinDir}:${process.env.PATH || ''}`,
+          },
+        },
         (error, stdout, stderr) => {
           const duration = Date.now() - startTime;
           // Cleanup temp directory

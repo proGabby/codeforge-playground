@@ -21,6 +21,10 @@ dist-ssr
 *.sqlite
 *.sqlite3
 
+# Local Go toolchain (for cloud deployment like Render)
+/.go/
+.go/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
