@@ -71,17 +71,24 @@ export class GoAdapter implements LanguageAdapter {
     const goRootDir = path.dirname(goBinDir);
 
     const startTime = Date.now();
+    const cacheDir = path.join(os.tmpdir(), 'codeforge-gocache');
+    const gopathDir = path.join(os.tmpdir(), 'codeforge-gopath');
+
     return new Promise((resolve) => {
-      // Run go run main.go with 4000ms timeout
+      // Run go run main.go with 12000ms timeout for shared cloud CPUs
       const child = exec(
         `"${goCmd}" run main.go`,
         {
           cwd: tmpDir,
-          timeout: 4000,
+          timeout: 12000,
           maxBuffer: 1024 * 1024,
           env: {
             ...process.env,
             GOROOT: goRootDir,
+            GOCACHE: cacheDir,
+            GOPATH: gopathDir,
+            CGO_ENABLED: '0',
+            GOPROXY: 'off',
             PATH: `${goBinDir}:${process.env.PATH || ''}`,
           },
         },
@@ -93,9 +100,15 @@ export class GoAdapter implements LanguageAdapter {
           } catch { }
 
           if (error) {
+            const isTimeout = Boolean((error as any).killed || (error as any).signal === 'SIGTERM');
+            const errOutput = stderr.toString().trim();
+            const failureMessage = isTimeout
+              ? 'Execution timed out. On free cloud instances, initial compilation takes a few seconds — please try clicking Run again!'
+              : (errOutput || error.message);
+
             resolve({
               stdout: stdout.toString(),
-              stderr: stderr.toString() || error.message,
+              stderr: failureMessage,
               exitCode: child.exitCode ?? 1,
               executionTimeMs: duration,
               compiledSuccessfully: false,
