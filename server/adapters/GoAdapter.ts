@@ -130,6 +130,73 @@ export class GoAdapter implements LanguageAdapter {
       };
     }
 
+    // Concept: Multiple Println Arguments (Strictly requires fmt.Println with multiple args, forbids fmt.Printf)
+    if (exerciseConcept === 'fmt-arguments') {
+      const codeLines = code.split('\n');
+      const usesPrintf = /\bfmt\.Printf\b/.test(code);
+      const usesPrintln = /\bfmt\.Println\b/.test(code);
+      const printlnMatch = code.match(/\bfmt\.Println\s*\(([\s\S]*?)\)/);
+      const commaCount = printlnMatch ? (printlnMatch[1].match(/,/g) || []).length : 0;
+      const hasMultipleArgs = commaCount >= 2;
+
+      if (usesPrintf || !usesPrintln || !hasMultipleArgs) {
+        let targetLineIndex = codeLines.findIndex((l) => l.includes('fmt.Printf') || l.includes('fmt.Print') || l.includes('fmt.Println'));
+        if (targetLineIndex === -1) {
+          targetLineIndex = codeLines.findIndex((l) => l.includes('main()'));
+        }
+        if (targetLineIndex === -1) targetLineIndex = 0;
+        const rawTargetLine = codeLines[targetLineIndex] || code;
+        const targetLineContent = rawTargetLine.trim();
+
+        let whatHappened = 'Must strictly use `fmt.Println` with multiple arguments.';
+        let whyItHappened = 'This exercise specifically teaches `fmt.Println` variadic arguments and automatic space insertion between comma-separated values.';
+        let howToFix = 'Call `fmt.Println("Score:", 100, "points")` instead of `fmt.Printf`.';
+        let graduatedHints = [
+          'Do not use `fmt.Printf`. This exercise strictly requires `fmt.Println`.',
+          '`fmt.Println` accepts multiple arguments separated by commas and automatically adds spaces between them.',
+          'Write: `fmt.Println("Score:", 100, "points")`',
+        ];
+
+        if (usesPrintf) {
+          whatHappened = 'Used `fmt.Printf` instead of `fmt.Println`';
+          whyItHappened = 'You used `fmt.Printf` with formatting specifiers. This exercise is specifically designed to teach `fmt.Println`\'s automatic space insertion across multiple variadic arguments. `fmt.Printf` is strictly not allowed for this exercise.';
+          howToFix = 'Replace `fmt.Printf(...)` with `fmt.Println("Score:", 100, "points")`.';
+        } else if (!usesPrintln) {
+          whatHappened = 'Missing `fmt.Println` call';
+          whyItHappened = 'You must use `fmt.Println` to output the values with automatic spacing.';
+          howToFix = 'Call `fmt.Println("Score:", 100, "points")`.';
+        } else if (!hasMultipleArgs) {
+          whatHappened = 'Single argument passed to `fmt.Println` instead of multiple arguments';
+          whyItHappened = 'You passed a single pre-formatted string to `fmt.Println`. The goal is to pass three separate arguments (`"Score:"`, `100`, `"points"`) separated by commas so that `fmt.Println` automatically inserts spaces between them.';
+          howToFix = 'Pass three arguments separated by commas: `fmt.Println("Score:", 100, "points")`.';
+        }
+
+        const failingCorrection: GuidedCorrection = {
+          lineIndex: targetLineIndex + 1,
+          whatHappened,
+          whyItHappened,
+          howToFix,
+          graduatedHints,
+        };
+
+        return {
+          success: false,
+          execution: execResult,
+          passedTestCount: 0,
+          totalTestCount: testCases && testCases.length > 0 ? testCases.length : 1,
+          testDetails: [{
+            testId: 'concept-check',
+            passed: false,
+            input: '',
+            expected: 'Must strictly use `fmt.Println` with three arguments: "Score:", 100, "points"',
+            actual: usesPrintf ? 'Used `fmt.Printf`' : !usesPrintln ? 'Missing `fmt.Println`' : 'Did not pass multiple arguments to `fmt.Println`',
+            description: 'Go Multiple Println Arguments Check',
+          }],
+          correction: failingCorrection,
+        };
+      }
+    }
+
     if (!testCases || testCases.length === 0) {
       return {
         success: true,
