@@ -13,18 +13,36 @@ export class GoAdapter implements LanguageAdapter {
   public version = '1.22+';
   public fileExtension = '.go';
 
-  private goBinary = '/usr/local/go/bin/go';
+  private getGoBinary(): string {
+    if (process.env.GO_BINARY && fs.existsSync(process.env.GO_BINARY)) {
+      return process.env.GO_BINARY;
+    }
+    const candidates = [
+      process.env.GO_BINARY,
+      '/tmp/go/bin/go',
+      '/usr/local/go/bin/go',
+      '/usr/bin/go',
+    ].filter(Boolean) as string[];
+
+    for (const candidate of candidates) {
+      if (fs.existsSync(candidate)) {
+        return candidate;
+      }
+    }
+    return 'go';
+  }
 
   public async runCode(code: string): Promise<ExecutionResult> {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codeforge-go-'));
     const filePath = path.join(tmpDir, 'main.go');
     fs.writeFileSync(filePath, code);
 
+    const goCmd = this.getGoBinary();
     const startTime = Date.now();
     return new Promise((resolve) => {
       // Run go run main.go with 3000ms timeout
       const child = exec(
-        `${this.goBinary} run main.go`,
+        `${goCmd} run main.go`,
         { cwd: tmpDir, timeout: 3000, maxBuffer: 1024 * 1024 },
         (error, stdout, stderr) => {
           const duration = Date.now() - startTime;
