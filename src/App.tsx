@@ -8,6 +8,7 @@ import { ExplanationPanel } from './components/Tutor/ExplanationPanel';
 import { TestRunnerPanel } from './components/Terminal/TestRunnerPanel';
 import { RecommendationBanner } from './components/Adaptive/RecommendationBanner';
 import { CompletionModal } from './components/Adaptive/CompletionModal';
+import { EmailModal } from './components/User/EmailModal';
 
 export const App: React.FC = () => {
   return (
@@ -25,6 +26,7 @@ export const App: React.FC = () => {
           <ExplanationPanel />
         </div>
         <CompletionModal />
+        <EmailModal />
       </div>
     </AppProvider>
   );
