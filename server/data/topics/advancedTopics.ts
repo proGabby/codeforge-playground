@@ -177,7 +177,7 @@ export const ADVANCED_TOPICS: (Topic & { exercises: Exercise[] })[] = [
     order: 17,
     description: 'Pass typed values between Goroutines safely using synchronization channels.',
     prerequisites: ['go-goroutines'],
-    exerciseIds: Array.from({ length: 10 }, (_, i) => `go-chan-${i + 1}`),
+    exerciseIds: Array.from({ length: 11 }, (_, i) => `go-chan-${i + 1}`),
     exercises: [
       {
         id: 'go-chan-1',
@@ -431,6 +431,132 @@ export const ADVANCED_TOPICS: (Topic & { exercises: Exercise[] })[] = [
           whyItWorks: '`default:` prevents main thread from deadlocking on `nil` channel `ch`.',
           syntaxBreakdown: [{ token: 'var ch chan int', meaning: 'Nil channel variable.' }],
           underTheHood: 'Used intentionally to disable `select` cases dynamically.',
+        },
+      },
+      {
+        id: 'go-chan-11',
+        languageId: 'go',
+        topicId: 'go-channels',
+        title: '🏆 CAPSTONE: StreamForge (Concurrent Job Processing Pipeline)',
+        difficulty: 6,
+        difficultyLabel: 'Milestone Capstone Project',
+        type: 'algorithm',
+        concept: 'capstone-concurrency',
+        isProject: true,
+        instructions: `Welcome to Project 3: StreamForge!
+
+High-throughput concurrency is Go's greatest superpower. In production backend systems, a Worker Pool is an essential architectural pattern used to distribute streams of intensive tasks across multiple worker goroutines in parallel without overwhelming CPU or memory limits.
+
+Your mission is to construct a concurrent processing pipeline organized across three files:
+- job.go: Declares the data models for jobs and processed results.
+- worker.go: Implements the concurrent worker routine that reads from a channel.
+- main.go: Allocates channels, launches workers, dispatches tasks, and aggregates results.
+
+FUNCTIONAL REQUIREMENTS:
+
+1. Job & Result Models (job.go):
+   - Create a Job struct with an ID (int) and a Value (int).
+   - Create a Result struct with JobID (int), WorkerID (int), and Output (int).
+
+2. The Worker Routine (worker.go):
+   - Write a function named Worker:
+     - Accepts a worker identifier number (int).
+     - Accepts a receive-only channel of jobs (<-chan Job).
+     - Accepts a send-only channel of results (chan<- Result).
+     - Accepts a pointer to a sync.WaitGroup to signal completion.
+   - Behavior:
+     - Uses defer to notify the WaitGroup when the function exits.
+     - Reads each job from the jobs channel using a for ... range loop.
+     - For each job, creates a Result with the job's ID, the worker's ID, and calculates Output as the job's Value multiplied by 2, then pushes it to the results channel.
+
+3. Pipeline Orchestrator (main.go):
+   - Allocate buffered channels for jobs and results sized to hold 6 items.
+   - Launch a pool of 3 worker goroutines, registering each with a sync.WaitGroup.
+   - Dispatch 6 jobs with IDs 1 through 6, where each job's Value equals its ID multiplied by 10.
+   - Close the jobs channel so workers know all work has been submitted.
+   - Wait for all workers to finish, then close the results channel.
+   - Collect all results from the results channel into a slice, sort them by JobID in ascending order, and print the header === StreamForge Concurrent Pipeline Execution === followed by each job's output.
+
+EXPECTED CONSOLE OUTPUT:
+=== StreamForge Concurrent Pipeline Execution ===
+Job #1: Output=20
+Job #2: Output=40
+Job #3: Output=60
+Job #4: Output=80
+Job #5: Output=100
+Job #6: Output=120`,
+        starterFiles: {
+          'main.go': `package main
+
+import (
+    "fmt"
+    "sort"
+    "sync"
+)
+
+func main() {
+    const numWorkers = 3
+    const numJobs = 6
+
+    // 1. Allocate buffered channels for jobs and results (capacity numJobs)
+
+    // 2. Launch a pool of 3 worker goroutines using sync.WaitGroup
+
+    // 3. Dispatch 6 jobs into the jobs channel (Value = ID * 10) and close the jobs channel
+
+    // 4. Wait for all workers to complete and close the results channel
+
+    // 5. Collect results, sort by JobID, and print the header and each job's output
+}
+`,
+          'worker.go': `package main
+
+import (
+    "sync"
+)
+
+// Worker consumes jobs from the receive-only channel and publishes results.
+func Worker(id int, jobs <-chan Job, results chan<- Result, wg *sync.WaitGroup) {
+    // TODO: Notify the WaitGroup when done (use defer)
+    // TODO: Range over jobs channel, multiply Value by 2, and send Result to results channel
+}
+`,
+          'job.go': `package main
+
+// Job represents a unit of work sent into the pipeline.
+type Job struct {
+    // TODO: Define ID (int) and Value (int)
+}
+
+// Result represents the output computed by a worker.
+type Result struct {
+    // TODO: Define JobID (int), WorkerID (int), and Output (int)
+}
+`,
+        },
+        starterCode: `package main\n\nfunc main() {\n}`,
+        expectedBehavior: 'Executes concurrent worker pool and prints sorted results.',
+        testCases: [
+          {
+            id: 't1',
+            input: '',
+            expectedOutput: '=== StreamForge Concurrent Pipeline Execution ===\nJob #1: Output=20\nJob #2: Output=40\nJob #3: Output=60\nJob #4: Output=80\nJob #5: Output=100\nJob #6: Output=120\n',
+            description: 'StreamForge Concurrent Worker Pool Execution',
+          },
+        ],
+        hints: [
+          { level: 1, text: 'Keep Job/Result in job.go and Worker in worker.go.' },
+          { level: 2, text: 'Remember to close(jobs) after dispatching so workers know when to exit.' },
+          { level: 3, text: 'Click "Run" to observe parallel execution!' },
+        ],
+        explanation: {
+          simple: 'StreamForge demonstrates the Worker Pool concurrency pattern, one of the most widely used patterns in production Go backend systems to balance workloads across CPU cores.',
+          whyItWorks: 'Channels act as concurrent-safe FIFO queues; sync.WaitGroup coordinates goroutine lifecycle without sleeping.',
+          syntaxBreakdown: [
+            { token: 'jobs <-chan Job', meaning: 'Receive-only channel parameter (enforces directionality).' },
+            { token: 'results chan<- Result', meaning: 'Send-only channel parameter.' },
+          ],
+          underTheHood: 'Directional channel parameters (<-chan and chan<-) are checked at compile-time to prevent accidental reversed operations.',
         },
       },
     ],
