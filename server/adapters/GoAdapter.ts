@@ -61,10 +61,29 @@ export class GoAdapter implements LanguageAdapter {
     return 'go';
   }
 
-  public async runCode(code: string): Promise<ExecutionResult> {
+  public async runCode(codeOrFiles: string | Record<string, string>): Promise<ExecutionResult> {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codeforge-go-'));
-    const filePath = path.join(tmpDir, 'main.go');
-    fs.writeFileSync(filePath, code);
+
+    // Create lightweight go.mod so multi-file packages and imports work cleanly
+    fs.writeFileSync(path.join(tmpDir, 'go.mod'), 'module playground\n\ngo 1.22\n');
+
+    let hasTestFiles = false;
+
+    if (typeof codeOrFiles === 'string') {
+      fs.writeFileSync(path.join(tmpDir, 'main.go'), codeOrFiles);
+    } else if (codeOrFiles && typeof codeOrFiles === 'object') {
+      const entries = Object.entries(codeOrFiles);
+      for (const [filename, content] of entries) {
+        const safeName = path.basename(filename);
+        if (safeName.endsWith('_test.go')) {
+          hasTestFiles = true;
+        }
+        fs.writeFileSync(path.join(tmpDir, safeName), content || '');
+      }
+      if (!fs.existsSync(path.join(tmpDir, 'main.go')) && !hasTestFiles && entries.length > 0) {
+        fs.writeFileSync(path.join(tmpDir, 'main.go'), entries[0][1] || '');
+      }
+    }
 
     const goCmd = this.getGoBinary();
     const goBinDir = path.dirname(goCmd);
@@ -81,10 +100,15 @@ export class GoAdapter implements LanguageAdapter {
       try { fs.mkdirSync(gopathDir, { recursive: true }); } catch { }
     }
 
+    // Determine execution command: 'go test -v ./...' if only tests exist, else 'go run .'
+    const command = hasTestFiles && !fs.existsSync(path.join(tmpDir, 'main.go'))
+      ? `"${goCmd}" test -v ./...`
+      : `"${goCmd}" run .`;
+
     return new Promise((resolve) => {
-      // Run go run main.go with 25000ms timeout for throttled cloud environments
+      // Run with 25000ms timeout for throttled cloud environments
       const child = exec(
-        `"${goCmd}" run main.go`,
+        command,
         {
           cwd: tmpDir,
           timeout: 25000,
@@ -135,20 +159,28 @@ export class GoAdapter implements LanguageAdapter {
   }
 
   public async runTests(
-    code: string,
+    codeOrFiles: string | Record<string, string>,
     exerciseType: string,
     testCases: TestCase[],
     exerciseConcept?: string
   ): Promise<SubmissionResult> {
     // 1. Run standard execution first
-    const execResult = await this.runCode(code);
+    const execResult = await this.runCode(codeOrFiles);
+    const primaryCode = typeof codeOrFiles === 'string'
+      ? codeOrFiles
+      : (codeOrFiles['main.go'] || Object.values(codeOrFiles)[0] || '');
+    const allCode = typeof codeOrFiles === 'string'
+      ? codeOrFiles
+      : Object.values(codeOrFiles).join('\n');
+    const code = primaryCode;
+
 
     if (!execResult.compiledSuccessfully) {
       // Generate single-error guided correction
       const correction = CorrectionEngine.analyzeCompilerError(
         execResult.stderr,
         execResult.stdout,
-        code
+        primaryCode
       );
 
       return {
@@ -161,8 +193,8 @@ export class GoAdapter implements LanguageAdapter {
     }
 
     // 2. Perform concept-specific syntax structure verification
-    if (exerciseConcept === 'constants' && !/\bconst\b/.test(code)) {
-      const codeLines = code.split('\n');
+    if (exerciseConcept === 'constants' && !/\bconst\b/.test(allCode)) {
+      const codeLines = primaryCode.split('\n');
       let targetLineIndex = codeLines.findIndex(
         (l) => l.includes(':=') || l.includes('var ') || (l.includes('=') && !l.trim().startsWith('//') && !l.trim().startsWith('package') && !l.trim().startsWith('import') && !l.trim().startsWith('func') && !l.trim().startsWith('}'))
       );
@@ -332,12 +364,12 @@ export class GoAdapter implements LanguageAdapter {
       codeQualityNotes: allPassed
         ? [
           'Clean idiomatic Go structure.',
-          'Effective use of static type declarations.',
-          'No unused variables or unhandled errors.',
+          'Effective modularization and type declarations.',
+          'Conforms to Go standard best practices.',
         ]
         : undefined,
       conceptsLearned: allPassed
-        ? ['Idiomatic Syntax', 'Return Type Handling', 'Behavioral Correctness']
+        ? ['Idiomatic Syntax', 'Return Type Handling', 'Multi-File Architecture']
         : undefined,
     };
   }
