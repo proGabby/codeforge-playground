@@ -90,6 +90,22 @@ export interface ExecutionResult {
   compiledSuccessfully: boolean;
 }
 
+export interface BestPracticeCheck {
+  id: string;
+  title: string;
+  passed: boolean;
+  message: string;
+  category: 'architecture' | 'idiomatic' | 'safety';
+  suggestion?: string;
+}
+
+export interface BestPracticeReport {
+  score: number; // 0 - 100
+  checks: BestPracticeCheck[];
+  passedCount: number;
+  totalCount: number;
+}
+
 export interface SubmissionResult {
   success: boolean;
   execution: ExecutionResult;
@@ -104,6 +120,7 @@ export interface SubmissionResult {
     description?: string;
   }[];
   correction?: GuidedCorrection;
+  bestPractices?: BestPracticeReport;
   codeQualityNotes?: string[];
   conceptsLearned?: string[];
 }
