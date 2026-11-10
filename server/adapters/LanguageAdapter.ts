@@ -9,13 +9,13 @@ export interface LanguageAdapter {
   /**
    * Runs arbitrary user code standalone.
    */
-  runCode(code: string): Promise<ExecutionResult>;
+  runCode(codeOrFiles: string | Record<string, string>): Promise<ExecutionResult>;
 
   /**
    * Evaluates user code against test cases (behavioral testing).
    */
   runTests(
-    code: string,
+    codeOrFiles: string | Record<string, string>,
     exerciseType: string,
     testCases: TestCase[],
     exerciseConcept?: string
