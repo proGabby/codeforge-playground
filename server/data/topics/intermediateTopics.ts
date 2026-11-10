@@ -1593,7 +1593,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
     order: 12,
     description: 'Attach receiver methods to custom types and structs.',
     prerequisites: ['go-structs'],
-    exerciseIds: Array.from({ length: 10 }, (_, i) => `go-method-${i + 1}`),
+    exerciseIds: Array.from({ length: 11 }, (_, i) => `go-method-${i + 1}`),
     exercises: [
       {
         id: 'go-method-1',
@@ -1846,6 +1846,140 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
             { token: 'func (r *Rectangle) Scale()', meaning: 'Pointer receiver (mutating).' },
           ],
           underTheHood: 'Maintains API consistency.',
+        },
+      },
+      {
+        id: 'go-method-11',
+        languageId: 'go',
+        topicId: 'go-methods',
+        title: '🏆 CAPSTONE: TaskForge (Phase 2 - Methods & Domain Modeling)',
+        difficulty: 6,
+        difficultyLabel: 'Milestone Capstone Project',
+        type: 'method',
+        concept: 'capstone-methods',
+        isProject: true,
+        instructions: `Welcome back to TaskForge (Phase 2)!
+
+Now that you have mastered Go structs, custom types, and receiver methods, it is time to upgrade TaskForge from primitive string slices to a true object-oriented domain model.
+
+Your task is to separate concerns across two files:
+- task.go: Defines the data models and their associated methods.
+- main.go: Instantiates and tests your task manager.
+
+FUNCTIONAL REQUIREMENTS:
+
+1. Task Model (Task struct in task.go):
+   - Create a struct named Task with fields for:
+     - ID: unique integer identifier
+     - Title: text description of the task
+     - Priority: text priority level (for example: "HIGH", "MEDIUM", "URGENT")
+     - Done: boolean indicating whether the task is completed
+
+2. Task Methods (Pointer Receivers in task.go):
+   - Write a method named MarkCompleted on Task that updates the Done status to true.
+   - Write a method named SetPriority on Task that accepts a new priority string and updates the task's priority.
+   - Best Practice Rule: Both methods mutate struct fields, so you must declare them with pointer receivers (*Task) so mutations persist!
+
+3. Task Manager Model (TaskManager in task.go):
+   - Create a TaskManager struct that holds a slice of task pointers ([]*Task).
+   - Write a constructor function named NewTaskManager that allocates and returns a pointer to a new manager.
+   - Write a method named AddTask on TaskManager that takes a title and priority, creates a new task (with sequential ID starting at 1 and Done set to false), appends it to the collection, and returns the task pointer.
+   - Write a method named PrintSummary on TaskManager that displays a dashboard of all tasks:
+     - Prints the header: === TaskForge v2.0 Dashboard ===
+     - For each task, prints its status checkbox ([x] if done, [ ] if pending), its ID, title, and priority in parentheses.
+
+4. Program Flow (main.go):
+   - In main(), create a new task manager.
+   - Add a task titled "Complete Go Lesson 12" with priority "HIGH".
+   - Add a second task titled "Build Capstone Architecture" with priority "MEDIUM".
+   - Mark the first task as completed.
+   - Update the priority of the second task to "URGENT".
+   - Call PrintSummary to display the dashboard.
+
+EXPECTED CONSOLE OUTPUT:
+=== TaskForge v2.0 Dashboard ===
+[x] #1: Complete Go Lesson 12 (HIGH)
+[ ] #2: Build Capstone Architecture (URGENT)`,
+        starterFiles: {
+          'main.go': `package main
+
+func main() {
+    // 1. Initialize a new TaskManager
+
+    // 2. Add two tasks:
+    //    - "Complete Go Lesson 12" with priority "HIGH"
+    //    - "Build Capstone Architecture" with priority "MEDIUM"
+
+    // 3. Mark the first task completed and set the second task's priority to "URGENT"
+
+    // 4. Print the task manager summary dashboard
+}
+`,
+          'task.go': `package main
+
+import "fmt"
+
+// Task represents an item in the workflow.
+type Task struct {
+    // TODO: Define ID (int), Title (string), Priority (string), and Done (bool)
+}
+
+// MarkCompleted sets the task status to Done.
+func (t *Task) MarkCompleted() {
+    // TODO: Implement using a pointer receiver
+}
+
+// SetPriority updates the priority level of the task.
+func (t *Task) SetPriority(priority string) {
+    // TODO: Implement using a pointer receiver
+}
+
+// TaskManager manages a collection of tasks.
+type TaskManager struct {
+    // TODO: Define a slice to store task pointers ([]*Task)
+}
+
+// NewTaskManager creates and returns a pointer to a new TaskManager.
+func NewTaskManager() *TaskManager {
+    // TODO: Allocate and return a new TaskManager
+    return nil
+}
+
+// AddTask creates a new task with sequential ID, adds it to the manager, and returns it.
+func (m *TaskManager) AddTask(title string, priority string) *Task {
+    // TODO: Create a new Task pointer, append it to the slice, and return it
+    return nil
+}
+
+// PrintSummary prints the TaskForge v2.0 dashboard to the console.
+func (m *TaskManager) PrintSummary() {
+    // TODO: Print header "=== TaskForge v2.0 Dashboard ===" and iterate through tasks
+}
+`,
+        },
+        starterCode: `package main\n\nfunc main() {\n}`,
+        expectedBehavior: 'Prints TaskForge v2.0 dashboard showing completed and updated tasks.',
+        testCases: [
+          {
+            id: 't1',
+            input: '',
+            expectedOutput: '=== TaskForge v2.0 Dashboard ===\n[x] #1: Complete Go Lesson 12 (HIGH)\n[ ] #2: Build Capstone Architecture (URGENT)\n',
+            description: 'TaskForge v2.0 Multi-File Domain Methods Evaluation',
+          },
+        ],
+        hints: [
+          { level: 1, text: 'Keep main.go clean by putting Task and TaskManager in task.go.' },
+          { level: 2, text: 'Use pointer receivers (*Task) for MarkCompleted and SetPriority so mutations persist.' },
+          { level: 3, text: 'Execute with "Run" to test multi-file compilation!' },
+        ],
+        explanation: {
+          simple: 'TaskForge v2.0 demonstrates real-world Go architecture: separating domain models into task.go, mutating through pointer receivers, and orchestrating in main.go.',
+          whyItWorks: 'Go compiles all package main files in the directory together (go run .). Pointer receivers mutate the actual memory location.',
+          syntaxBreakdown: [
+            { token: 'func (t *Task) MarkCompleted()', meaning: 'Pointer receiver method that mutates struct state.' },
+            { token: 'tasks []*Task', meaning: 'Slice of pointers to tasks preventing expensive struct cloning.' },
+          ],
+          underTheHood: 'Using pointer slices ([]*T) avoids value copies and allows direct mutation across functions.',
         },
       },
     ],
