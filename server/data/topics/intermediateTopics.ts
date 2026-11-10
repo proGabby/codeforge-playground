@@ -1053,6 +1053,115 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
           underTheHood: 'Linear O(N) allocation.',
         },
       },
+      {
+        id: 'go-slice-11',
+        languageId: 'go',
+        topicId: 'go-slices',
+        title: '🏆 CAPSTONE: TaskForge (Phase 1)',
+        difficulty: 6,
+        difficultyLabel: 'Level 6: Multi-File Capstone',
+        type: 'function',
+        concept: 'slices-capstone',
+        isProject: true,
+        instructions: `Welcome to your first milestone project: TaskForge (Phase 1)!
+
+In this project, you will build a command-line task management program using Go's dynamic slice capabilities. Following professional Go engineering practices, your project is split into two files:
+- task.go: Contains your reusable task operations and slice logic.
+- main.go: Contains your application entry point that tests the workflow.
+
+FUNCTIONAL REQUIREMENTS:
+
+1. Adding Tasks (AddTask):
+   - In task.go, write a function named AddTask.
+   - It should accept an existing slice of tasks and a new task title as text.
+   - It must append the new task to the slice and return the updated slice.
+
+2. Listing Tasks (ListTasks):
+   - In task.go, write a function named ListTasks.
+   - It should accept a slice of tasks.
+   - It should iterate over the tasks and print each one prefixed with its 1-based index enclosed in brackets (for example: [1] Learn Go).
+
+3. Removing Tasks (RemoveTask):
+   - In task.go, write a function named RemoveTask.
+   - It should accept a slice of tasks and a 0-based index to remove.
+   - Guard against invalid indices: if the index is negative or out of bounds, return the slice unmodified.
+   - Otherwise, remove the item at that index using Go slice operations and return the updated slice.
+
+4. Program Flow (main.go):
+   - In main(), start with an empty slice of tasks.
+   - Add three tasks in sequence: "Learn Go", "Build TaskForge", and "Master Slices".
+   - Print the header Initial Tasks: and list all tasks.
+   - Print the header After Deleting Task #2:, remove the second task (index 1), and list the remaining tasks.
+
+EXPECTED CONSOLE OUTPUT:
+Initial Tasks:
+[1] Learn Go
+[2] Build TaskForge
+[3] Master Slices
+After Deleting Task #2:
+[1] Learn Go
+[2] Master Slices`,
+        starterCode: `package main\n\nfunc main() {\n}`,
+        starterFiles: {
+          'main.go': `package main
+
+import "fmt"
+
+func main() {
+    // 1. Create an initial empty slice for tasks
+
+    // 2. Add three tasks: "Learn Go", "Build TaskForge", "Master Slices"
+
+    // 3. Print "Initial Tasks:" and call ListTasks
+
+    // 4. Print "After Deleting Task #2:", remove index 1, and call ListTasks again
+}
+`,
+          'task.go': `package main
+
+import "fmt"
+
+// AddTask appends a new task to the slice and returns the updated slice.
+func AddTask(tasks []string, task string) []string {
+    // TODO: Append the task to the slice and return it
+    return nil
+}
+
+// ListTasks prints each task formatted with a 1-based index (e.g. "[1] Task Title").
+func ListTasks(tasks []string) {
+    // TODO: Iterate over the tasks slice and print each element with its index
+}
+
+// RemoveTask removes the item at the specified 0-based index from the slice.
+func RemoveTask(tasks []string, index int) []string {
+    // TODO: Guard against invalid indices, then remove the element using slice expressions
+    return nil
+}
+`,
+        },
+        expectedBehavior: 'Compiles multiple files and prints the task lists.',
+        testCases: [
+          {
+            id: 't1',
+            input: '',
+            expectedOutput: 'Initial Tasks:\n[1] Learn Go\n[2] Build TaskForge\n[3] Master Slices\nAfter Deleting Task #2:\n[1] Learn Go\n[2] Master Slices\n',
+          },
+        ],
+        hints: [
+          { level: 1, text: 'Use the tab bar at the top of the editor to switch between main.go and task.go.' },
+          { level: 2, text: 'In task.go, use the built-in append function to add new tasks.' },
+          { level: 3, text: 'To delete an item at index i, combine slice ranges: append(tasks[:index], tasks[index+1:]...).' },
+        ],
+        explanation: {
+          simple: 'TaskForge Phase 1 demonstrates multi-file architecture in Go where multiple files share package main.',
+          whyItWorks: 'Go compiles all .go files in the package together into a single unified binary.',
+          syntaxBreakdown: [
+            { token: 'package main', meaning: 'All files in the root folder share the same package namespace.' },
+            { token: 'append(tasks[:index], tasks[index+1:]...)', meaning: 'Slices around the target index and unpacks remaining elements.' },
+          ],
+          underTheHood: 'The Go compiler links symbols across both files in a single pass.',
+        },
+      },
     ],
   },
 
@@ -2525,7 +2634,7 @@ func (m *TaskManager) PrintSummary() {
     order: 15,
     description: 'Decouple code using implicit interfaces, empty interfaces, type assertions, and type switches.',
     prerequisites: ['go-errors'],
-    exerciseIds: Array.from({ length: 10 }, (_, i) => `go-iface-${i + 1}`),
+    exerciseIds: Array.from({ length: 11 }, (_, i) => `go-iface-${i + 1}`),
     exercises: [
       {
         id: 'go-iface-1',
@@ -2775,6 +2884,169 @@ func (m *TaskManager) PrintSummary() {
           whyItWorks: '`ConsoleLogger` satisfies `io.Writer` interface.',
           syntaxBreakdown: [{ token: 'io.Writer', meaning: 'Standard byte stream output interface.' }],
           underTheHood: 'Foundation of Go I/O package design.',
+        },
+      },
+      {
+        id: 'go-iface-11',
+        languageId: 'go',
+        topicId: 'go-interfaces',
+        title: '🏆 CAPSTONE: PulseMetric (Service Health & Alert System)',
+        difficulty: 6,
+        difficultyLabel: 'Milestone Capstone Project',
+        type: 'algorithm',
+        concept: 'capstone-interfaces',
+        isProject: true,
+        instructions: `Welcome to Project 2: PulseMetric!
+
+In production cloud platforms, background agents continuously inspect the health of internal APIs and microservices. When a failure occurs, alerts must be dispatched through different channels (terminal logs, Slack webhooks, incident management) without tightly coupling the health checking code to any specific alerting provider.
+
+Your task is to build a polymorphic alerting system organized across three files:
+- notifier.go: Declares the alerting interface and implements concrete notification channels.
+- monitor.go: Models monitored services and evaluates their health.
+- main.go: Sets up services, registers alerts, and tests the dispatchers.
+
+FUNCTIONAL REQUIREMENTS:
+
+1. The Notifier Interface (notifier.go):
+   - Define an interface named Notifier with a method named Alert that takes a Target and returns a formatted string.
+   - Implement ConsoleNotifier: A struct whose Alert method returns a human-readable console string formatted like:
+     [CONSOLE ALERT] <Service Name> reported HTTP <Status Code> (<Status Message>)
+   - Implement WebhookNotifier: A struct with a WebhookURL string field whose Alert method returns a compact JSON payload formatted like:
+     {"service":"<Service Name>","status":<Status Code>,"alert_to":"<WebhookURL>"}
+
+2. Target & Health Monitor (monitor.go):
+   - Create a Target struct with fields for Name (string), URL (string), and StatusCode (int).
+   - Write an IsHealthy method on Target that returns true if the status code indicates success (between 200 and 299 inclusive).
+   - Write a StatusMessage method on Target that returns "HEALTHY" if the service is healthy, or "DOWN" if degraded.
+   - Create a HealthMonitor struct that manages a collection of targets.
+   - Provide a constructor function named NewHealthMonitor returning a pointer to a new monitor.
+   - Add an AddTarget method on HealthMonitor that adds a target to the collection.
+   - Add an Evaluate method on HealthMonitor that accepts any Notifier implementation, iterates through all registered targets, and prints the generated alert string for any target that is NOT healthy.
+
+3. Program Flow (main.go):
+   - Instantiate a ConsoleNotifier and a WebhookNotifier configured with "https://hooks.codeforge.dev/alerts".
+   - Create a HealthMonitor and add three services:
+     - "Auth Service" (status 200)
+     - "Payment Gateway" (status 503)
+     - "Database Replica" (status 500)
+   - Print the header === PulseMetric Service Health Check === and evaluate with the console notifier.
+   - Print the header \n=== Webhook Alert Payloads === and evaluate with the webhook notifier.
+
+EXPECTED CONSOLE OUTPUT:
+=== PulseMetric Service Health Check ===
+[CONSOLE ALERT] Payment Gateway reported HTTP 503 (DOWN)
+[CONSOLE ALERT] Database Replica reported HTTP 500 (DOWN)
+
+=== Webhook Alert Payloads ===
+{"service":"Payment Gateway","status":503,"alert_to":"https://hooks.codeforge.dev/alerts"}
+{"service":"Database Replica","status":500,"alert_to":"https://hooks.codeforge.dev/alerts"}`,
+        starterFiles: {
+          'main.go': `package main
+
+import "fmt"
+
+func main() {
+    // 1. Create a ConsoleNotifier and a WebhookNotifier (with "https://hooks.codeforge.dev/alerts")
+
+    // 2. Initialize a HealthMonitor and add three targets:
+    //    - "Auth Service" (HTTP 200)
+    //    - "Payment Gateway" (HTTP 503)
+    //    - "Database Replica" (HTTP 500)
+
+    // 3. Print "=== PulseMetric Service Health Check ===" and evaluate using the console notifier
+
+    // 4. Print "\\n=== Webhook Alert Payloads ===" and evaluate using the webhook notifier
+}
+`,
+          'notifier.go': `package main
+
+import "fmt"
+
+// Notifier defines the interface contract for alert dispatchers.
+type Notifier interface {
+    // TODO: Declare the Alert method accepting a Target and returning a string
+}
+
+// ConsoleNotifier formats alerts for human terminal consumption.
+type ConsoleNotifier struct{}
+
+// TODO: Implement the Alert method on ConsoleNotifier
+
+// WebhookNotifier formats alerts as JSON payloads for automated webhook endpoints.
+type WebhookNotifier struct {
+    WebhookURL string
+}
+
+// TODO: Implement the Alert method on WebhookNotifier
+`,
+          'monitor.go': `package main
+
+import "fmt"
+
+// Target represents a monitored web endpoint or microservice.
+type Target struct {
+    Name       string
+    URL        string
+    StatusCode int
+}
+
+// IsHealthy returns true if the status code is in the 200-299 range.
+func (t Target) IsHealthy() bool {
+    // TODO: Return true if StatusCode is between 200 and 299 inclusive
+    return false
+}
+
+// StatusMessage returns "HEALTHY" or "DOWN" based on the status code.
+func (t Target) StatusMessage() string {
+    // TODO: Return "HEALTHY" if healthy, or "DOWN" otherwise
+    return ""
+}
+
+// HealthMonitor tracks services and evaluates them using polymorphic notifiers.
+type HealthMonitor struct {
+    // TODO: Store a slice of Target values
+}
+
+// NewHealthMonitor initializes and returns a new HealthMonitor pointer.
+func NewHealthMonitor() *HealthMonitor {
+    // TODO: Allocate and return a new HealthMonitor
+    return nil
+}
+
+// AddTarget registers a new target to monitor.
+func (m *HealthMonitor) AddTarget(t Target) {
+    // TODO: Append the target to the monitor
+}
+
+// Evaluate iterates over all targets and dispatches alerts for degraded services.
+func (m *HealthMonitor) Evaluate(notifier Notifier) {
+    // TODO: Loop through targets and call notifier.Alert for any unhealthy target
+}
+`,
+        },
+        starterCode: `package main\n\nfunc main() {\n}`,
+        expectedBehavior: 'Prints console alerts and JSON webhook alerts for degraded services.',
+        testCases: [
+          {
+            id: 't1',
+            input: '',
+            expectedOutput: '=== PulseMetric Service Health Check ===\n[CONSOLE ALERT] Payment Gateway reported HTTP 503 (DOWN)\n[CONSOLE ALERT] Database Replica reported HTTP 500 (DOWN)\n\n=== Webhook Alert Payloads ===\n{"service":"Payment Gateway","status":503,"alert_to":"https://hooks.codeforge.dev/alerts"}\n{"service":"Database Replica","status":500,"alert_to":"https://hooks.codeforge.dev/alerts"}\n',
+            description: 'PulseMetric Polymorphic Notifier Interface Evaluation',
+          },
+        ],
+        hints: [
+          { level: 1, text: 'Keep notifier implementations in notifier.go and target monitor in monitor.go.' },
+          { level: 2, text: 'HealthMonitor.Evaluate accepts any type satisfying Notifier (ConsoleNotifier, WebhookNotifier).' },
+          { level: 3, text: 'Click "Run" to test multi-file interface resolution.' },
+        ],
+        explanation: {
+          simple: 'PulseMetric illustrates polymorphic dependency injection in Go. HealthMonitor depends only on the Notifier interface, allowing any number of alert destinations to be added without modifying the core monitor.',
+          whyItWorks: 'Go uses implicit interface satisfaction: types implement an interface simply by defining the required methods.',
+          syntaxBreakdown: [
+            { token: 'type Notifier interface', meaning: 'Interface contract declaring Alert(Target) string.' },
+            { token: 'func (m *HealthMonitor) Evaluate(n Notifier)', meaning: 'Polymorphic method accepting any Notifier.' },
+          ],
+          underTheHood: 'Interface values in Go are 2-word fat pointers storing a pointer to the type descriptor (itable) and a pointer to the underlying data.',
         },
       },
     ],
