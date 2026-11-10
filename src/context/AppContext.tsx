@@ -56,6 +56,14 @@ interface AppContextType {
   setShowEmailModal: (show: boolean) => void;
   savedSolutions: Record<string, string>;
   logoutUser: () => void;
+
+  // Multi-File Project Workspace
+  files: Record<string, string>;
+  activeFileName: string;
+  setActiveFileName: (name: string) => void;
+  addFile: (name: string, content?: string) => void;
+  deleteFile: (name: string) => void;
+  setFiles: (files: Record<string, string>, defaultActiveFile?: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -96,6 +104,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const {
     code,
     setCode,
+    files,
+    setFiles,
+    activeFileName,
+    setActiveFileName,
+    addFile,
+    deleteFile,
     isExecuting,
     executionResult,
     submissionResult,
@@ -137,31 +151,56 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (existingEmail) {
       syncUserWithTurso(existingEmail, setUserProgress).then((data) => {
         if (data?.solutions && activeExerciseId && data.solutions[activeExerciseId]) {
-          setCode(data.solutions[activeExerciseId]);
+          const rawSol = data.solutions[activeExerciseId];
+          try {
+            if (rawSol.startsWith('{"files":')) {
+              const parsed = JSON.parse(rawSol);
+              setFiles(parsed.files || { 'main.go': rawSol });
+            } else {
+              setFiles({ 'main.go': rawSol });
+            }
+          } catch {
+            setFiles({ 'main.go': rawSol });
+          }
         }
       });
     }
-}, [syncUserWithTurso]);
+  }, [syncUserWithTurso]);
 
-// Handle switching active exercises: restore code & reset transient UI states
-useEffect(() => {
-  if (activeExerciseId && curriculum.length > 0) {
-    for (const topic of curriculum) {
-      const ex = (topic as any).exercises?.find((e: Exercise) => e.id === activeExerciseId);
-      if (ex) {
-        setActiveTopicId(topic.id);
-        setActiveExercise(ex);
+  // Handle switching active exercises: restore code/files & reset transient UI states
+  useEffect(() => {
+    if (activeExerciseId && curriculum.length > 0) {
+      for (const topic of curriculum) {
+        const ex = (topic as any).exercises?.find((e: Exercise) => e.id === activeExerciseId);
+        if (ex) {
+          setActiveTopicId(topic.id);
+          setActiveExercise(ex);
 
-        // Restore previously saved answer from Turso/local cache if available
-        const previousSolution = savedSolutions[ex.id];
-        setCode(previousSolution || ex.starterCode);
+          // Restore previously saved answer from Turso/local cache if available
+          const previousSolution = savedSolutions[ex.id];
+          if (previousSolution) {
+            try {
+              if (previousSolution.startsWith('{"files":')) {
+                const parsed = JSON.parse(previousSolution);
+                setFiles(parsed.files || { 'main.go': previousSolution });
+              } else {
+                setFiles({ 'main.go': previousSolution });
+              }
+            } catch {
+              setFiles({ 'main.go': previousSolution });
+            }
+          } else if (ex.starterFiles && Object.keys(ex.starterFiles).length > 0) {
+            setFiles(ex.starterFiles);
+          } else {
+            setFiles({ 'main.go': ex.starterCode });
+          }
 
-        resetExecutionState();
-        resetExerciseAiState();
-        break;
+          resetExecutionState();
+          resetExerciseAiState();
+          break;
+        }
       }
     }
-  }
   }, [activeExerciseId, curriculum, savedSolutions, resetExecutionState, resetExerciseAiState]);
 
   const setUserEmail = async (email: string) => {
@@ -212,6 +251,14 @@ useEffect(() => {
         setShowEmailModal,
         savedSolutions,
         logoutUser,
+
+        // Multi-File Project Workspace
+        files,
+        setFiles,
+        activeFileName,
+        setActiveFileName,
+        addFile,
+        deleteFile,
       }}
     >
       {children}
