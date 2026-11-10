@@ -26,22 +26,65 @@ export function useCodeExecution({
   setSavedSolutions,
   setHasAttemptedCurrentExercise,
 }: UseCodeExecutionProps) {
-  const [code, setCode] = useState<string>('');
+  const [files, setFilesState] = useState<Record<string, string>>({ 'main.go': '' });
+  const [activeFileName, setActiveFileName] = useState<string>('main.go');
   const [isExecuting, setIsExecuting] = useState(false);
   const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
   const [submissionResult, setSubmissionResult] = useState<SubmissionResult | null>(null);
   const [activeHintLevel, setActiveHintLevel] = useState<number>(0);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
 
+  // Active file code string
+  const code = files[activeFileName] || '';
+
+  const setCode = useCallback((newContent: string) => {
+    setFilesState((prev) => ({
+      ...prev,
+      [activeFileName]: newContent,
+    }));
+  }, [activeFileName]);
+
+  const setFiles = useCallback((newFiles: Record<string, string>, defaultActiveFile?: string) => {
+    const keys = Object.keys(newFiles);
+    const targetKey = defaultActiveFile && newFiles[defaultActiveFile] !== undefined
+      ? defaultActiveFile
+      : (newFiles['main.go'] !== undefined ? 'main.go' : (keys[0] || 'main.go'));
+    setFilesState(newFiles);
+    setActiveFileName(targetKey);
+  }, []);
+
+  const addFile = useCallback((rawName: string, initialContent = 'package main\n\n') => {
+    let name = rawName.trim();
+    if (!name) return;
+    if (!name.endsWith('.go')) {
+      name += '.go';
+    }
+    setFilesState((prev) => {
+      if (prev[name] !== undefined) return prev;
+      return { ...prev, [name]: initialContent };
+    });
+    setActiveFileName(name);
+  }, []);
+
+  const deleteFile = useCallback((name: string) => {
+    if (name === 'main.go') return; // Cannot delete main.go entry point
+    setFilesState((prev) => {
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
+    setActiveFileName((current) => (current === name ? 'main.go' : current));
+  }, []);
+
   const runCode = useCallback(async () => {
-    if (!code) return;
+    if (!code && Object.keys(files).length === 0) return;
     setIsExecuting(true);
     setHasAttemptedCurrentExercise(true);
     try {
       const res = await fetch('/api/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, languageId: 'go' }),
+        body: JSON.stringify({ code, files, languageId: 'go' }),
       });
       const data = await res.json();
       setExecutionResult(data);
@@ -56,10 +99,10 @@ export function useCodeExecution({
     } finally {
       setIsExecuting(false);
     }
-  }, [code, setHasAttemptedCurrentExercise]);
+  }, [code, files, setHasAttemptedCurrentExercise]);
 
   const submitCode = useCallback(async () => {
-    if (!code || !activeExercise) return;
+    if ((!code && Object.keys(files).length === 0) || !activeExercise) return;
     setIsExecuting(true);
     setHasAttemptedCurrentExercise(true);
     setActiveHintLevel(0);
@@ -70,6 +113,7 @@ export function useCodeExecution({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           code,
+          files,
           exerciseId: activeExercise.id,
           languageId: 'go',
           email: userEmail,
@@ -80,10 +124,14 @@ export function useCodeExecution({
       setExecutionResult(data.execution);
 
       if (data.success) {
-        // Cache solution locally and update saved solutions map
+        // Cache solution locally (serialize multi-file if multiple exist)
+        const solutionToSave = Object.keys(files).length > 1
+          ? JSON.stringify({ files })
+          : (files['main.go'] || code);
+
         setSavedSolutions((prev) => ({
           ...prev,
-          [activeExercise.id]: code,
+          [activeExercise.id]: solutionToSave,
         }));
 
         setUserProgress((prev) => {
@@ -125,6 +173,7 @@ export function useCodeExecution({
     }
   }, [
     code,
+    files,
     activeExercise,
     activeTopicId,
     curriculum,
@@ -143,6 +192,12 @@ export function useCodeExecution({
   return {
     code,
     setCode,
+    files,
+    setFiles,
+    activeFileName,
+    setActiveFileName,
+    addFile,
+    deleteFile,
     isExecuting,
     executionResult,
     submissionResult,
@@ -155,4 +210,3 @@ export function useCodeExecution({
     resetExecutionState,
   };
 }
-
