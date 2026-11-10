@@ -155,9 +155,15 @@ export const CurriculumTree: React.FC = () => {
                                   )}
                                   <span className="truncate">{ex.title}</span>
                                 </div>
-                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/50 flex-shrink-0">
-                                  L{ex.difficulty}
-                                </span>
+                                {ex.isProject ? (
+                                  <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 flex-shrink-0 animate-pulse">
+                                    Project
+                                  </span>
+                                ) : (
+                                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/50 flex-shrink-0">
+                                    L{ex.difficulty}
+                                  </span>
+                                )}
                               </div>
                             );
                           })}
