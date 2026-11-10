@@ -46,6 +46,9 @@ export interface Exercise {
   concept: string;
   instructions: string;
   starterCode: string;
+  starterFiles?: Record<string, string>;
+  isProject?: boolean;
+  readOnlyFiles?: string[];
   options?: string[]; // For prediction / fill_blank exercises
   correctOption?: string; // For prediction exercises
   blankPlaceholder?: string;
