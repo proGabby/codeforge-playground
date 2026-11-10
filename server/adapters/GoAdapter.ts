@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { ExecutionResult, GuidedCorrection, LineExplanation, SubmissionResult, TestCase } from '../../src/types';
 import { CorrectionEngine } from '../engine/CorrectionEngine';
 import { LineExplanationEngine } from '../engine/LineExplanationEngine';
+import { LinterEngine } from '../engine/LinterEngine';
 import { LanguageAdapter } from './LanguageAdapter';
 import { ensureGo } from '../../scripts/ensure-go.js';
 
@@ -162,7 +163,8 @@ export class GoAdapter implements LanguageAdapter {
     codeOrFiles: string | Record<string, string>,
     exerciseType: string,
     testCases: TestCase[],
-    exerciseConcept?: string
+    exerciseConcept?: string,
+    isProject?: boolean
   ): Promise<SubmissionResult> {
     // 1. Run standard execution first
     const execResult = await this.runCode(codeOrFiles);
@@ -174,6 +176,8 @@ export class GoAdapter implements LanguageAdapter {
       : Object.values(codeOrFiles).join('\n');
     const code = primaryCode;
 
+    // 2. Perform Best Practices & Architecture Linting
+    const bestPractices = LinterEngine.analyze(codeOrFiles, isProject, exerciseConcept);
 
     if (!execResult.compiledSuccessfully) {
       // Generate single-error guided correction
@@ -189,6 +193,7 @@ export class GoAdapter implements LanguageAdapter {
         passedTestCount: 0,
         totalTestCount: testCases ? testCases.length : 1,
         correction,
+        bestPractices,
       };
     }
 
@@ -314,6 +319,7 @@ export class GoAdapter implements LanguageAdapter {
         execution: execResult,
         passedTestCount: 1,
         totalTestCount: 1,
+        bestPractices,
         conceptsLearned: ['Go Syntax & Output Verification'],
       };
     }
@@ -352,7 +358,26 @@ export class GoAdapter implements LanguageAdapter {
       }
     }
 
-    const allPassed = passedCount === testCases.length;
+    // For capstone projects, also require passing critical architecture checks
+    const criticalFailure = bestPractices.checks.find(
+      (c) => !c.passed && c.category === 'architecture'
+    );
+
+    if (!failingCorrection && criticalFailure && isProject) {
+      failingCorrection = {
+        lineIndex: 1,
+        whatHappened: criticalFailure.title,
+        whyItHappened: criticalFailure.message,
+        howToFix: criticalFailure.suggestion || 'Follow Go multi-file project conventions.',
+        graduatedHints: [
+          'Capstone projects must follow idiomatic Go architecture.',
+          criticalFailure.message,
+          criticalFailure.suggestion || 'Separate your domain models and handlers across files.',
+        ],
+      };
+    }
+
+    const allPassed = passedCount === testCases.length && (!isProject || !criticalFailure);
 
     return {
       success: allPassed,
@@ -361,6 +386,7 @@ export class GoAdapter implements LanguageAdapter {
       totalTestCount: testCases.length,
       testDetails,
       correction: failingCorrection,
+      bestPractices,
       codeQualityNotes: allPassed
         ? [
           'Clean idiomatic Go structure.',

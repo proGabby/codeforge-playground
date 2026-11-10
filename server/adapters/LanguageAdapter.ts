@@ -7,18 +7,19 @@ export interface LanguageAdapter {
   fileExtension: string;
 
   /**
-   * Runs arbitrary user code standalone.
+   * Runs arbitrary user code standalone (single file string or multi-file dictionary).
    */
   runCode(codeOrFiles: string | Record<string, string>): Promise<ExecutionResult>;
 
   /**
-   * Evaluates user code against test cases (behavioral testing).
+   * Evaluates user code against test cases (behavioral testing) and architectural best practices.
    */
   runTests(
     codeOrFiles: string | Record<string, string>,
     exerciseType: string,
     testCases: TestCase[],
-    exerciseConcept?: string
+    exerciseConcept?: string,
+    isProject?: boolean
   ): Promise<SubmissionResult>;
 
   /**

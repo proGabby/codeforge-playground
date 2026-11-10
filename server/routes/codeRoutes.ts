@@ -49,7 +49,8 @@ codeRouter.post('/submit', async (req, res) => {
       payload,
       exercise.type,
       exercise.testCases || [],
-      exercise.concept
+      exercise.concept,
+      exercise.isProject
     );
 
     // If an email is provided, record the submission in Turso
