@@ -798,7 +798,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
     order: 9,
     description: 'Dynamic, flexible, resizable views into backing array data using make and append.',
     prerequisites: ['go-arrays'],
-    exerciseIds: Array.from({ length: 10 }, (_, i) => `go-slice-${i + 1}`),
+    exerciseIds: Array.from({ length: 11 }, (_, i) => `go-slice-${i + 1}`),
     exercises: [
       {
         id: 'go-slice-1',
