@@ -2380,7 +2380,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'function',
         concept: 'explicit-errors',
         instructions: 'Write `func divide(a, b float64) (float64, error)` returning `errors.New("division by zero")` if `b == 0`.',
-        starterCode: `package main\n\nimport (\n    "errors"\n    "fmt"\n)\n\nfunc divide(a, b float64) (float64, error) {\n    if b == 0 {\n        return 0, errors.New("division by zero")\n    }\n    return a / b, nil\n}\n\nfunc main() {\n    _, err := divide(10, 0)\n    if err != nil {\n        fmt.Println(err)\n    }\n}`,
+        starterCode: `package main\n\nimport (\n    "errors"\n    "fmt"\n)\n\n// Write divide(a, b float64) (float64, error) returning error if b == 0\n\nfunc main() {\n    _, err := divide(10, 0)\n    if err != nil {\n        fmt.Println(err)\n    }\n}`,
         expectedBehavior: 'Prints "division by zero".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'division by zero\n' }],
         hints: [
@@ -2405,7 +2405,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'function',
         concept: 'fmt-errorf',
         instructions: 'Write `func checkAge(age int) error` returning `fmt.Errorf("invalid age: %d", age)` if `age < 0`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc checkAge(age int) error {\n    if age < 0 {\n        return fmt.Errorf("invalid age: %d", age)\n    }\n    return nil\n}\n\nfunc main() {\n    err := checkAge(-5)\n    if err != nil {\n        fmt.Println(err)\n    }\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\n// Write checkAge(age int) error returning fmt.Errorf if age < 0\n\nfunc main() {\n    err := checkAge(-5)\n    if err != nil {\n        fmt.Println(err)\n    }\n}`,
         expectedBehavior: 'Prints "invalid age: -5".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'invalid age: -5\n' }],
         hints: [
@@ -2430,7 +2430,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'sentinel-errors',
         instructions: 'Declare package sentinel `var ErrNotFound = errors.New("not found")`. Compare error against `ErrNotFound`.',
-        starterCode: `package main\n\nimport (\n    "errors"\n    "fmt"\n)\n\nvar ErrNotFound = errors.New("not found")\n\nfunc main() {\n    err := ErrNotFound\n    if err == ErrNotFound {\n        fmt.Println("Handled sentinel")\n    }\n}`,
+        starterCode: `package main\n\nimport (\n    "errors"\n    "fmt"\n)\n\n// Declare sentinel error ErrNotFound here\n\nfunc main() {\n    err := ErrNotFound\n    if err == ErrNotFound {\n        fmt.Println("Handled sentinel")\n    }\n}`,
         expectedBehavior: 'Prints "Handled sentinel".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Handled sentinel\n' }],
         hints: [
@@ -2455,7 +2455,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'error-wrapping',
         instructions: 'Wrap sentinel error using `fmt.Errorf("database query failed: %w", ErrNotFound)`. Print error.',
-        starterCode: `package main\n\nimport (\n    "errors"\n    "fmt"\n)\n\nvar ErrNotFound = errors.New("not found")\n\nfunc main() {\n    err := fmt.Errorf("database query failed: %w", ErrNotFound)\n    fmt.Println(err)\n}`,
+        starterCode: `package main\n\nimport (\n    "errors"\n    "fmt"\n)\n\nvar ErrNotFound = errors.New("not found")\n\nfunc main() {\n    // Wrap ErrNotFound using fmt.Errorf with %w and print err\n}`,
         expectedBehavior: 'Prints "database query failed: not found".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'database query failed: not found\n' }],
         hints: [
@@ -2480,7 +2480,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'errors-is',
         instructions: 'Use `errors.Is(err, ErrNotFound)` to check if wrapped error contains `ErrNotFound`.',
-        starterCode: `package main\n\nimport (\n    "errors"\n    "fmt"\n)\n\nvar ErrNotFound = errors.New("not found")\n\nfunc main() {\n    err := fmt.Errorf("outer context: %w", ErrNotFound)\n    if errors.Is(err, ErrNotFound) {\n        fmt.Println("Matched sentinel error")\n    }\n}`,
+        starterCode: `package main\n\nimport (\n    "errors"\n    "fmt"\n)\n\nvar ErrNotFound = errors.New("not found")\n\nfunc main() {\n    err := fmt.Errorf("outer context: %w", ErrNotFound)\n    // Check if err wraps ErrNotFound using errors.Is() and print "Matched sentinel error"\n}`,
         expectedBehavior: 'Prints "Matched sentinel error".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Matched sentinel error\n' }],
         hints: [
@@ -2505,7 +2505,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'struct',
         concept: 'custom-error-struct',
         instructions: 'Define `type ValidationError struct { Field string }`. Implement `Error() string` method returning `"invalid field: " + e.Field`.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype ValidationError struct {\n    Field string\n}\n\nfunc (e ValidationError) Error() string {\n    return "invalid field: " + e.Field\n}\n\nfunc main() {\n    var err error = ValidationError{Field: "Email"}\n    fmt.Println(err.Error())\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype ValidationError struct {\n    Field string\n}\n\n// Implement Error() string method on ValidationError returning "invalid field: " + e.Field\n\nfunc main() {\n    var err error = ValidationError{Field: "Email"}\n    fmt.Println(err.Error())\n}`,
         expectedBehavior: 'Prints "invalid field: Email".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'invalid field: Email\n' }],
         hints: [
@@ -2530,7 +2530,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'errors-as',
         instructions: 'Use `var valErr ValidationError; errors.As(err, &valErr)` to unwrap structured custom error.',
-        starterCode: `package main\n\nimport (\n    "errors"\n    "fmt"\n)\n\ntype ValidationError struct {\n    Field string\n}\n\nfunc (e ValidationError) Error() string {\n    return "invalid: " + e.Field\n}\n\nfunc main() {\n    var err error = ValidationError{Field: "Password"}\n    var valErr ValidationError\n    if errors.As(err, &valErr) {\n        fmt.Println(valErr.Field)\n    }\n}`,
+        starterCode: `package main\n\nimport (\n    "errors"\n    "fmt"\n)\n\ntype ValidationError struct {\n    Field string\n}\n\nfunc (e ValidationError) Error() string {\n    return "invalid: " + e.Field\n}\n\nfunc main() {\n    var err error = ValidationError{Field: "Password"}\n    // Use errors.As to unwrap ValidationError into valErr and print valErr.Field\n}`,
         expectedBehavior: 'Prints "Password".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Password\n' }],
         hints: [
@@ -2555,7 +2555,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'panic-recover',
         instructions: 'Use `defer` with `recover()` to catch a `panic("critical crash")` and print `"Recovered"`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    defer func() {\n        if r := recover(); r != nil {\n            fmt.Println("Recovered")\n        }\n    }()\n    panic("critical crash")\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Defer a function calling recover() to catch panic and print "Recovered"\n    panic("critical crash")\n}`,
         expectedBehavior: 'Prints "Recovered".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Recovered\n' }],
         hints: [
@@ -2583,7 +2583,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'guard-clause',
         instructions: 'Write idiomatic guard clause `if err != nil { return err }` returning early instead of deep nesting.',
-        starterCode: `package main\n\nimport (\n    "errors"\n    "fmt"\n)\n\nfunc process() error {\n    err := errors.New("step 1 failed")\n    if err != nil {\n        return err\n    }\n    return nil\n}\n\nfunc main() {\n    if err := process(); err != nil {\n        fmt.Println("Handled guard clause")\n    }\n}`,
+        starterCode: `package main\n\nimport (\n    "errors"\n    "fmt"\n)\n\nfunc process() error {\n    err := errors.New("step 1 failed")\n    // Write guard clause: return err if err != nil\n    return nil\n}\n\nfunc main() {\n    if err := process(); err != nil {\n        fmt.Println("Handled guard clause")\n    }\n}`,
         expectedBehavior: 'Prints "Handled guard clause".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Handled guard clause\n' }],
         hints: [
@@ -2608,7 +2608,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'ignore-error',
         instructions: 'Use `val, _ := compute()` to explicitly ignore error output using blank identifier `_`.',
-        starterCode: `package main\n\nimport (\n    "errors"\n    "fmt"\n)\n\nfunc compute() (int, error) {\n    return 42, errors.New("minor warning")\n}\n\nfunc main() {\n    val, _ := compute()\n    fmt.Println(val)\n}`,
+        starterCode: `package main\n\nimport (\n    "errors"\n    "fmt"\n)\n\nfunc compute() (int, error) {\n    return 42, errors.New("minor warning")\n}\n\nfunc main() {\n    // Call compute(), discard error with blank identifier _, and print val\n}`,
         expectedBehavior: 'Prints 42.',
         testCases: [{ id: 't1', input: '', expectedOutput: '42\n' }],
         hints: [
@@ -2646,7 +2646,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'interface-declaration',
         instructions: 'Define `type Speaker interface { Speak() string }`. Implement on struct `Dog`. Print `d.Speak()`.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype Speaker interface {\n    Speak() string\n}\n\ntype Dog struct{}\n\nfunc (d Dog) Speak() string {\n    return "Woof!"\n}\n\nfunc main() {\n    var s Speaker = Dog{}\n    fmt.Println(s.Speak())\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype Speaker interface {\n    Speak() string\n}\n\ntype Dog struct{}\n\n// Implement Speak() string method on Dog returning "Woof!"\n\nfunc main() {\n    var s Speaker = Dog{}\n    fmt.Println(s.Speak())\n}`,
         expectedBehavior: 'Prints "Woof!".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Woof!\n' }],
         hints: [
@@ -2671,7 +2671,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'polymorphism',
         instructions: 'Store `Dog{}` and `Cat{}` in slice `speakers := []Speaker{Dog{}, Cat{}}`. Loop and print `s.Speak()`.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype Speaker interface {\n    Speak() string\n}\n\ntype Dog struct{}\nfunc (d Dog) Speak() string { return "Woof!" }\n\ntype Cat struct{}\nfunc (c Cat) Speak() string { return "Meow!" }\n\nfunc main() {\n    speakers := []Speaker{Dog{}, Cat{}}\n    for _, s := range speakers {\n        fmt.Println(s.Speak())\n    }\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype Speaker interface {\n    Speak() string\n}\n\ntype Dog struct{}\nfunc (d Dog) Speak() string { return "Woof!" }\n\ntype Cat struct{}\nfunc (c Cat) Speak() string { return "Meow!" }\n\nfunc main() {\n    // Create slice speakers []Speaker with Dog{} and Cat{}, loop and print s.Speak()\n}`,
         expectedBehavior: 'Prints "Woof!" and "Meow!" on separate lines.',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Woof!\nMeow!\n' }],
         hints: [
@@ -2696,7 +2696,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'empty-interface',
         instructions: 'Write function `describe(val any)` that accepts any parameter value and prints `val`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc describe(val any) {\n    fmt.Println(val)\n}\n\nfunc main() {\n    describe("Hello")\n    describe(42)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\n// Write describe(val any) function that prints val\n\nfunc main() {\n    describe("Hello")\n    describe(42)\n}`,
         expectedBehavior: 'Prints "Hello" and 42.',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Hello\n42\n' }],
         hints: [
@@ -2721,7 +2721,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'type-assertion',
         instructions: 'Given `var i any = "Go"`, assert concrete string type using `str := i.(string)` and print `str`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    var i any = "Go"\n    str := i.(string)\n    fmt.Println(str)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    var i any = "Go"\n    // Assert i as string and print it\n}`,
         expectedBehavior: 'Prints "Go".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Go\n' }],
         hints: [
@@ -2746,7 +2746,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'safe-type-assertion',
         instructions: 'Given `var i any = 100`, attempt string assertion safely using `str, ok := i.(string)`. Print `ok`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    var i any = 100\n    str, ok := i.(string)\n    if !ok {\n        fmt.Println("Not a string")\n    } else {\n        fmt.Println(str)\n    }\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    var i any = 100\n    // Use comma-ok type assertion to safely check if i is string; print "Not a string" if !ok\n}`,
         expectedBehavior: 'Prints "Not a string".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Not a string\n' }],
         hints: [
@@ -2771,7 +2771,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'type-switch',
         instructions: 'Use `switch v := i.(type)` to print `"Int"` for integer `42` and `"String"` for string `"Go"`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc checkType(i any) {\n    switch v := i.(type) {\n    case int:\n        fmt.Println("Int:", v)\n    case string:\n        fmt.Println("String:", v)\n    }\n}\n\nfunc main() {\n    checkType(42)\n    checkType("Go")\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc checkType(val any) {\n    // Write a type switch switch v := val.(type) handling int and string\n}\n\nfunc main() {\n    checkType(42)\n    checkType("Go")\n}`,
         expectedBehavior: 'Prints "Int: 42" and "String: Go".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Int: 42\nString: Go\n' }],
         hints: [
@@ -2796,7 +2796,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'interface-composition',
         instructions: 'Combine `Reader` and `Writer` into `type ReadWriter interface { Reader; Writer }`.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype Reader interface { Read() string }\ntype Writer interface { Write(s string) }\n\ntype ReadWriter interface {\n    Reader\n    Writer\n}\n\ntype File struct{}\nfunc (f File) Read() string { return "Data" }\nfunc (f File) Write(s string) { fmt.Println("Wrote:", s) }\n\nfunc main() {\n    var rw ReadWriter = File{}\n    rw.Write(rw.Read())\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype Reader interface {\n    Read() string\n}\n\ntype Writer interface {\n    Write(s string)\n}\n\ntype ReadWriter interface {\n    // Embed Reader and Writer interfaces here\n}\n\ntype Document struct{}\nfunc (d Document) Read() string { return "Reading doc" }\nfunc (d Document) Write(s string) { fmt.Println("Writing:", s) }\n\nfunc main() {\n    var rw ReadWriter = Document{}\n    fmt.Println(rw.Read())\n}`,
         expectedBehavior: 'Prints "Wrote: Data".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Wrote: Data\n' }],
         hints: [
@@ -2821,7 +2821,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'pointer-receiver-iface',
         instructions: 'Given pointer receiver `func (c *Counter) Increment()`, instantiate interface `var inc Incer = &Counter{}`.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype Incer interface {\n    Increment()\n}\n\ntype Counter struct {\n    count int\n}\n\nfunc (c *Counter) Increment() {\n    c.count++\n}\n\nfunc main() {\n    var inc Incer = &Counter{}\n    inc.Increment()\n    fmt.Println("Incremented")\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype Incrementer interface {\n    Inc()\n}\n\ntype Counter struct {\n    val int\n}\n\n// Implement Inc() method on *Counter with pointer receiver\n\nfunc main() {\n    var inc Incrementer = &Counter{}\n    inc.Inc()\n    fmt.Println("Incremented successfully")\n}`,
         expectedBehavior: 'Prints "Incremented".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Incremented\n' }],
         hints: [
@@ -2846,7 +2846,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'nil-iface-gotcha',
         instructions: 'Demonstrate that an interface holding a `nil` pointer is NOT equal to `nil` (`var p *Dog; var s Speaker = p; s != nil`).',
-        starterCode: `package main\n\nimport "fmt"\n\ntype Speaker interface { Speak() }\ntype Dog struct{}\nfunc (d *Dog) Speak() {}\n\nfunc main() {\n    var p *Dog = nil\n    var s Speaker = p\n    if s != nil {\n        fmt.Println("Interface is NOT nil")\n    }\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype Greeter interface {\n    Greet()\n}\n\ntype Person struct{}\nfunc (p *Person) Greet() {}\n\nfunc main() {\n    var p *Person = nil\n    var g Greeter = p\n    // Check if g == nil and print result\n}`,
         expectedBehavior: 'Prints "Interface is NOT nil".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Interface is NOT nil\n' }],
         hints: [
@@ -2871,7 +2871,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'io-writer',
         instructions: 'Implement `Write(p []byte) (n int, err error)` on `ConsoleLogger` struct to satisfy standard `io.Writer`.',
-        starterCode: `package main\n\nimport (\n    "fmt"\n    "io"\n)\n\ntype ConsoleLogger struct{}\n\nfunc (c ConsoleLogger) Write(p []byte) (n int, err error) {\n    fmt.Print(string(p))\n    return len(p), nil\n}\n\nfunc main() {\n    var w io.Writer = ConsoleLogger{}\n    w.Write([]byte("Logged message\\n"))\n}`,
+        starterCode: `package main\n\nimport (\n    "fmt"\n    "io"\n)\n\ntype MemoryBuffer struct {\n    data string\n}\n\n// Implement Write(p []byte) (n int, err error) on *MemoryBuffer to satisfy io.Writer\n\nfunc main() {\n    var w io.Writer = &MemoryBuffer{}\n    fmt.Fprintf(w, "Hello, Writer!")\n    fmt.Println(w.(*MemoryBuffer).data)\n}`,
         expectedBehavior: 'Prints "Logged message".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Logged message\n' }],
         hints: [
