@@ -146,7 +146,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: 'infinite-loop',
         instructions: 'Create an infinite loop `for { ... }`. Increment `count := 0`. When `count == 3`, break and print `"Done"`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    count := 0\n    for {\n        count++\n        if count == 3 {\n            break\n        }\n    }\n    fmt.Println("Done")\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    count := 0\n    // Create an infinite loop, increment count, and break when count == 3\n\n    fmt.Println("Done")\n}`,
         expectedBehavior: 'Prints "Done".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Done\n' }],
         hints: [
@@ -171,7 +171,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: 'nested-loops',
         instructions: 'Use nested `for` loops (`i` from 1 to 2, `j` from 1 to 2) to print `i * j` values.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    for i := 1; i <= 2; i++ {\n        for j := 1; j <= 2; j++ {\n            fmt.Println(i * j)\n        }\n    }\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Use nested for loops (i from 1 to 2, j from 1 to 2) to print i * j\n}`,
         expectedBehavior: 'Prints 1, 2, 2, 4.',
         testCases: [{ id: 't1', input: '', expectedOutput: '1\n2\n2\n4\n' }],
         hints: [
@@ -246,7 +246,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: 'string-range',
         instructions: 'Given `word := "Go"`, iterate over `word` using `range` and print each character formatted as string `string(ch)`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    word := "Go"\n    for _, ch := range word {\n        fmt.Println(string(ch))\n    }\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    word := "Go"\n    // Iterate over word using range and print each character as string(ch)\n}`,
         expectedBehavior: 'Prints "G" and "o" on separate lines.',
         testCases: [{ id: 't1', input: '', expectedOutput: 'G\no\n' }],
         hints: [
@@ -384,7 +384,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: 'closures',
         instructions: 'Declare an anonymous function `double := func(n int) int { return n * 2 }`. Call `double(5)` and print result.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Declare anonymous function double\n    double := func(n int) int {\n        return n * 2\n    }\n    fmt.Println(double(5))\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Declare anonymous function double := func(n int) int { return n * 2 }\n    // Call double(5) and print result\n}`,
         expectedBehavior: 'Prints 10.',
         testCases: [{ id: 't1', input: '', expectedOutput: '10\n' }],
         hints: [
@@ -409,7 +409,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'function',
         concept: 'stateful-closures',
         instructions: 'Write `func newCounter() func() int` returning closure that increments local count on each call. Call `c := newCounter()` twice and print `c()` twice.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc newCounter() func() int {\n    count := 0\n    return func() int {\n        count++\n        return count\n    }\n}\n\nfunc main() {\n    c := newCounter()\n    fmt.Println(c(), c())\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\n// Write newCounter() returning a closure func() int here\n\nfunc main() {\n    c := newCounter()\n    fmt.Println(c(), c())\n}`,
         expectedBehavior: 'Prints "1 2".',
         testCases: [{ id: 't1', input: '', expectedOutput: '1 2\n' }],
         hints: [
@@ -434,7 +434,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: 'defer',
         instructions: 'Use `defer fmt.Println("Cleanup")` at top of `main()`. Print `"Start"`, then `"End"`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    defer fmt.Println("Cleanup")\n    fmt.Println("Start")\n    fmt.Println("End")\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Defer printing "Cleanup", then print "Start" and "End"\n}`,
         expectedBehavior: 'Prints Start, End, Cleanup.',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Start\nEnd\nCleanup\n' }],
         hints: [
@@ -509,7 +509,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: 'pass-by-value',
         instructions: 'Write `func update(val int) { val = 99 }`. In `main()`, set `x := 10`, call `update(x)`, and print `x` to verify `x` remains `10`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc update(val int) {\n    val = 99\n}\n\nfunc main() {\n    x := 10\n    update(x)\n    fmt.Println(x)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\n// Write update(val int) function here that sets val = 99\n\nfunc main() {\n    x := 10\n    update(x)\n    fmt.Println(x)\n}`,
         expectedBehavior: 'Prints 10.',
         testCases: [{ id: 't1', input: '', expectedOutput: '10\n' }],
         hints: [
@@ -622,7 +622,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: 'ellipsis-array',
         instructions: 'Use `...` ellipsis syntax `primes := [...]int{2, 3, 5, 7}` to let Go count elements automatically, then print `len(primes)`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Use [...]int syntax\n    primes := [...]int{2, 3, 5, 7}\n    fmt.Println(len(primes))\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Declare primes array using [...]int syntax with 2, 3, 5, 7, then print len(primes)\n}`,
         expectedBehavior: 'Prints 4.',
         testCases: [{ id: 't1', input: '', expectedOutput: '4\n' }],
         hints: [
@@ -647,7 +647,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: 'array-mutation',
         instructions: 'Given `scores := [3]int{50, 60, 70}`, modify second element `scores[1] = 99`, then print `scores`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    scores := [3]int{50, 60, 70}\n    // Update scores[1] = 99\n    scores[1] = 99\n    fmt.Println(scores)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    scores := [3]int{50, 60, 70}\n    // Modify second element to 99 and print scores\n}`,
         expectedBehavior: 'Prints [50 99 70].',
         testCases: [{ id: 't1', input: '', expectedOutput: '[50 99 70]\n' }],
         hints: [
@@ -697,7 +697,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: 'array-copy',
         instructions: 'Given `a := [2]int{1, 2}`, assign `b := a`. Modify `b[0] = 99`. Print `a` to verify `a` was NOT modified.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    a := [2]int{1, 2}\n    b := a\n    b[0] = 99\n    fmt.Println(a)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    a := [2]int{1, 2}\n    // Assign b := a, modify b[0] = 99, and print a\n}`,
         expectedBehavior: 'Prints [1 2].',
         testCases: [{ id: 't1', input: '', expectedOutput: '[1 2]\n' }],
         hints: [
@@ -722,7 +722,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: 'keyed-array',
         instructions: 'Initialize array `arr := [5]int{0: 10, 4: 50}` using index keys, then print `arr`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Initialize index 0 to 10 and index 4 to 50\n    arr := [5]int{0: 10, 4: 50}\n    fmt.Println(arr)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Initialize arr using keyed indices {0: 10, 4: 50} and print arr\n}`,
         expectedBehavior: 'Prints [10 0 0 0 50].',
         testCases: [{ id: 't1', input: '', expectedOutput: '[10 0 0 0 50]\n' }],
         hints: [
@@ -747,7 +747,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: '2d-array',
         instructions: 'Declare 2D array `matrix := [2][2]int{{1, 2}, {3, 4}}`. Print `matrix[1][0]` (row 1, col 0).',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    matrix := [2][2]int{{1, 2}, {3, 4}}\n    // Print matrix[1][0]\n    fmt.Println(matrix[1][0])\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Declare 2D array matrix [2][2]int and print matrix[1][0]\n}`,
         expectedBehavior: 'Prints 3.',
         testCases: [{ id: 't1', input: '', expectedOutput: '3\n' }],
         hints: [
@@ -835,7 +835,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: 'slice-make',
         instructions: 'Use `make([]int, 3)` to create a slice `s` of length 3. Set `s[0] = 10`, `s[1] = 20`, `s[2] = 30`, and print `s`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Create slice with make([]int, 3)\n    s := make([]int, 3)\n    s[0] = 10\n    s[1] = 20\n    s[2] = 30\n    fmt.Println(s)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Create slice s of length 3 using make([]int, 3), assign elements 10, 20, 30, and print s\n}`,
         expectedBehavior: 'Prints [10 20 30].',
         testCases: [{ id: 't1', input: '', expectedOutput: '[10 20 30]\n' }],
         hints: [
@@ -860,7 +860,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: 'len-cap',
         instructions: 'Given `s := make([]int, 2, 5)`, print `len(s)` and `cap(s)`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    s := make([]int, 2, 5)\n    // Print len(s) and cap(s)\n    fmt.Println(len(s), cap(s))\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    s := make([]int, 2, 5)\n    // Print len(s) and cap(s)\n}`,
         expectedBehavior: 'Prints "2 5".',
         testCases: [{ id: 't1', input: '', expectedOutput: '2 5\n' }],
         hints: [
@@ -888,7 +888,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: 'slicing-operator',
         instructions: 'Given `nums := []int{10, 20, 30, 40, 50}`, create sub-slice `sub := nums[1:4]` and print `sub`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    nums := []int{10, 20, 30, 40, 50}\n    // Slice from index 1 up to (excluding) 4\n    sub := nums[1:4]\n    fmt.Println(sub)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    nums := []int{10, 20, 30, 40, 50}\n    // Create sub-slice sub from index 1 to 4 and print sub\n}`,
         expectedBehavior: 'Prints [20 30 40].',
         testCases: [{ id: 't1', input: '', expectedOutput: '[20 30 40]\n' }],
         hints: [
@@ -913,7 +913,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: 'shared-backing-array',
         instructions: 'Given `orig := []int{1, 2, 3}`, create slice `sub := orig[0:2]`. Modify `sub[0] = 99`. Print `orig`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    orig := []int{1, 2, 3}\n    sub := orig[0:2]\n    sub[0] = 99\n    fmt.Println(orig)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    orig := []int{1, 2, 3}\n    // Create slice sub := orig[0:2], modify sub[0] = 99, and print orig\n}`,
         expectedBehavior: 'Prints [99 2 3].',
         testCases: [{ id: 't1', input: '', expectedOutput: '[99 2 3]\n' }],
         hints: [
@@ -938,7 +938,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: 'slice-copy',
         instructions: 'Given `src := []int{1, 2, 3}`, allocate `dst := make([]int, len(src))`. Use `copy(dst, src)` and modify `dst[0] = 99`. Print `src` to verify `src` was NOT changed.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    src := []int{1, 2, 3}\n    dst := make([]int, len(src))\n    copy(dst, src)\n    dst[0] = 99\n    fmt.Println(src)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    src := []int{1, 2, 3}\n    // Allocate dst with make(), copy src into dst, modify dst[0] = 99, and print src\n}`,
         expectedBehavior: 'Prints [1 2 3].',
         testCases: [{ id: 't1', input: '', expectedOutput: '[1 2 3]\n' }],
         hints: [
@@ -963,7 +963,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: 'nil-slice',
         instructions: 'Declare `var s []int`. Check `if s == nil` and print `"Nil slice"`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    var s []int\n    if s == nil {\n        fmt.Println("Nil slice")\n    }\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Declare nil slice s []int, check if s == nil, and print "Nil slice"\n}`,
         expectedBehavior: 'Prints "Nil slice".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Nil slice\n' }],
         hints: [
@@ -988,7 +988,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: 'slice-merge',
         instructions: 'Given `a := []int{1, 2}` and `b := []int{3, 4}`, merge them using `a = append(a, b...)` and print `a`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    a := []int{1, 2}\n    b := []int{3, 4}\n    // Append b... into a\n    a = append(a, b...)\n    fmt.Println(a)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    a := []int{1, 2}\n    b := []int{3, 4}\n    // Merge b into a using append with ... and print a\n}`,
         expectedBehavior: 'Prints [1 2 3 4].',
         testCases: [{ id: 't1', input: '', expectedOutput: '[1 2 3 4]\n' }],
         hints: [
@@ -1013,7 +1013,7 @@ export const INTERMEDIATE_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'syntax',
         concept: 'slice-delete',
         instructions: 'Given `nums := []int{10, 20, 30, 40}`, delete index 1 (`20`) using `nums = append(nums[:1], nums[2:]...)`. Print `nums`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    nums := []int{10, 20, 30, 40}\n    // Delete index 1 using append(nums[:1], nums[2:]...)\n    nums = append(nums[:1], nums[2:]...)\n    fmt.Println(nums)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    nums := []int{10, 20, 30, 40}\n    // Delete index 1 using append and slice expressions, then print nums\n}`,
         expectedBehavior: 'Prints [10 30 40].',
         testCases: [{ id: 't1', input: '', expectedOutput: '[10 30 40]\n' }],
         hints: [
@@ -1210,7 +1210,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'syntax',
         concept: 'comma-ok',
         instructions: 'Given `scores := map[string]int{"Alice": 95}`, check if key `"Bob"` exists using `val, ok := scores["Bob"]`. Print `ok`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    scores := map[string]int{"Alice": 95}\n    // Use comma-ok idiom val, ok := scores["Bob"]\n    _, ok := scores["Bob"]\n    fmt.Println(ok)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    scores := map[string]int{"Alice": 95}\n    // Check if "Bob" exists using comma-ok idiom and print ok\n}`,
         expectedBehavior: 'Prints false.',
         testCases: [{ id: 't1', input: '', expectedOutput: 'false\n' }],
         hints: [
@@ -1235,7 +1235,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'syntax',
         concept: 'map-delete',
         instructions: 'Given `m := map[string]int{"A": 1, "B": 2}`, delete key `"A"` using `delete(m, "A")`, then print `m`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    m := map[string]int{"A": 1, "B": 2}\n    // Delete key "A"\n    delete(m, "A")\n    fmt.Println(m)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    m := map[string]int{"A": 1, "B": 2}\n    // Delete key "A" using delete() and print m\n}`,
         expectedBehavior: 'Prints map[B:2].',
         testCases: [{ id: 't1', input: '', expectedOutput: 'map[B:2]\n' }],
         hints: [
@@ -1260,7 +1260,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'syntax',
         concept: 'map-make',
         instructions: 'Create map `counts := make(map[string]int)`. Set `counts["clicks"] = 10` and print `counts["clicks"]`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Create map with make\n    counts := make(map[string]int)\n    counts["clicks"] = 10\n    fmt.Println(counts["clicks"])\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Allocate map m with make(map[string]int), add "Go" = 2009, and print m["Go"]\n}`,
         expectedBehavior: 'Prints 10.',
         testCases: [{ id: 't1', input: '', expectedOutput: '10\n' }],
         hints: [
@@ -1285,7 +1285,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'syntax',
         concept: 'map-range',
         instructions: 'Given `prices := map[string]int{"coffee": 5}`, iterate using `for k, v := range prices` and print `k` and `v`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    prices := map[string]int{"coffee": 5}\n    for k, v := range prices {\n        fmt.Println(k, v)\n    }\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    prices := map[string]int{"coffee": 5}\n    // Iterate over prices with range and print k, v\n}`,
         expectedBehavior: 'Prints "coffee 5".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'coffee 5\n' }],
         hints: [
@@ -1310,7 +1310,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'syntax',
         concept: 'map-update',
         instructions: 'Given `counter := map[string]int{"views": 100}`, increment views using `counter["views"]++`. Print `counter["views"]`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    counter := map[string]int{"views": 100}\n    // Increment views\n    counter["views"]++\n    fmt.Println(counter["views"])\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    counts := map[string]int{"hits": 10}\n    // Increment counts["hits"] and print counts["hits"]\n}`,
         expectedBehavior: 'Prints 101.',
         testCases: [{ id: 't1', input: '', expectedOutput: '101\n' }],
         hints: [
@@ -1335,7 +1335,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'syntax',
         concept: 'map-slice',
         instructions: 'Declare `groups := map[string][]string{"admin": {"Alice", "Bob"}}`. Print `groups["admin"][0]`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    groups := map[string][]string{"admin": {"Alice", "Bob"}}\n    // Print first admin name\n    fmt.Println(groups["admin"][0])\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Create map[string][]string groups, append "Alice" to groups["admin"], and print groups["admin"]\n}`,
         expectedBehavior: 'Prints "Alice".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Alice\n' }],
         hints: [
@@ -1410,7 +1410,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'syntax',
         concept: 'map-len',
         instructions: 'Given `m := map[string]int{"A": 1, "B": 2, "C": 3}`, print `len(m)`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    m := map[string]int{"A": 1, "B": 2, "C": 3}\n    // Print len(m)\n    fmt.Println(len(m))\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    m := map[string]int{"a": 1, "b": 2, "c": 3}\n    // Print length of m using len()\n}`,
         expectedBehavior: 'Prints 3.',
         testCases: [{ id: 't1', input: '', expectedOutput: '3\n' }],
         hints: [
