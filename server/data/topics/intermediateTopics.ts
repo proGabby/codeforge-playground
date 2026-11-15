@@ -1814,7 +1814,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'method',
         concept: 'getter-setter',
         instructions: 'Given `type Wallet struct { balance int }`, write getter `Balance()` and setter `SetBalance(b int)`.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype Wallet struct {\n    balance int\n}\n\nfunc (w Wallet) Balance() int {\n    return w.balance\n}\n\nfunc (w *Wallet) SetBalance(b int) {\n    w.balance = b\n}\n\nfunc main() {\n    w := Wallet{}\n    w.SetBalance(500)\n    fmt.Println(w.Balance())\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype Wallet struct {\n    balance int\n}\n\n// Write Balance getter method here\n\n// Write SetBalance setter method here\n\nfunc main() {\n    w := Wallet{}\n    w.SetBalance(500)\n    fmt.Println(w.Balance())\n}`,
         expectedBehavior: 'Prints 500.',
         testCases: [{ id: 't1', input: '', expectedOutput: '500\n' }],
         hints: [
@@ -1839,7 +1839,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'method',
         concept: 'chained-methods',
         instructions: 'Write `func (c *Calculator) Add(v int) *Calculator` returning `c`. Chain `c.Add(5).Add(10)` and print `c.Total`.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype Calculator struct {\n    Total int\n}\n\nfunc (c *Calculator) Add(v int) *Calculator {\n    c.Total += v\n    return c\n}\n\nfunc main() {\n    c := &Calculator{}\n    c.Add(5).Add(10)\n    fmt.Println(c.Total)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype Calculator struct {\n    Total int\n}\n\n// Write Add pointer receiver method returning *Calculator here\n\nfunc main() {\n    c := &Calculator{}\n    c.Add(5).Add(10)\n    fmt.Println(c.Total)\n}`,
         expectedBehavior: 'Prints 15.',
         testCases: [{ id: 't1', input: '', expectedOutput: '15\n' }],
         hints: [
@@ -1864,7 +1864,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'method',
         concept: 'nil-receiver',
         instructions: 'Write `func (u *User) GetName() string` that checks `if u == nil { return "Guest" }`. Call on nil pointer `var u *User` and print `u.GetName()`.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype User struct {\n    Name string\n}\n\nfunc (u *User) GetName() string {\n    if u == nil {\n        return "Guest"\n    }\n    return u.Name\n}\n\nfunc main() {\n    var u *User\n    fmt.Println(u.GetName())\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype User struct {\n    Name string\n}\n\n// Write GetName method here with nil check: if u == nil return "Guest"\n\nfunc main() {\n    var u *User\n    fmt.Println(u.GetName())\n}`,
         expectedBehavior: 'Prints "Guest".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Guest\n' }],
         hints: [
@@ -1889,7 +1889,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'method',
         concept: 'method-values',
         instructions: 'Given `u := User{Name: "Sam"}`, assign `fn := u.Greet` where `Greet() string`. Call `fn()` and print result.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype User struct {\n    Name string\n}\n\nfunc (u User) Greet() string {\n    return "Hi, " + u.Name\n}\n\nfunc main() {\n    u := User{Name: "Sam"}\n    fn := u.Greet\n    fmt.Println(fn())\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype User struct {\n    Name string\n}\n\nfunc (u User) Greet() string {\n    return "Hi, " + u.Name\n}\n\nfunc main() {\n    u := User{Name: "Sam"}\n    // Assign method value u.Greet to fn, call fn(), and print result\n}`,
         expectedBehavior: 'Prints "Hi, Sam".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Hi, Sam\n' }],
         hints: [
@@ -1914,7 +1914,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'method',
         concept: 'promoted-methods',
         instructions: 'Given `type Logger struct{}`, write `func (l Logger) Log(msg string)`. Embed `Logger` into `type Server struct { Logger }`. Call `srv.Log("Running")`.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype Logger struct{}\n\nfunc (l Logger) Log(msg string) {\n    fmt.Println("LOG:", msg)\n}\n\ntype Server struct {\n    Logger\n}\n\nfunc main() {\n    srv := Server{}\n    srv.Log("Running")\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype Logger struct{}\n\n// Write Log method on Logger here (prints "LOG: " + msg)\n\ntype Server struct {\n    // Embed Logger here\n}\n\nfunc main() {\n    srv := Server{}\n    srv.Log("Running")\n}`,
         expectedBehavior: 'Prints "LOG: Running".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'LOG: Running\n' }],
         hints: [
@@ -1939,7 +1939,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'method',
         concept: 'receiver-rules',
         instructions: 'Write value receiver `Area() int` and pointer receiver `Scale(factor int)` for `type Rectangle struct { W, H int }`. Scale by 2 and print `r.Area()`.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype Rectangle struct {\n    W, H int\n}\n\nfunc (r Rectangle) Area() int {\n    return r.W * r.H\n}\n\nfunc (r *Rectangle) Scale(factor int) {\n    r.W *= factor\n    r.H *= factor\n}\n\nfunc main() {\n    r := Rectangle{W: 3, H: 4}\n    r.Scale(2)\n    fmt.Println(r.Area())\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype Rectangle struct {\n    W, H int\n}\n\n// Write Area value receiver method here\n\n// Write Scale pointer receiver method here\n\nfunc main() {\n    r := Rectangle{W: 3, H: 4}\n    r.Scale(2)\n    fmt.Println(r.Area())\n}`,
         expectedBehavior: 'Prints 48 (6 * 8 = 48).',
         testCases: [{ id: 't1', input: '', expectedOutput: '48\n' }],
         hints: [
