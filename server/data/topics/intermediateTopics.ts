@@ -3072,7 +3072,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'function',
         concept: 'generic-func',
         instructions: 'Write `func Identity[T any](val T) T { return val }`. Call with string `"Go"` and int `100`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc Identity[T any](val T) T {\n    return val\n}\n\nfunc main() {\n    fmt.Println(Identity("Go"), Identity(100))\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\n// Write generic Identity[T any](v T) T function here\n\nfunc main() {\n    fmt.Println(Identity("Generics"), Identity(42))\n}`,
         expectedBehavior: 'Prints "Go 100".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Go 100\n' }],
         hints: [
@@ -3097,7 +3097,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'function',
         concept: 'comparable-constraint',
         instructions: 'Write `func Equal[T comparable](a, b T) bool { return a == b }`. Test with integers `5, 5`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc Equal[T comparable](a, b T) bool {\n    return a == b\n}\n\nfunc main() {\n    fmt.Println(Equal(5, 5))\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\n// Write generic Equal[T comparable](a, b T) bool function here\n\nfunc main() {\n    fmt.Println(Equal(10, 10), Equal("A", "B"))\n}`,
         expectedBehavior: 'Prints true.',
         testCases: [{ id: 't1', input: '', expectedOutput: 'true\n' }],
         hints: [
@@ -3122,7 +3122,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'function',
         concept: 'generic-reverse',
         instructions: 'Write `func Reverse[T any](s []T) []T` returning reversed slice copy.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc Reverse[T any](s []T) []T {\n    res := make([]T, len(s))\n    for i, v := range s {\n        res[len(s)-1-i] = v\n    }\n    return res\n}\n\nfunc main() {\n    nums := []int{1, 2, 3}\n    fmt.Println(Reverse(nums))\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\n// Write generic Reverse[T any](s []T) []T function here\n\nfunc main() {\n    nums := []int{1, 2, 3}\n    fmt.Println(Reverse(nums))\n}`,
         expectedBehavior: 'Prints [3 2 1].',
         testCases: [{ id: 't1', input: '', expectedOutput: '[3 2 1]\n' }],
         hints: [
@@ -3147,7 +3147,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'struct',
         concept: 'generic-struct',
         instructions: 'Define `type Stack[T any] struct { items []T }`. Write `Push(v T)` and `Pop() T`.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype Stack[T any] struct {\n    items []T\n}\n\nfunc (s *Stack[T]) Push(v T) {\n    s.items = append(s.items, v)\n}\n\nfunc (s *Stack[T]) Pop() T {\n    v := s.items[len(s.items)-1]\n    s.items = s.items[:len(s.items)-1]\n    return v\n}\n\nfunc main() {\n    s := &Stack[string]{}\n    s.Push("first")\n    s.Push("second")\n    fmt.Println(s.Pop())\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype Stack[T any] struct {\n    items []T\n}\n\n// Write Push(v T) and Pop() T methods on *Stack[T]\n\nfunc main() {\n    s := &Stack[string]{}\n    s.Push("first")\n    s.Push("second")\n    fmt.Println(s.Pop())\n}`,
         expectedBehavior: 'Prints "second".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'second\n' }],
         hints: [
@@ -3172,7 +3172,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'union-constraints',
         instructions: 'Define interface constraint `type Number interface { ~int | ~float64 }`. Write `func Add[T Number](a, b T) T { return a + b }`.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype Number interface {\n    ~int | ~float64\n}\n\nfunc Add[T Number](a, b T) T {\n    return a + b\n}\n\nfunc main() {\n    fmt.Println(Add(10, 20), Add(1.5, 2.5))\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\n// Define Number interface constraint (~int | ~float64)\n// Write Add[T Number](a, b T) T function\n\nfunc main() {\n    fmt.Println(Add(5, 10), Add(1.5, 2.5))\n}`,
         expectedBehavior: 'Prints "30 4".',
         testCases: [{ id: 't1', input: '', expectedOutput: '30 4\n' }],
         hints: [
@@ -3197,7 +3197,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'function',
         concept: 'generic-map',
         instructions: 'Write `func Map[T, U any](s []T, f func(T) U) []U` returning transformed slice.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc Map[T, U any](s []T, f func(T) U) []U {\n    res := make([]U, len(s))\n    for i, v := range s {\n        res[i] = f(v)\n    }\n    return res\n}\n\nfunc main() {\n    nums := []int{1, 2, 3}\n    doubled := Map(nums, func(n int) int { return n * 2 })\n    fmt.Println(doubled)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\n// Write Map[T, U any](s []T, fn func(T) U) []U generic mapping function\n\nfunc main() {\n    nums := []int{1, 2, 3}\n    doubled := Map(nums, func(n int) int { return n * 2 })\n    fmt.Println(doubled)\n}`,
         expectedBehavior: 'Prints [2 4 6].',
         testCases: [{ id: 't1', input: '', expectedOutput: '[2 4 6]\n' }],
         hints: [
@@ -3222,7 +3222,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'function',
         concept: 'generic-filter',
         instructions: 'Write `func Filter[T any](s []T, predicate func(T) bool) []T` returning matching elements.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc Filter[T any](s []T, predicate func(T) bool) []T {\n    res := []T{}\n    for _, v := range s {\n        if predicate(v) {\n            res = append(res, v)\n        }\n    }\n    return res\n}\n\nfunc main() {\n    nums := []int{1, 2, 3, 4, 5}\n    evens := Filter(nums, func(n int) bool { return n%2 == 0 })\n    fmt.Println(evens)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\n// Write Filter[T any](s []T, predicate func(T) bool) []T generic filter function\n\nfunc main() {\n    nums := []int{1, 2, 3, 4, 5}\n    evens := Filter(nums, func(n int) bool { return n%2 == 0 })\n    fmt.Println(evens)\n}`,
         expectedBehavior: 'Prints [2 4].',
         testCases: [{ id: 't1', input: '', expectedOutput: '[2 4]\n' }],
         hints: [
@@ -3247,7 +3247,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'function',
         concept: 'generic-keys',
         instructions: 'Write `func Keys[K comparable, V any](m map[K]V) []K` returning slice of all map keys.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc Keys[K comparable, V any](m map[K]V) []K {\n    keys := make([]K, 0, len(m))\n    for k := range m {\n        keys = append(keys, k)\n    }\n    return keys\n}\n\nfunc main() {\n    m := map[string]int{"a": 1}\n    fmt.Println(Keys(m))\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\n// Write Keys[K comparable, V any](m map[K]V) []K function extracting keys\n\nfunc main() {\n    m := map[string]int{"Go": 1}\n    fmt.Println(Keys(m))\n}`,
         expectedBehavior: 'Prints [a].',
         testCases: [{ id: 't1', input: '', expectedOutput: '[a]\n' }],
         hints: [
@@ -3272,7 +3272,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'explicit-generic-args',
         instructions: 'Call `Identity[string]("Explicit")` with explicit `[string]` type argument.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc Identity[T any](val T) T {\n    return val\n}\n\nfunc main() {\n    // Explicit type argument [string]\n    msg := Identity[string]("Explicit")\n    fmt.Println(msg)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc MakePair[T any](a, b T) [2]T {\n    return [2]T{a, b}\n}\n\nfunc main() {\n    // Call MakePair with explicit type argument [int] and print result\n}`,
         expectedBehavior: 'Prints "Explicit".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Explicit\n' }],
         hints: [
@@ -3297,7 +3297,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'function',
         concept: 'generic-deref',
         instructions: 'Write `func Pointer[T any](v T) *T { return &v }` returning a pointer to value `v`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc Pointer[T any](v T) *T {\n    return &v\n}\n\nfunc main() {\n    p := Pointer(42)\n    fmt.Println(*p)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\n// Write DerefOrDefault[T any](p *T, def T) T returning *p if p != nil, else def\n\nfunc main() {\n    var val *int\n    fmt.Println(DerefOrDefault(val, 99))\n}`,
         expectedBehavior: 'Prints 42.',
         testCases: [{ id: 't1', input: '', expectedOutput: '42\n' }],
         hints: [
@@ -3335,7 +3335,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'json-marshal',
         instructions: "Serialize struct User{Name: 'Alice'} into JSON using json.Marshal. Print string output.",
-        starterCode: `package main\n\nimport (\n    "encoding/json"\n    "fmt"\n)\n\ntype User struct {\n    Name string \`json:"name"\`\n}\n\nfunc main() {\n    u := User{Name: "Alice"}\n    bytes, _ := json.Marshal(u)\n    fmt.Println(string(bytes))\n}`,
+        starterCode: `package main\n\nimport (\n    "encoding/json"\n    "fmt"\n)\n\ntype User struct {\n    Name string \`json:"name"\`\n}\n\nfunc main() {\n    u := User{Name: "Alice"}\n    // Marshal u to JSON using json.Marshal and print string(bytes)\n}`,
         expectedBehavior: 'Prints {"name":"Alice"}.',
         testCases: [{ id: 't1', input: '', expectedOutput: '{"name":"Alice"}\n' }],
         hints: [
@@ -3360,7 +3360,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'json-unmarshal',
         instructions: "Parse JSON string '{\"name\":\"Bob\"}' into var u User using json.Unmarshal. Print u.Name.",
-        starterCode: `package main\n\nimport (\n    "encoding/json"\n    "fmt"\n)\n\ntype User struct {\n    Name string \`json:"name"\`\n}\n\nfunc main() {\n    jsonStr := \`{"name":"Bob"}\`\n    var u User\n    json.Unmarshal([]byte(jsonStr), &u)\n    fmt.Println(u.Name)\n}`,
+        starterCode: `package main\n\nimport (\n    "encoding/json"\n    "fmt"\n)\n\ntype User struct {\n    Name string \`json:"name"\`\n}\n\nfunc main() {\n    data := \`{"name":"Bob"}\`\n    var u User\n    // Unmarshal data into &u and print u.Name\n}`,
         expectedBehavior: 'Prints "Bob".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Bob\n' }],
         hints: [
@@ -3385,7 +3385,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'http-handler',
         instructions: 'Write HTTP handler `func handleHello(w http.ResponseWriter, r *http.Request) { fmt.Fprintln(w, "Hello, API!") }`.',
-        starterCode: `package main\n\nimport (\n    "fmt"\n    "net/http"\n)\n\nfunc handleHello(w http.ResponseWriter, r *http.Request) {\n    fmt.Fprintln(w, "Hello, API!")\n}\n\nfunc main() {\n    fmt.Println("HTTP Handler Ready")\n}`,
+        starterCode: `package main\n\nimport (\n    "fmt"\n    "net/http"\n    "net/http/httptest"\n)\n\nfunc handler(w http.ResponseWriter, r *http.Request) {\n    // Write "Hello, Web!" to w using fmt.Fprint\n}\n\nfunc main() {\n    rec := httptest.NewRecorder()\n    req := httptest.NewRequest("GET", "/", nil)\n    handler(rec, req)\n    fmt.Println(rec.Body.String())\n}`,
         expectedBehavior: 'Prints "HTTP Handler Ready".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'HTTP Handler Ready\n' }],
         hints: [
@@ -3410,7 +3410,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'time-duration',
         instructions: 'Declare `duration := 10 * time.Millisecond`. Print `duration.Milliseconds()`.',
-        starterCode: `package main\n\nimport (\n    "fmt"\n    "time"\n)\n\nfunc main() {\n    duration := 10 * time.Millisecond\n    fmt.Println(duration.Milliseconds())\n}`,
+        starterCode: `package main\n\nimport (\n    "fmt"\n    "time"\n)\n\nfunc main() {\n    // Create duration d of 50 milliseconds (50 * time.Millisecond) and print d.Milliseconds()\n}`,
         expectedBehavior: 'Prints 10.',
         testCases: [{ id: 't1', input: '', expectedOutput: '10\n' }],
         hints: [
@@ -3435,7 +3435,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'fmt-sprintf',
         instructions: 'Use `fmt.Sprintf("User #%d: %s", 1, "Alice")` to return a formatted string without printing to console.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    msg := fmt.Sprintf("User #%d: %s", 1, "Alice")\n    fmt.Println(msg)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    name := "Go"\n    version := 1.22\n    // Use fmt.Sprintf to format "Language: Go, Version: 1.22" and print it\n}`,
         expectedBehavior: 'Prints "User #1: Alice".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'User #1: Alice\n' }],
         hints: [
@@ -3460,7 +3460,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'strings-pkg',
         instructions: 'Use `strings.ToUpper("codeforge")` and `strings.Contains("golang", "go")`. Print both results.',
-        starterCode: `package main\n\nimport (\n    "fmt"\n    "strings"\n)\n\nfunc main() {\n    fmt.Println(strings.ToUpper("codeforge"), strings.Contains("golang", "go"))\n}`,
+        starterCode: `package main\n\nimport (\n    "fmt"\n    "strings"\n)\n\nfunc main() {\n    s := "codeforge"\n    // Convert s to uppercase using strings.ToUpper and print strings.Contains for "FORGE"\n}`,
         expectedBehavior: 'Prints "CODEFORGE true".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'CODEFORGE true\n' }],
         hints: [
@@ -3485,7 +3485,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'split-join',
         instructions: 'Split `"a,b,c"` with `strings.Split(str, ",")`. Join with `strings.Join(parts, "-")`. Print result.',
-        starterCode: `package main\n\nimport (\n    "fmt"\n    "strings"\n)\n\nfunc main() {\n    parts := strings.Split("a,b,c", ",")\n    joined := strings.Join(parts, "-")\n    fmt.Println(joined)\n}`,
+        starterCode: `package main\n\nimport (\n    "fmt"\n    "strings"\n)\n\nfunc main() {\n    csv := "apple,banana,orange"\n    // Split csv by comma using strings.Split, join with " - " using strings.Join, and print\n}`,
         expectedBehavior: 'Prints "a-b-c".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'a-b-c\n' }],
         hints: [
@@ -3513,7 +3513,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'sort-package',
         instructions: 'Sort integer slice `nums := []int{4, 1, 3, 2}` in-place using `sort.Ints(nums)`. Print `nums`.',
-        starterCode: `package main\n\nimport (\n    "fmt"\n    "sort"\n)\n\nfunc main() {\n    nums := []int{4, 1, 3, 2}\n    sort.Ints(nums)\n    fmt.Println(nums)\n}`,
+        starterCode: `package main\n\nimport (\n    "fmt"\n    "sort"\n)\n\nfunc main() {\n    nums := []int{5, 2, 8, 1, 9}\n    // Sort nums using sort.Ints and print nums\n}`,
         expectedBehavior: 'Prints [1 2 3 4].',
         testCases: [{ id: 't1', input: '', expectedOutput: '[1 2 3 4]\n' }],
         hints: [
@@ -3538,7 +3538,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'base64-encode',
         instructions: 'Encode string `"Go"` to base64 using `base64.StdEncoding.EncodeToString([]byte("Go"))`. Print result.',
-        starterCode: `package main\n\nimport (\n    "encoding/base64"\n    "fmt"\n)\n\nfunc main() {\n    encoded := base64.StdEncoding.EncodeToString([]byte("Go"))\n    fmt.Println(encoded)\n}`,
+        starterCode: `package main\n\nimport (\n    "encoding/base64"\n    "fmt"\n)\n\nfunc main() {\n    data := "Hello, Base64!"\n    // Encode data to base64 using base64.StdEncoding.EncodeToString and print\n}`,
         expectedBehavior: 'Prints "R28=".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'R28=\n' }],
         hints: [
@@ -3563,7 +3563,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'crypto-sha256',
         instructions: 'Compute SHA-256 hash `hash := sha256.Sum256([]byte("secret"))`. Format with `fmt.Sprintf("%x", hash)`. Print hash prefix.',
-        starterCode: `package main\n\nimport (\n    "crypto/sha256"\n    "fmt"\n)\n\nfunc main() {\n    hash := sha256.Sum256([]byte("secret"))\n    fmt.Printf("%x\\n", hash[:4])\n}`,
+        starterCode: `package main\n\nimport (\n    "crypto/sha256"\n    "fmt"\n)\n\nfunc main() {\n    data := "secret"\n    // Compute SHA-256 hash using sha256.Sum256 and print formatted hex with %x\n}`,
         expectedBehavior: 'Prints first 4 hex bytes of SHA-256 hash.',
         testCases: [{ id: 't1', input: '', expectedOutput: '2bb80d53\n' }],
         hints: [
@@ -3601,7 +3601,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'unit-test',
         instructions: 'Write test function `TestAdd(t *testing.T)` checking `if add(2, 3) != 5 { t.Errorf(...) }`.',
-        starterCode: `package main\n\nimport (\n    "fmt"\n    "testing"\n)\n\nfunc add(a, b int) int { return a + b }\n\nfunc TestAdd(t *testing.T) {\n    if got := add(2, 3); got != 5 {\n        t.Errorf("add(2, 3) = %d; want 5", got)\n    }\n}\n\nfunc main() {\n    fmt.Println("Test Runner Ready")\n}`,
+        starterCode: `package main\n\nimport (\n    "fmt"\n    "testing"\n)\n\nfunc Add(a, b int) int {\n    return a + b\n}\n\nfunc TestAdd(t *testing.T) {\n    // Test Add(2, 3); call t.Errorf if result != 5\n}\n\nfunc main() {\n    fmt.Println("Test pattern ready")\n}`,
         expectedBehavior: 'Prints "Test Runner Ready".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Test Runner Ready\n' }],
         hints: [
@@ -3626,7 +3626,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'table-driven-tests',
         instructions: 'Use table slice `tests := []struct{ a, b, want int }` to iterate test cases in a single loop.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc add(a, b int) int { return a + b }\n\nfunc main() {\n    tests := []struct{ a, b, want int }{\n        {1, 1, 2},\n        {2, 3, 5},\n        {10, -5, 5},\n    }\n    for _, tt := range tests {\n        if got := add(tt.a, tt.b); got != tt.want {\n            fmt.Printf("FAIL: got %d, want %d\\n", got, tt.want)\n        }\n    }\n    fmt.Println("All Table Tests Passed")\n}`,
+        starterCode: `package main\n\nimport (\n    "fmt"\n    "testing"\n)\n\nfunc Multiply(a, b int) int {\n    return a * b\n}\n\nfunc TestMultiply(t *testing.T) {\n    // Define test cases slice and iterate over them running assertions\n}\n\nfunc main() {\n    fmt.Println("Table tests ready")\n}`,
         expectedBehavior: 'Prints "All Table Tests Passed".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'All Table Tests Passed\n' }],
         hints: [
@@ -3651,7 +3651,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'subtests',
         instructions: 'Demonstrate subtest execution pattern using `t.Run(name, func(t *testing.T) { ... })`.',
-        starterCode: `package main\n\nimport (\n    "fmt"\n    "testing"\n)\n\nfunc TestMath(t *testing.T) {\n    t.Run("Add", func(t *testing.T) {\n        if 1+1 != 2 { t.Error("failed") }\n    })\n}\n\nfunc main() {\n    fmt.Println("Subtest Pattern Ready")\n}`,
+        starterCode: `package main\n\nimport (\n    "fmt"\n    "testing"\n)\n\nfunc TestSubtests(t *testing.T) {\n    // Use t.Run("subtest_name", func(t *testing.T) { ... })\n}\n\nfunc main() {\n    fmt.Println("Subtests ready")\n}`,
         expectedBehavior: 'Prints "Subtest Pattern Ready".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Subtest Pattern Ready\n' }],
         hints: [
@@ -3676,7 +3676,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'fatal-vs-error',
         instructions: 'Understand that `t.Fatalf` stops current test execution immediately while `t.Errorf` continues.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Fatalf stops test; Errorf continues")\n}`,
+        starterCode: `package main\n\nimport (\n    "fmt"\n    "testing"\n)\n\nfunc TestFailureModes(t *testing.T) {\n    // Demonstrate t.Fatalf stops execution while t.Errorf continues\n}\n\nfunc main() {\n    fmt.Println("Failure modes ready")\n}`,
         expectedBehavior: 'Prints "Fatalf stops test; Errorf continues".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Fatalf stops test; Errorf continues\n' }],
         hints: [
@@ -3704,7 +3704,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'benchmark-signature',
         instructions: 'Write benchmark function signature `func BenchmarkAdd(b *testing.B)` with `for i := 0; i < b.N; i++` loop.',
-        starterCode: `package main\n\nimport (\n    "fmt"\n    "testing"\n)\n\nfunc add(a, b int) int { return a + b }\n\nfunc BenchmarkAdd(b *testing.B) {\n    for i := 0; i < b.N; i++ {\n        add(2, 3)\n    }\n}\n\nfunc main() {\n    fmt.Println("Benchmark Ready")\n}`,
+        starterCode: `package main\n\nimport (\n    "fmt"\n    "testing"\n)\n\nfunc Fibonacci(n int) int {\n    if n <= 1 {\n        return n\n    }\n    return Fibonacci(n-1) + Fibonacci(n-2)\n}\n\n// Write BenchmarkFibonacci(b *testing.B) running loop for b.N\n\nfunc main() {\n    fmt.Println("Benchmark signature ready")\n}`,
         expectedBehavior: 'Prints "Benchmark Ready".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Benchmark Ready\n' }],
         hints: [
@@ -3732,7 +3732,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'reset-timer',
         instructions: 'Use `b.ResetTimer()` to exclude setup initialization overhead from benchmark timer results.',
-        starterCode: `package main\n\nimport (\n    "fmt"\n    "testing"\n)\n\nfunc BenchmarkSetup(b *testing.B) {\n    // Setup expensive initialization\n    data := make([]int, 1000)\n    b.ResetTimer()\n    for i := 0; i < b.N; i++ {\n        _ = data[0]\n    }\n}\n\nfunc main() {\n    fmt.Println("ResetTimer Ready")\n}`,
+        starterCode: `package main\n\nimport (\n    "fmt"\n    "testing"\n)\n\nfunc BenchmarkWithSetup(b *testing.B) {\n    // Perform expensive setup, call b.ResetTimer(), then run benchmark loop\n}\n\nfunc main() {\n    fmt.Println("Reset timer ready")\n}`,
         expectedBehavior: 'Prints "ResetTimer Ready".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'ResetTimer Ready\n' }],
         hints: [
@@ -3757,7 +3757,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 't-parallel',
         instructions: 'Call `t.Parallel()` inside unit tests to instruct test runner to execute them concurrently.',
-        starterCode: `package main\n\nimport (\n    "fmt"\n    "testing"\n)\n\nfunc TestParallelA(t *testing.T) {\n    t.Parallel()\n}\n\nfunc main() {\n    fmt.Println("t.Parallel Ready")\n}`,
+        starterCode: `package main\n\nimport (\n    "fmt"\n    "testing"\n)\n\nfunc TestParallel(t *testing.T) {\n    // Call t.Parallel() to mark test for concurrent execution\n}\n\nfunc main() {\n    fmt.Println("Parallel testing ready")\n}`,
         expectedBehavior: 'Prints "t.Parallel Ready".',
         testCases: [{ id: 't1', input: '', expectedOutput: 't.Parallel Ready\n' }],
         hints: [
@@ -3782,7 +3782,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 't-helper',
         instructions: 'Call `t.Helper()` inside test helper functions to report line numbers of callers instead of helper function line.',
-        starterCode: `package main\n\nimport (\n    "fmt"\n    "testing"\n)\n\nfunc assertEqual(t *testing.T, got, want int) {\n    t.Helper()\n    if got != want {\n        t.Errorf("got %d, want %d", got, want)\n    }\n}\n\nfunc main() {\n    fmt.Println("t.Helper Ready")\n}`,
+        starterCode: `package main\n\nimport (\n    "fmt"\n    "testing"\n)\n\nfunc assertEqual(t *testing.T, got, want int) {\n    // Call t.Helper() so test line failure reports caller line\n}\n\nfunc main() {\n    fmt.Println("Helper function ready")\n}`,
         expectedBehavior: 'Prints "t.Helper Ready".',
         testCases: [{ id: 't1', input: '', expectedOutput: 't.Helper Ready\n' }],
         hints: [
@@ -3807,7 +3807,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'fuzz-testing',
         instructions: 'Demonstrate Go 1.18+ automated fuzz test signature `func FuzzXxx(f *testing.F)`.',
-        starterCode: `package main\n\nimport (\n    "fmt"\n    "testing"\n)\n\nfunc FuzzReverse(f *testing.F) {\n    f.Add("hello")\n    f.Fuzz(func(t *testing.T, orig string) {\n        // Automated fuzzing tests against random generated inputs\n    })\n}\n\nfunc main() {\n    fmt.Println("Fuzz Testing Ready")\n}`,
+        starterCode: `package main\n\nimport (\n    "fmt"\n    "testing"\n)\n\nfunc FuzzReverse(f *testing.F) {\n    // Add seed corpus with f.Add() and run fuzzing target with f.Fuzz()\n}\n\nfunc main() {\n    fmt.Println("Fuzz testing ready")\n}`,
         expectedBehavior: 'Prints "Fuzz Testing Ready".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Fuzz Testing Ready\n' }],
         hints: [
@@ -3835,7 +3835,7 @@ func (m *HealthMonitor) Evaluate(notifier Notifier) {
         type: 'syntax',
         concept: 'test-main',
         instructions: 'Write global setup/teardown entrypoint `func TestMain(m *testing.M)` that calls `os.Exit(m.Run())`.',
-        starterCode: `package main\n\nimport (\n    "fmt"\n    "os"\n    "testing"\n)\n\nfunc TestMain(m *testing.M) {\n    // Setup global test database / fixtures\n    code := m.Run()\n    // Teardown global fixtures\n    os.Exit(code)\n}\n\nfunc main() {\n    fmt.Println("TestMain Entrypoint Ready")\n}`,
+        starterCode: `package main\n\nimport (\n    "fmt"\n    "os"\n    "testing"\n)\n\n// Implement TestMain(m *testing.M) calling m.Run() and os.Exit()\n\nfunc main() {\n    fmt.Println("TestMain ready")\n}`,
         expectedBehavior: 'Prints "TestMain Entrypoint Ready".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'TestMain Entrypoint Ready\n' }],
         hints: [
