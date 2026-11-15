@@ -1473,7 +1473,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'syntax',
         concept: 'anon-struct',
         instructions: 'Create an anonymous struct `point := struct{ X, Y int }{X: 10, Y: 20}` and print `point.X`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Create anonymous struct point\n    point := struct{ X, Y int }{X: 10, Y: 20}\n    fmt.Println(point.X)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Instantiate anonymous struct point with X: 10, Y: 20 and print point.X, point.Y\n}`,
         expectedBehavior: 'Prints 10.',
         testCases: [{ id: 't1', input: '', expectedOutput: '10\n' }],
         hints: [
@@ -1498,7 +1498,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'syntax',
         concept: 'nested-structs',
         instructions: 'Define `type Address struct { City string }` and `type Person struct { Name string; Addr Address }`. Instantiate `p := Person{Name: "Alice", Addr: Address{City: "Paris"}}`. Print `p.Addr.City`.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype Address struct {\n    City string\n}\n\ntype Person struct {\n    Name string\n    Addr Address\n}\n\nfunc main() {\n    p := Person{Name: "Alice", Addr: Address{City: "Paris"}}\n    // Print p.Addr.City\n    fmt.Println(p.Addr.City)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype Address struct {\n    City string\n}\n\ntype User struct {\n    Name string\n    Addr Address\n}\n\nfunc main() {\n    // Instantiate User u with Address City "Berlin" and print u.Addr.City\n}`,
         expectedBehavior: 'Prints "Paris".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Paris\n' }],
         hints: [
@@ -1523,7 +1523,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'syntax',
         concept: 'struct-embedding',
         instructions: 'Define `type Engine struct { HP int }` and `type Car struct { Engine; Model string }`. Instantiate `c := Car{Engine: Engine{HP: 300}, Model: "Tesla"}`. Print promoted field `c.HP`.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype Engine struct {\n    HP int\n}\n\ntype Car struct {\n    Engine\n    Model string\n}\n\nfunc main() {\n    c := Car{Engine: Engine{HP: 300}, Model: "Tesla"}\n    // Print promoted field c.HP\n    fmt.Println(c.HP)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype Base struct {\n    ID int\n}\n\ntype Post struct {\n    // Embed Base here\n    Title string\n}\n\nfunc main() {\n    // Instantiate Post with Base ID 101 and print p.ID\n}`,
         expectedBehavior: 'Prints 300.',
         testCases: [{ id: 't1', input: '', expectedOutput: '300\n' }],
         hints: [
@@ -1548,7 +1548,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'syntax',
         concept: 'struct-comparison',
         instructions: 'Define `type Point struct { X, Y int }`. Compare `p1 := Point{1, 2}` and `p2 := Point{1, 2}` using `p1 == p2`. Print result.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype Point struct {\n    X, Y int\n}\n\nfunc main() {\n    p1 := Point{1, 2}\n    p2 := Point{1, 2}\n    fmt.Println(p1 == p2)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype Point struct {\n    X, Y int\n}\n\nfunc main() {\n    p1 := Point{1, 2}\n    p2 := Point{1, 2}\n    // Compare p1 == p2 and print result\n}`,
         expectedBehavior: 'Prints true.',
         testCases: [{ id: 't1', input: '', expectedOutput: 'true\n' }],
         hints: [
@@ -1573,7 +1573,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'syntax',
         concept: 'struct-pointer',
         instructions: 'Given `type Config struct { Host string }`, instantiate pointer `cfg := &Config{Host: "localhost"}`. Modify `cfg.Host = "127.0.0.1"`. Print `cfg.Host`.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype Config struct {\n    Host string\n}\n\nfunc main() {\n    cfg := &Config{Host: "localhost"}\n    cfg.Host = "127.0.0.1"\n    fmt.Println(cfg.Host)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype Config struct {\n    Host string\n}\n\nfunc main() {\n    // Instantiate pointer cfg to Config, update cfg.Host to "127.0.0.1", and print cfg.Host\n}`,
         expectedBehavior: 'Prints 127.0.0.1.',
         testCases: [{ id: 't1', input: '', expectedOutput: '127.0.0.1\n' }],
         hints: [
@@ -1598,7 +1598,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'syntax',
         concept: 'custom-types',
         instructions: 'Define custom type `type Celsius float64`. Declare `var temp Celsius = 25.5`. Print `temp`.',
-        starterCode: `package main\n\nimport "fmt"\n\n// Define type Celsius float64\ntype Celsius float64\n\nfunc main() {\n    var temp Celsius = 25.5\n    fmt.Println(temp)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\n// Define type Celsius float64 here\n\nfunc main() {\n    var temp Celsius = 25.5\n    fmt.Println(temp)\n}`,
         expectedBehavior: 'Prints 25.5.',
         testCases: [{ id: 't1', input: '', expectedOutput: '25.5\n' }],
         hints: [
@@ -1623,7 +1623,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'syntax',
         concept: 'struct-tags',
         instructions: "Define type Product struct with JSON tag. Print struct definition.",
-        starterCode: `package main\n\nimport "fmt"\n\ntype Product struct {\n    Name string \`json:"product_name"\`\n}\n\nfunc main() {\n    p := Product{Name: "Laptop"}\n    fmt.Println(p.Name)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype Product struct {\n    // Define Name string with json tag\n}\n\nfunc main() {\n    p := Product{Name: "Laptop"}\n    fmt.Println(p.Name)\n}`,
         expectedBehavior: 'Prints "Laptop".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Laptop\n' }],
         hints: [
@@ -1673,7 +1673,7 @@ func RemoveTask(tasks []string, index int) []string {
         type: 'syntax',
         concept: 'export-fields',
         instructions: 'In Go, capitalized fields are public (exported). Define struct `type Account struct { Balance int; id string }`. Print `acc.Balance`.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype Account struct {\n    Balance int\n    id      string\n}\n\nfunc main() {\n    acc := Account{Balance: 1000, id: "acc-1"}\n    fmt.Println(acc.Balance)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\n// Define Account struct with exported Balance int and unexported id string\n\nfunc main() {\n    acc := Account{Balance: 1000, id: "acc-1"}\n    fmt.Println(acc.Balance)\n}`,
         expectedBehavior: 'Prints 1000.',
         testCases: [{ id: 't1', input: '', expectedOutput: '1000\n' }],
         hints: [
@@ -2114,7 +2114,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'address-operator',
         instructions: 'Given `x := 42`, store its memory address in pointer `p := &x`. Print `*p` (dereferenced value).',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    x := 42\n    p := &x\n    fmt.Println(*p)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    x := 42\n    // Store x's memory address in pointer p and print *p\n}`,
         expectedBehavior: 'Prints 42.',
         testCases: [{ id: 't1', input: '', expectedOutput: '42\n' }],
         hints: [
@@ -2142,7 +2142,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'pointer-mutation',
         instructions: 'Given `x := 10` and `p := &x`, modify `x` through pointer by writing `*p = 99`. Print `x`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    x := 10\n    p := &x\n    *p = 99\n    fmt.Println(x)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    x := 10\n    p := &x\n    // Modify x through pointer p by writing *p = 99, then print x\n}`,
         expectedBehavior: 'Prints 99.',
         testCases: [{ id: 't1', input: '', expectedOutput: '99\n' }],
         hints: [
@@ -2167,7 +2167,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'function',
         concept: 'pass-pointer-func',
         instructions: 'Write `func double(n *int)` that doubles value via `*n *= 2`. In `main()`, set `num := 5`, call `double(&num)`, and print `num`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc double(n *int) {\n    *n *= 2\n}\n\nfunc main() {\n    num := 5\n    double(&num)\n    fmt.Println(num)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\n// Write double(n *int) function here to double value via *n *= 2\n\nfunc main() {\n    num := 5\n    double(&num)\n    fmt.Println(num)\n}`,
         expectedBehavior: 'Prints 10.',
         testCases: [{ id: 't1', input: '', expectedOutput: '10\n' }],
         hints: [
@@ -2192,7 +2192,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'function',
         concept: 'swap-pointers',
         instructions: 'Write `func swap(a, b *int)` that swaps values of two integers. Call `swap(&x, &y)` for `x := 1`, `y := 2` and print `x, y`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc swap(a, b *int) {\n    *a, *b = *b, *a\n}\n\nfunc main() {\n    x, y := 1, 2\n    swap(&x, &y)\n    fmt.Println(x, y)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\n// Write swap(a, b *int) function here to swap values\n\nfunc main() {\n    x, y := 1, 2\n    swap(&x, &y)\n    fmt.Println(x, y)\n}`,
         expectedBehavior: 'Prints "2 1".',
         testCases: [{ id: 't1', input: '', expectedOutput: '2 1\n' }],
         hints: [
@@ -2217,7 +2217,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'nil-pointer-check',
         instructions: 'Write function `safePrint(p *int)` that checks `if p != nil` before dereferencing, printing `"Nil"` if `p == nil`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc safePrint(p *int) {\n    if p != nil {\n        fmt.Println(*p)\n    } else {\n        fmt.Println("Nil")\n    }\n}\n\nfunc main() {\n    var p *int\n    safePrint(p)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\n// Write safePrint(p *int) function here checking if p != nil\n\nfunc main() {\n    var p *int\n    safePrint(p)\n}`,
         expectedBehavior: 'Prints "Nil".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Nil\n' }],
         hints: [
@@ -2242,7 +2242,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'new-builtin',
         instructions: 'Use `p := new(int)` to allocate a zeroed integer pointer. Set `*p = 100` and print `*p`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    p := new(int)\n    *p = 100\n    fmt.Println(*p)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Allocate zeroed int pointer with new(int), set *p = 100, and print *p\n}`,
         expectedBehavior: 'Prints 100.',
         testCases: [{ id: 't1', input: '', expectedOutput: '100\n' }],
         hints: [
@@ -2267,7 +2267,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'struct-pointer-auto-deref',
         instructions: 'Given `type User struct { Name string }`, create struct pointer `u := &User{Name: "Alice"}`. Print `u.Name`.',
-        starterCode: `package main\n\nimport "fmt"\n\ntype User struct {\n    Name string\n}\n\nfunc main() {\n    u := &User{Name: "Alice"}\n    fmt.Println(u.Name)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\ntype User struct {\n    Name string\n}\n\nfunc main() {\n    // Create struct pointer u := &User{Name: "Alice"} and print u.Name\n}`,
         expectedBehavior: 'Prints "Alice".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Alice\n' }],
         hints: [
@@ -2292,7 +2292,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'double-pointer',
         instructions: 'Given `x := 5`, pointer `p := &x`, and double pointer `pp := &p`, print `**pp`.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    x := 5\n    p := &x\n    pp := &p\n    fmt.Println(**pp)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    x := 5\n    p := &x\n    // Declare double pointer pp := &p and print **pp\n}`,
         expectedBehavior: 'Prints 5.',
         testCases: [{ id: 't1', input: '', expectedOutput: '5\n' }],
         hints: [
@@ -2317,7 +2317,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'syntax',
         concept: 'no-ptr-arithmetic',
         instructions: 'Go does not allow pointer arithmetic (like `p++` in C). Print `"Safe Pointers"` to acknowledge Go type-safe memory model.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Safe Pointers")\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\nfunc main() {\n    // Print "Safe Pointers" to acknowledge Go type-safe memory model\n}`,
         expectedBehavior: 'Prints "Safe Pointers".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Safe Pointers\n' }],
         hints: [
@@ -2342,7 +2342,7 @@ func (m *TaskManager) PrintSummary() {
         type: 'function',
         concept: 'escape-analysis',
         instructions: 'Write `func createCounter() *int` that returns `&count` where `count := 42` is a local variable.',
-        starterCode: `package main\n\nimport "fmt"\n\nfunc createCounter() *int {\n    count := 42\n    return &count\n}\n\nfunc main() {\n    p := createCounter()\n    fmt.Println(*p)\n}`,
+        starterCode: `package main\n\nimport "fmt"\n\n// Write createCounter() *int function returning address of local count\n\nfunc main() {\n    p := createCounter()\n    fmt.Println(*p)\n}`,
         expectedBehavior: 'Prints 42.',
         testCases: [{ id: 't1', input: '', expectedOutput: '42\n' }],
         hints: [
