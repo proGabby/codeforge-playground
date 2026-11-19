@@ -8,6 +8,8 @@ export const Navbar: React.FC = () => {
     setTheme,
     learningMode,
     setLearningMode,
+    selectedLanguage,
+    setSelectedLanguage,
     userProgress,
     weakConcepts,
     userEmail,
@@ -37,13 +39,32 @@ export const Navbar: React.FC = () => {
           <Cpu className="w-3.5 h-3.5 text-indigo-400" /> Language:
         </span>
         <div className="flex items-center bg-slate-800 p-1 rounded-lg border border-slate-700">
-          <button className="flex items-center gap-1.5 px-3 py-1 bg-indigo-600 text-white rounded text-xs font-semibold shadow-sm cursor-pointer">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            Go (Golang)
-          </button>
-          <span className="px-2 text-xs text-slate-500 font-mono cursor-not-allowed" title="Coming soon">Python</span>
-          <span className="px-2 text-xs text-slate-500 font-mono cursor-not-allowed" title="Coming soon">Rust</span>
-          <span className="px-2 text-xs text-slate-500 font-mono cursor-not-allowed" title="Coming soon">JS/TS</span>
+            <button
+              onClick={() => setSelectedLanguage('go')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold shadow-sm transition-all cursor-pointer ${selectedLanguage === 'go'
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                }`}
+            >
+              {selectedLanguage === 'go' && (
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              )}
+              Go (Golang)
+            </button>
+            <button
+              onClick={() => setSelectedLanguage('python')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold shadow-sm transition-all cursor-pointer ${selectedLanguage === 'python'
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                }`}
+            >
+              {selectedLanguage === 'python' && (
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              )}
+              Python
+            </button>
+            <span className="px-2 text-xs text-slate-500 font-mono cursor-not-allowed" title="Coming soon">Rust</span>
+            <span className="px-2 text-xs text-slate-500 font-mono cursor-not-allowed" title="Coming soon">JS/TS</span>
         </div>
       </div>
 
