@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { CheckCircle2, Trophy, ArrowRight, Sparkles, Flame } from 'lucide-react';
+import { CheckCircle2, Trophy, ArrowRight, Sparkles, Flame, Award } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import type { Exercise } from '../../types';
 
 export const CompletionModal: React.FC = () => {
   const {
@@ -12,6 +13,7 @@ export const CompletionModal: React.FC = () => {
     activeExercise,
     setActiveExerciseId,
     userProgress,
+    startTopicQuiz,
   } = useApp();
 
   useEffect(() => {
@@ -44,6 +46,17 @@ export const CompletionModal: React.FC = () => {
   };
 
   const nextExId = findNextExerciseId();
+
+  // Check if current topic exercises are all completed
+  const currentTopic = curriculum.find((t) => t.id === activeExercise.topicId);
+  const topicExercises: Exercise[] = (currentTopic as any)?.exercises || [];
+  const isTopicFinished =
+    topicExercises.length > 0 &&
+    topicExercises.every(
+      (e) =>
+        e.id === activeExercise.id || userProgress.completedExerciseIds.includes(e.id)
+    );
+  const isQuizPassed = (userProgress.completedQuizIds || []).includes(`quiz-${activeExercise.topicId}`);
 
   const handleContinue = () => {
     setShowCompletionModal(false);
@@ -116,6 +129,29 @@ export const CompletionModal: React.FC = () => {
                 <li key={idx}>{note}</li>
               ))}
             </ul>
+          </div>
+        )}
+
+        {/* Section Mastery Milestone CTA */}
+        {isTopicFinished && !isQuizPassed && (
+          <div className="bg-gradient-to-r from-indigo-500/20 via-purple-500/15 to-indigo-500/20 border border-indigo-500/40 rounded-xl p-3.5 space-y-2">
+            <div className="flex items-center space-x-2 text-indigo-300 font-bold text-xs uppercase tracking-wider">
+              <Award className="w-4 h-4 text-amber-400 flex-shrink-0" />
+              <span>Section Mastery Milestone Unlocked!</span>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              You solved all exercises in <strong className="text-slate-100">{currentTopic?.title}</strong>. Take the quick 3-minute quiz to test your comprehension and earn <span className="text-emerald-400 font-bold font-mono">+50 XP</span>!
+            </p>
+            <button
+              onClick={() => {
+                setShowCompletionModal(false);
+                startTopicQuiz(activeExercise.topicId);
+              }}
+              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-extrabold rounded-lg shadow-md shadow-indigo-600/30 flex items-center justify-center space-x-1.5 transition-all"
+            >
+              <span>Take Section Quiz (+50 XP)</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         )}
 

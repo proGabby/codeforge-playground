@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, Lock, PlayCircle, Layers } from 'lucide-react';
+import { CheckCircle2, Lock, PlayCircle, Layers, Award } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import type { Exercise } from '../../types';
 
@@ -11,6 +11,7 @@ export const CurriculumTree: React.FC = () => {
     setActiveTopicId,
     setActiveExerciseId,
     userProgress,
+    startTopicQuiz,
   } = useApp();
 
   const isTopicUnlocked = (topicId: string) => {
@@ -86,30 +87,27 @@ export const CurriculumTree: React.FC = () => {
                   return (
                     <div
                       key={topic.id}
-                      className={`rounded-xl border transition-all ${
-                        isActive
+                      className={`rounded-xl border transition-all ${isActive
                           ? 'border-indigo-500/60 bg-slate-800/80 shadow-md shadow-indigo-500/10'
                           : unlocked
-                          ? 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
-                          : 'border-slate-800/40 bg-slate-900/20 opacity-60'
-                      }`}
+                            ? 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
+                            : 'border-slate-800/40 bg-slate-900/20 opacity-60'
+                        }`}
                     >
                       {/* Topic Header Row */}
                       <div
                         onClick={() => unlocked && setActiveTopicId(topic.id)}
-                        className={`p-3 flex items-center justify-between cursor-pointer ${
-                          !unlocked && 'cursor-not-allowed'
-                        }`}
+                        className={`p-3 flex items-center justify-between cursor-pointer ${!unlocked && 'cursor-not-allowed'
+                          }`}
                       >
                         <div className="flex items-center space-x-2.5">
                           <div
-                            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-mono ${
-                              progressPercent === 100
+                            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold font-mono ${progressPercent === 100
                                 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                                 : unlocked
-                                ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                                : 'bg-slate-800 text-slate-500'
-                            }`}
+                                  ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                                  : 'bg-slate-800 text-slate-500'
+                              }`}
                           >
                             {progressPercent === 100 ? (
                               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
@@ -147,11 +145,10 @@ export const CurriculumTree: React.FC = () => {
                               <div
                                 key={ex.id}
                                 onClick={() => setActiveExerciseId(ex.id)}
-                                className={`p-2 rounded-lg text-xs flex items-center justify-between cursor-pointer transition-all ${
-                                  isExActive
+                                className={`p-2 rounded-lg text-xs flex items-center justify-between cursor-pointer transition-all ${isExActive
                                     ? 'bg-indigo-600/20 text-indigo-200 font-medium border border-indigo-500/40'
                                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                                }`}
+                                  }`}
                               >
                                 <div className="flex items-center space-x-2 truncate">
                                   {done ? (
@@ -173,6 +170,44 @@ export const CurriculumTree: React.FC = () => {
                               </div>
                             );
                           })}
+
+                          {/* Section Milestone Quiz */}
+                          {(() => {
+                            const quizId = `quiz-${topic.id}`;
+                            const isQuizPassed = (userProgress.completedQuizIds || []).includes(quizId);
+                            const quizScore = userProgress.quizScores?.[quizId];
+
+                            return (
+                              <div
+                                onClick={() => startTopicQuiz(topic.id)}
+                                className={`mt-1.5 p-2 rounded-lg text-xs flex items-center justify-between cursor-pointer transition-all border ${isQuizPassed
+                                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/15'
+                                    : progressPercent === 100
+                                      ? 'bg-indigo-500/20 text-indigo-200 border-indigo-500/50 hover:bg-indigo-500/30 shadow-sm shadow-indigo-500/20'
+                                      : 'text-slate-400 border-slate-800/80 bg-slate-900/40 hover:text-slate-200 hover:bg-slate-800/40'
+                                  }`}
+                                title={`Take Section Quiz for ${topic.title}`}
+                              >
+                                <div className="flex items-center space-x-2 truncate">
+                                  <Award
+                                    className={`w-3.5 h-3.5 flex-shrink-0 ${isQuizPassed ? 'text-emerald-400' : 'text-indigo-400'
+                                      }`}
+                                  />
+                                  <span className="font-semibold truncate">Section Milestone Quiz</span>
+                                </div>
+
+                                {isQuizPassed ? (
+                                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex-shrink-0">
+                                    ✓ {quizScore ? `${quizScore}%` : 'Passed'}
+                                  </span>
+                                ) : (
+                                  <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex-shrink-0">
+                                    +50 XP
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </div>
                       )}
                     </div>
