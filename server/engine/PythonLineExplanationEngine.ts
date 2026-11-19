@@ -14,6 +14,34 @@ export class PythonLineExplanationEngine {
       };
     }
 
+    // Async function definition (async def)
+    if (lineText.startsWith('async def ')) {
+      const match = lineText.match(/^async\s+def\s+([a-zA-Z0-9_]+)\s*\((.*?)\)(?:\s*->\s*([a-zA-Z0-9_\[\],\s]+))?:/);
+      const fnName = match ? match[1] : 'async_function';
+      const params = match ? match[2] : '';
+      const returnType = match ? match[3] : undefined;
+
+      const breakdown = [
+        { token: 'async def', description: 'Declares an asynchronous native coroutine function that can be paused with await.' },
+        { token: fnName, description: `The identifier name of the coroutine.` },
+        { token: `(${params})`, description: `The parameters accepted by ${fnName}.` },
+      ];
+
+      if (returnType) {
+        breakdown.push({ token: `-> ${returnType}`, description: `Optional PEP 484 type hint specifying coroutine return type.` });
+      }
+
+      breakdown.push({ token: ':', description: 'Colon signaling the start of the coroutine body block.' });
+
+      return {
+        lineText,
+        lineNumber,
+        summary: `Defines an asynchronous coroutine named \`${fnName}\`.`,
+        breakdown,
+        underTheHood: 'Returns a coroutine object executed cooperatively by an asyncio event loop.'
+      };
+    }
+
     // Function definition (def)
     if (lineText.startsWith('def ')) {
       const match = lineText.match(/^def\s+([a-zA-Z0-9_]+)\s*\((.*?)\)(?:\s*->\s*([a-zA-Z0-9_\[\],\s]+))?:/);
@@ -166,6 +194,24 @@ export class PythonLineExplanationEngine {
           { token: lineText.split(/[\s:]/)[0], description: 'Exception handling keyword.' }
         ],
         underTheHood: 'Unwinds the runtime call stack to the nearest matching except handler.'
+      };
+    }
+
+    // Yield statement (yield / yield from)
+    if (lineText.startsWith('yield ') || lineText.startsWith('yield\n') || lineText === 'yield') {
+      const isYieldFrom = lineText.startsWith('yield from ');
+      const yieldedVal = lineText.replace(/^yield(\s+from)?/, '').trim();
+      return {
+        lineText,
+        lineNumber,
+        summary: isYieldFrom
+          ? `Delegates generator iteration to sub-generator or iterable \`${yieldedVal}\`.`
+          : `Pauses generator execution and emits \`${yieldedVal || 'None'}\` to the caller.`,
+        breakdown: [
+          { token: isYieldFrom ? 'yield from' : 'yield', description: 'Generator keyword that suspends execution and yields value lazily.' },
+          ...(yieldedVal ? [{ token: yieldedVal, description: 'Value or sub-generator expression being yielded.' }] : []),
+        ],
+        underTheHood: 'Saves local frame state and returns control to caller; resumes on next() or send().'
       };
     }
 

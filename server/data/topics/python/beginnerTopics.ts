@@ -194,7 +194,7 @@ export const PYTHON_BEGINNER_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         type: 'fix_code',
         concept: 'debug-string',
         instructions: 'Fix the syntax error in the code caused by mismatched quotes on the message string.',
-        starterCode: 'message = "Welcome to CodeForge!\nprint(message)\n',
+        starterCode: '# Fix the unclosed string quote below\nmessage = "Welcome to CodeForge!\nprint(message)\n',
         expectedBehavior: 'Prints "Welcome to CodeForge!".',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Welcome to CodeForge!\n' }],
         hints: [
