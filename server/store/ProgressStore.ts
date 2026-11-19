@@ -71,6 +71,9 @@ export class ProgressStore {
       weakConcepts: [],
       lastActiveTopicId: 'go-hello-world',
       lastActiveExerciseId: 'go-hello-1',
+      completedQuizIds: [],
+      quizScores: {},
+      xp: 0,
     };
   }
 }
