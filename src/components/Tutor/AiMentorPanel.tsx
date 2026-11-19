@@ -134,7 +134,7 @@ export const AiMentorPanel: React.FC = () => {
             </div>
             <p className="text-sm font-medium text-slate-200">AI Mentor Ready!</p>
             <p className="text-xs text-slate-400 max-w-xs mx-auto mt-1">
-              Ask any question about your execution result, Go syntax, or algorithm logic below.
+              Ask any question about your execution result, {activeExercise?.languageId === 'python' ? 'Python' : 'Go'} syntax, or algorithm logic below.
             </p>
           </div>
         )}
@@ -145,27 +145,24 @@ export const AiMentorPanel: React.FC = () => {
             className={`flex items-start gap-3 ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}
           >
             <div
-              className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-semibold shrink-0 ${
-                msg.sender === 'user'
+              className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-semibold shrink-0 ${msg.sender === 'user'
                   ? 'bg-indigo-600 text-white'
                   : 'bg-purple-950 border border-purple-600/50 text-purple-300'
-              }`}
+                }`}
             >
               {msg.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
             </div>
 
             <div
-              className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed ${
-                msg.sender === 'user'
+              className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed ${msg.sender === 'user'
                   ? 'bg-indigo-600/90 text-white rounded-tr-none'
                   : 'bg-slate-800/90 text-slate-200 border border-slate-700/80 rounded-tl-none font-sans'
-              }`}
+                }`}
             >
               <div className="whitespace-pre-wrap">{msg.text}</div>
               <div
-                className={`text-[9px] mt-1.5 ${
-                  msg.sender === 'user' ? 'text-indigo-200/80 text-right' : 'text-slate-400'
-                }`}
+                className={`text-[9px] mt-1.5 ${msg.sender === 'user' ? 'text-indigo-200/80 text-right' : 'text-slate-400'
+                  }`}
               >
                 {msg.timestamp}
               </div>

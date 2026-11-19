@@ -16,11 +16,12 @@ export function useAiMentor(
     async (lineNum?: number) => {
       const targetLine = lineNum ?? selectedLineNumber;
       if (!targetLine || !code) return;
+      const langId = activeExercise?.languageId || 'go';
       try {
         const res = await fetch('/api/explain-line', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code, lineNumber: targetLine, languageId: 'go' }),
+          body: JSON.stringify({ code, lineNumber: targetLine, languageId: langId }),
         });
         const data = await res.json();
         setLineExplanation(data);
@@ -28,7 +29,7 @@ export function useAiMentor(
         console.error('Error fetching line explanation:', err);
       }
     },
-    [code, selectedLineNumber]
+    [code, selectedLineNumber, activeExercise]
   );
 
   const askAiMentor = useCallback(
@@ -43,14 +44,15 @@ export function useAiMentor(
       setChatMessages((prev) => [...prev, userMsg]);
       setIsAskingAi(true);
 
+      const isPython = activeExercise?.languageId === 'python';
       try {
         const res = await fetch('/api/ai-mentor', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            exerciseTitle: activeExercise?.title || 'Go Exercise',
+            exerciseTitle: activeExercise?.title || (isPython ? 'Python Exercise' : 'Go Exercise'),
             instructions: activeExercise?.instructions || '',
-            concept: activeExercise?.concept || 'Go Syntax',
+            concept: activeExercise?.concept || (isPython ? 'Python Syntax' : 'Go Syntax'),
             userCode: code,
             stdout: executionResult?.stdout || '',
             stderr: executionResult?.stderr || '',

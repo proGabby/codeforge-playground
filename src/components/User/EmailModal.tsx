@@ -70,7 +70,7 @@ export const EmailModal: React.FC = () => {
 
         {/* Description */}
         <p className="text-xs text-slate-300 leading-relaxed mb-5">
-          Enter your email to sync your Go exercises, previous solutions, and streaks to our Turso cloud database. You can pick up right where you left off from any browser or device.
+          Enter your email to sync your coding exercises, previous solutions, and streaks to our Turso cloud database. You can pick up right where you left off from any browser or device.
         </p>
 
         {/* Value Perks */}

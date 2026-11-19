@@ -18,31 +18,28 @@ export const ExplanationPanel: React.FC = () => {
         <div className="flex items-center space-x-1 bg-slate-950 p-1 rounded-lg border border-slate-800 w-full overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab('concept')}
-            className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === 'concept'
-                ? 'bg-indigo-600 text-white shadow'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
+            className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all cursor-pointer whitespace-nowrap ${activeTab === 'concept'
+              ? 'bg-indigo-600 text-white shadow'
+              : 'text-slate-400 hover:text-slate-200'
+              }`}
           >
             Concept
           </button>
           <button
             onClick={() => setActiveTab('hood')}
-            className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === 'hood'
-                ? 'bg-indigo-600 text-white shadow'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
+            className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all cursor-pointer whitespace-nowrap ${activeTab === 'hood'
+              ? 'bg-indigo-600 text-white shadow'
+              : 'text-slate-400 hover:text-slate-200'
+              }`}
           >
             Under Hood
           </button>
           <button
             onClick={() => setActiveTab('line')}
-            className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all relative cursor-pointer whitespace-nowrap ${
-              activeTab === 'line'
-                ? 'bg-indigo-600 text-white shadow'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
+            className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all relative cursor-pointer whitespace-nowrap ${activeTab === 'line'
+              ? 'bg-indigo-600 text-white shadow'
+              : 'text-slate-400 hover:text-slate-200'
+              }`}
           >
             Line Info
             {lineExplanation && (
@@ -51,11 +48,10 @@ export const ExplanationPanel: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('ai')}
-            className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all flex items-center gap-1 cursor-pointer whitespace-nowrap ${
-              activeTab === 'ai'
-                ? 'bg-purple-600 text-white shadow'
-                : 'text-purple-400 hover:text-purple-300'
-            }`}
+            className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all flex items-center gap-1 cursor-pointer whitespace-nowrap ${activeTab === 'ai'
+              ? 'bg-purple-600 text-white shadow'
+              : 'text-purple-400 hover:text-purple-300'
+              }`}
           >
             <Sparkles className="w-3 h-3 text-purple-300" />
             AI Mentor

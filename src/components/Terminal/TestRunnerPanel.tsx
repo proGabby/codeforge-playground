@@ -3,10 +3,11 @@ import { Terminal, CheckCircle, XCircle, Clock, ShieldCheck, Cpu, Award, AlertTr
 import { useApp } from '../../context/AppContext';
 
 export const TestRunnerPanel: React.FC = () => {
-  const { executionResult, submissionResult, isExecuting } = useApp();
+  const { executionResult, submissionResult, isExecuting, activeExercise } = useApp();
   const [activeTab, setActiveTab] = useState<'output' | 'tests' | 'practices'>('output');
 
   const bestPractices = submissionResult?.bestPractices;
+  const isPython = activeExercise?.languageId === 'python';
 
   return (
     <div className="h-48 bg-slate-950 border-t border-slate-800 flex flex-col select-none overflow-hidden">
@@ -15,11 +16,10 @@ export const TestRunnerPanel: React.FC = () => {
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setActiveTab('output')}
-            className={`flex items-center space-x-1.5 px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-              activeTab === 'output'
+            className={`flex items-center space-x-1.5 px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${activeTab === 'output'
                 ? 'bg-slate-800 text-indigo-300 border border-slate-700'
                 : 'text-slate-400 hover:text-slate-200'
-            }`}
+              }`}
           >
             <Terminal className="w-3.5 h-3.5" />
             <span>Output</span>
@@ -27,11 +27,10 @@ export const TestRunnerPanel: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('tests')}
-            className={`flex items-center space-x-1.5 px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-              activeTab === 'tests'
+            className={`flex items-center space-x-1.5 px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${activeTab === 'tests'
                 ? 'bg-slate-800 text-indigo-300 border border-slate-700'
                 : 'text-slate-400 hover:text-slate-200'
-            }`}
+              }`}
           >
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>
@@ -46,21 +45,19 @@ export const TestRunnerPanel: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('practices')}
-            className={`flex items-center space-x-1.5 px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-              activeTab === 'practices'
+            className={`flex items-center space-x-1.5 px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${activeTab === 'practices'
                 ? 'bg-slate-800 text-amber-300 border border-slate-700'
                 : 'text-slate-400 hover:text-slate-200'
-            }`}
+              }`}
           >
             <Award className="w-3.5 h-3.5" />
             <span>
               Best Practices{' '}
               {bestPractices && (
-                <span className={`ml-1 text-[10px] px-1.5 py-0.2 rounded font-mono ${
-                  bestPractices.score >= 80
+                <span className={`ml-1 text-[10px] px-1.5 py-0.2 rounded font-mono ${bestPractices.score >= 80
                     ? 'bg-emerald-500/20 text-emerald-300'
                     : 'bg-amber-500/20 text-amber-300'
-                }`}>
+                  }`}>
                   {bestPractices.score}%
                 </span>
               )}
@@ -77,9 +74,8 @@ export const TestRunnerPanel: React.FC = () => {
             </div>
             <div className="flex items-center space-x-1">
               <span
-                className={`w-2 h-2 rounded-full ${
-                  executionResult.exitCode === 0 ? 'bg-emerald-400' : 'bg-rose-400'
-                }`}
+                className={`w-2 h-2 rounded-full ${executionResult.exitCode === 0 ? 'bg-emerald-400' : 'bg-rose-400'
+                  }`}
               ></span>
               <span>Exit: {executionResult.exitCode}</span>
             </div>
@@ -92,7 +88,7 @@ export const TestRunnerPanel: React.FC = () => {
         {isExecuting ? (
           <div className="flex items-center space-x-2 text-indigo-400 animate-pulse">
             <Cpu className="w-4 h-4 animate-spin" />
-            <span>Executing Go code in isolated sandbox...</span>
+            <span>Executing {isPython ? 'Python' : 'Go'} code in isolated sandbox...</span>
           </div>
         ) : activeTab === 'output' ? (
           <div>
@@ -119,11 +115,10 @@ export const TestRunnerPanel: React.FC = () => {
               submissionResult.testDetails.map((t, idx) => (
                 <div
                   key={t.testId || idx}
-                  className={`p-2 rounded-lg border flex items-center justify-between ${
-                    t.passed
+                  className={`p-2 rounded-lg border flex items-center justify-between ${t.passed
                       ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-300'
                       : 'bg-rose-950/20 border-rose-500/30 text-rose-300'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center space-x-2">
                     {t.passed ? (
@@ -151,11 +146,10 @@ export const TestRunnerPanel: React.FC = () => {
                     <Award className="w-4 h-4 text-amber-400" />
                     Code Quality & Architecture Score
                   </span>
-                  <span className={`font-mono font-bold px-2 py-0.5 rounded text-xs ${
-                    bestPractices.score >= 80
+                  <span className={`font-mono font-bold px-2 py-0.5 rounded text-xs ${bestPractices.score >= 80
                       ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                       : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                  }`}>
+                    }`}>
                     {bestPractices.score}% ({bestPractices.passedCount}/{bestPractices.totalCount} passed)
                   </span>
                 </div>
@@ -163,11 +157,10 @@ export const TestRunnerPanel: React.FC = () => {
                 {bestPractices.checks.map((check) => (
                   <div
                     key={check.id}
-                    className={`p-2.5 rounded-lg border space-y-1 ${
-                      check.passed
+                    className={`p-2.5 rounded-lg border space-y-1 ${check.passed
                         ? 'bg-emerald-950/15 border-emerald-500/25 text-emerald-200'
                         : 'bg-amber-950/20 border-amber-500/30 text-amber-200'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
@@ -197,7 +190,7 @@ export const TestRunnerPanel: React.FC = () => {
                 ))}
               </>
             ) : (
-              <span className="text-slate-600">Submit your code to inspect architecture, mutation safety, and Go conventions.</span>
+              <span className="text-slate-600">Submit your code to inspect architecture, mutation safety, and {isPython ? 'Pythonic' : 'Go'} conventions.</span>
             )}
           </div>
         )}
