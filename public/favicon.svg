@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b0f19" />
+      <stop offset="50%" stop-color="#111827" />
+      <stop offset="100%" stop-color="#1e1b4b" />
+    </linearGradient>
+    <linearGradient id="bracketGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#c084fc" />
+    </linearGradient>
+    <linearGradient id="slashGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.3" />
+    </linearGradient>
+  </defs>
+
+  <!-- Base App Tile with Smooth Rounded Corners -->
+  <rect x="1" y="1" width="30" height="30" rx="7" fill="url(#bgGrad)" stroke="url(#borderGrad)" stroke-width="1.5" />
+
+  <!-- Code Symbol: < / > (Developer Native) -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Left Chevron '<' -->
+    <path d="M9.5 10.5 L4 16 L9.5 21.5" stroke="url(#bracketGrad)" stroke-width="2.5" />
+
+    <!-- Forward Slash '/' -->
+    <path d="M18.5 7.5 L13.5 24.5" stroke="url(#slashGrad)" stroke-width="2.5" />
+
+    <!-- Right Chevron '>' -->
+    <path d="M22.5 10.5 L28 16 L22.5 21.5" stroke="url(#bracketGrad)" stroke-width="2.5" />
+  </g>
+</svg>
