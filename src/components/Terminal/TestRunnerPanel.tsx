@@ -55,12 +55,12 @@ export const TestRunnerPanel: React.FC = () => {
 
   return (
     <div
-      className={`bg-[#0B0E14] border-t border-[#121620] flex flex-col select-none overflow-hidden transition-all duration-200 ${
+      className={`bg-[#0B101B] border-t border-[#182133] flex flex-col select-none overflow-hidden transition-all duration-200 ${
         isCollapsed ? 'h-9' : 'h-64'
       }`}
     >
       {/* 1. Header with Tabs & Collapse Button */}
-      <div className="h-9 px-4 flex items-center justify-between border-b border-[#121620] shrink-0">
+      <div className="h-9 px-4 flex items-center justify-between border-b border-[#182133] shrink-0">
         <div className="flex items-center space-x-4">
           <button
             onClick={() => setActiveTab('tests')}

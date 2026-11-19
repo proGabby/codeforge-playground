@@ -137,10 +137,10 @@ export const RightDrawer: React.FC = () => {
             <section className="pt-2 border-t border-[#121620] space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-xs font-bold text-[#F2F4F8]">Socratic mentor</h3>
+                  <h3 className="text-xs font-bold text-[#3B82F6]">Socratic mentor</h3>
                   <p className="text-[11px] text-[#737F94] mt-0.5">A nudge in the right direction.</p>
                 </div>
-                <span className="text-[10px] font-mono font-bold text-[#737F94] px-1.5 py-0.5 rounded-[4px] border border-[#1E2536]">
+                <span className="text-[10px] font-mono font-bold text-[#3B82F6] px-1.5 py-0.5 rounded-[4px] border border-[#3B82F6]/30 bg-[#3B82F6]/10">
                   AI
                 </span>
               </div>

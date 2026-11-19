@@ -80,74 +80,74 @@ export const CurriculumTree: React.FC = () => {
   };
 
   return (
-    <aside className="w-72 bg-[#0B0E14] text-[#F2F4F8] flex flex-col h-full select-none shrink-0 border-r border-[#121620]">
-      {/* Sidebar Header */}
-      <div className="p-4 pb-3 border-b border-[#121620]/60">
-        <span className="text-[10px] font-mono font-semibold tracking-wider text-[#737F94] uppercase block">
-          {pathLabel}
-        </span>
-        <h2 className="text-sm font-bold text-[#F2F4F8] mt-1">Build your foundations</h2>
-        <p className="text-xs text-[#737F94] mt-1">
-          {completedExercisesCount} of {totalExercises} lessons complete
-        </p>
+      <aside className="w-72 bg-[#0B0E14] text-[#F2F4F8] flex flex-col h-full select-none shrink-0 border-r border-[#121620]">
+        {/* Sidebar Header */}
+          <div className="p-4 pb-3 border-b border-[#121620]/60">
+            <span className="text-[10px] font-mono font-semibold tracking-wider text-[#737F94] uppercase block">
+              {pathLabel}
+            </span>
+            <h2 className="text-sm font-bold text-[#F2F4F8] mt-1">Build your foundations</h2>
+            <p className="text-xs text-[#737F94] mt-1">
+              {completedExercisesCount} of {totalExercises} lessons complete
+            </p>
 
-        {/* Thin Progress Bar */}
-        <div className="w-full bg-[#161D2B] h-1 rounded-full mt-2.5 overflow-hidden">
-          <div
-            className="bg-[#3B82F6] h-full transition-all duration-300 rounded-full"
-            style={{ width: `${Math.max(15, progressPercent)}%` }}
-          />
-        </div>
-      </div>
+            {/* Thin Progress Bar */}
+            <div className="w-full bg-[#161D2B] h-1 rounded-full mt-2.5 overflow-hidden">
+              <div
+                className="bg-[#3B82F6] h-full transition-all duration-300 rounded-full"
+                style={{ width: `${Math.max(15, progressPercent)}%` }}
+              />
+            </div>
+          </div>
 
-      {/* Main Categorized Topics & Exercises Tree */}
-      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4 custom-scrollbar">
-        {categories.map((cat) => {
-          const categoryTopics = curriculum.filter(
-            (t) => (t.category || 'beginner') === cat.key
-          );
-          if (categoryTopics.length === 0) return null;
+            {/* Main Categorized Topics & Exercises Tree */}
+            <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4 custom-scrollbar">
+              {categories.map((cat) => {
+                const categoryTopics = curriculum.filter(
+                  (t) => (t.category || 'beginner') === cat.key
+                );
+                if (categoryTopics.length === 0) return null;
 
-          return (
-            <div key={cat.key} className="space-y-1">
-              {/* Category Group Label: e.g. 01 BEGINNER */}
-              <div className="px-2 pt-1 pb-0.5 flex items-center justify-between text-[10px] font-mono font-semibold text-[#737F94] tracking-wider uppercase">
-                <div className="flex items-center gap-1.5">
-                  <span>{cat.num}</span>
-                  <span>{cat.label}</span>
-                </div>
-                <span>
-                  {categoryTopics.reduce((acc, t) => acc + ((t as any).exercises?.length || 0), 0)} Ex
-                </span>
-              </div>
+                return (
+                    <div key={cat.key} className="space-y-1">
+                      {/* Category Group Label: e.g. 01 BEGINNER */}
+                        <div className="px-2 pt-1 pb-0.5 flex items-center justify-between text-[10px] font-mono font-semibold text-[#737F94] tracking-wider uppercase">
+                          <div className="flex items-center gap-1.5">
+                            <span>{cat.num}</span>
+                            <span>{cat.label}</span>
+                          </div>
+                          <span>
+                            {categoryTopics.reduce((acc, t) => acc + ((t as any).exercises?.length || 0), 0)} Ex
+                          </span>
+                        </div>
 
-              {/* Topics / Sections */}
-              <div className="space-y-1">
-                {categoryTopics.map((topic) => {
-                  const isTopicActive = activeTopic?.id === topic.id;
-                  const isDone = isTopicCompleted(topic);
-                  const isExpanded = expandedTopicIds.has(topic.id);
-                  const cleanTitle = topic.title.replace(/^\d+\.\s*/, '');
-                  const exercises = (topic as any).exercises || [];
-                  const completedInTopic = exercises.filter((e: Exercise) => isExerciseCompleted(e.id)).length;
+                          {/* Topics / Sections */}
+                          <div className="space-y-1">
+                            {categoryTopics.map((topic) => {
+                              const isTopicActive = activeTopic?.id === topic.id;
+                              const isDone = isTopicCompleted(topic);
+                              const isExpanded = expandedTopicIds.has(topic.id);
+                              const cleanTitle = topic.title.replace(/^\d+\.\s*/, '');
+                              const exercises = (topic as any).exercises || [];
+                              const completedInTopic = exercises.filter((e: Exercise) => isExerciseCompleted(e.id)).length;
 
-                  return (
-                    <div key={topic.id} className="space-y-0.5">
-                      {/* Topic Header Row (Click to toggle expand/collapse) */}
-                      <button
-                        onClick={() => {
-                          toggleTopicExpand(topic.id);
-                          setActiveTopicId(topic.id);
-                          if (exercises.length > 0 && !exercises.some((e: Exercise) => e.id === activeExercise?.id)) {
-                            setActiveExerciseId(exercises[0].id);
-                          }
-                        }}
-                        className={`w-full text-left px-2 py-1.5 rounded-[8px] text-xs transition-all flex items-center justify-between cursor-pointer group ${
-                          isTopicActive
-                            ? 'bg-[#161D2B] text-[#F2F4F8] font-semibold'
-                            : 'text-[#99A3B5] hover:text-[#F2F4F8] hover:bg-[#121620]'
-                        }`}
-                      >
+                              return (
+                                <div key={topic.id} className="space-y-0.5">
+                                  {/* Topic Header Row (Click to toggle expand/collapse) */}
+                                  <button
+                                    onClick={() => {
+                                      toggleTopicExpand(topic.id);
+                                      setActiveTopicId(topic.id);
+                                        if (exercises.length > 0 && !exercises.some((e: Exercise) => e.id === activeExercise?.id)) {
+                                          setActiveExerciseId(exercises[0].id);
+                                        }
+                                      }
+                                    }
+                        className={`w-full text-left px-2 py-1.5 rounded-[8px] text-xs transition-all flex items-center justify-between cursor-pointer group ${isTopicActive
+                                        ? 'bg-[#161D2B] text-[#F2F4F8] font-semibold'
+                                        : 'text-[#99A3B5] hover:text-[#F2F4F8] hover:bg-[#121620]'
+                                      }`}
+                                  >
                         <div className="flex items-center gap-1.5 truncate">
                           {/* Chevron Icon */}
                           <span className="text-[#737F94] group-hover:text-[#F2F4F8] transition-transform shrink-0">
@@ -171,19 +171,20 @@ export const CurriculumTree: React.FC = () => {
                         </div>
 
                         {/* Exercises count / progress tag */}
-                        <span className="text-[10px] font-mono text-[#737F94] shrink-0 ml-1">
-                          {completedInTopic}/{exercises.length}
-                        </span>
-                      </button>
+                                      <span className="text-[10px] font-mono text-[#737F94] shrink-0 ml-1">
+                                        {completedInTopic}/{exercises.length}
+                                      </span>
+                                  </button>
 
-                      {/* Expanded Section: List of Exercises & Milestone Quiz */}
-                      {isExpanded && (
-                        <div className="pl-4 pr-1 py-1 space-y-0.5 border-l border-[#1E2536] ml-3 mt-0.5">
-                          {exercises.map((ex: Exercise) => {
-                            const isExActive = activeExercise?.id === ex.id;
-                            const isExDone = isExerciseCompleted(ex.id);
+                                        {/* Expanded Section: List of Exercises & Milestone Quiz */ }
+                                        {
+                                          isExpanded && (
+                                            <div className="pl-4 pr-1 py-1 space-y-0.5 border-l border-[#1E2536] ml-3 mt-0.5">
+                                              {exercises.map((ex: Exercise) => {
+                                                const isExActive = activeExercise?.id === ex.id;
+                                                const isExDone = isExerciseCompleted(ex.id);
 
-                            return (
+                                                return (
                               <button
                                 key={ex.id}
                                 onClick={(e) => {

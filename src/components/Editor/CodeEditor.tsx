@@ -152,14 +152,14 @@ def test_negative_values():
         { token: 'variable', foreground: 'F2F4F8' },
       ],
       colors: {
-        'editor.background': '#0B0E14',
+        'editor.background': '#0E131F',
         'editor.foreground': '#F2F4F8',
-        'editorLineNumber.foreground': '#737F94',
+        'editorLineNumber.foreground': '#64748B',
         'editorLineNumber.activeForeground': '#F2F4F8',
-        'editor.lineHighlightBackground': '#121620',
+        'editor.lineHighlightBackground': '#151C2C',
         'editorCursor.foreground': '#3B82F6',
-        'editorIndentGuide.background': '#161D2B',
-        'editorIndentGuide.activeBackground': '#1E2536',
+        'editorIndentGuide.background': '#1A2234',
+        'editorIndentGuide.activeBackground': '#25324C',
       },
     });
 
@@ -246,9 +246,9 @@ def test_negative_values():
   const exerciseTitle = activeExercise?.title || 'Sum a slice';
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#0B0E14] overflow-hidden relative">
+    <div className="flex-1 flex flex-col h-full bg-[#0E131F] overflow-hidden relative">
       {/* 1. Top File Tabs Bar */}
-      <div className="h-10 bg-[#0B0E14] border-b border-[#121620] flex items-center justify-between px-3 select-none shrink-0">
+      <div className="h-10 bg-[#0B101B] border-b border-[#182133] flex items-center justify-between px-3 select-none shrink-0">
         <div className="flex items-center space-x-1 overflow-x-auto scrollbar-none py-1">
           {fileList.map((fileName) => {
             const isActive = fileName === activeFileName;
@@ -260,8 +260,8 @@ def test_negative_values():
                 onClick={() => setActiveFileName(fileName)}
                 className={`group flex items-center space-x-2 px-3 py-1.5 rounded-[6px] text-xs font-mono transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-[#121620] text-[#F2F4F8] font-medium'
-                    : 'text-[#737F94] hover:text-[#99A3B5] hover:bg-[#121620]/50'
+                    ? 'bg-[#0E131F] text-[#F2F4F8] font-medium'
+                    : 'text-[#737F94] hover:text-[#99A3B5] hover:bg-[#121927]'
                 }`}
               >
                 <span>{fileName}</span>
@@ -287,7 +287,7 @@ def test_negative_values():
               setFileError('');
               setShowNewFileModal(true);
             }}
-            className="p-1 rounded text-[#737F94] hover:text-[#F2F4F8] hover:bg-[#121620] transition-colors cursor-pointer"
+            className="p-1 rounded text-[#737F94] hover:text-[#F2F4F8] hover:bg-[#121927] transition-colors cursor-pointer"
             title="Create new file"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -296,7 +296,7 @@ def test_negative_values():
       </div>
 
       {/* 2. Exercise Subheader */}
-      <div className="h-9 px-4 bg-[#0B0E14] flex items-center justify-between border-b border-[#121620] select-none shrink-0">
+      <div className="h-9 px-4 bg-[#0E131F] flex items-center justify-between border-b border-[#182133] select-none shrink-0">
         <div className="flex items-center space-x-2">
           <span className="text-xs font-mono font-bold text-[#3B82F6]">{exerciseLabel}</span>
           <span className="text-xs font-bold text-[#F2F4F8]">{exerciseTitle}</span>
@@ -379,7 +379,7 @@ def test_negative_values():
       </div>
 
       {/* 5. Editor Status Bar */}
-      <div className="h-6 bg-[#0B0E14] border-t border-[#121620] px-4 flex items-center justify-between text-[11px] select-none shrink-0">
+      <div className="h-6 bg-[#0B101B] border-t border-[#182133] px-4 flex items-center justify-between text-[11px] select-none shrink-0">
         <div className="flex items-center space-x-2">
           {compilerDiagnostic ? (
             <span className="text-red-400 font-medium flex items-center gap-1">
