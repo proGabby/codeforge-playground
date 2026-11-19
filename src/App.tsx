@@ -58,11 +58,11 @@ const AppContent: React.FC = () => {
           <Navbar onNavigateHome={navigateToLanding} />
           <div className="flex-1 flex overflow-hidden relative">
             <CurriculumTree />
-            <main className="flex-1 flex flex-col overflow-hidden relative bg-[#0E131F] border-x border-[#182133]">
-              <CodeEditor />
-              <TestRunnerPanel />
-            </main>
-            <RightDrawer />
+              <main className="flex-1 flex flex-col overflow-hidden relative bg-[#0E131F] border-x border-[#182133]">
+                <CodeEditor />
+                <TestRunnerPanel />
+              </main>
+              <RightDrawer />
           </div>
           <CompletionModal />
           <QuizModal />

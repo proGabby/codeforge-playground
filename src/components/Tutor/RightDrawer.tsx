@@ -59,21 +59,19 @@ export const RightDrawer: React.FC = () => {
       <div className="h-10 px-4 flex items-center space-x-6 border-b border-[#121620] shrink-0">
         <button
           onClick={() => setActiveTab('concept')}
-          className={`text-xs font-semibold pb-1 transition-all cursor-pointer ${
-            activeTab === 'concept'
+          className={`text-xs font-semibold pb-1 transition-all cursor-pointer ${activeTab === 'concept'
               ? 'text-[#F2F4F8] border-b-2 border-[#3B82F6]'
               : 'text-[#737F94] hover:text-[#99A3B5]'
-          }`}
+            }`}
         >
           Concept
         </button>
         <button
           onClick={() => setActiveTab('discussion')}
-          className={`text-xs font-semibold pb-1 transition-all cursor-pointer ${
-            activeTab === 'discussion'
+          className={`text-xs font-semibold pb-1 transition-all cursor-pointer ${activeTab === 'discussion'
               ? 'text-[#F2F4F8] border-b-2 border-[#3B82F6]'
               : 'text-[#737F94] hover:text-[#99A3B5]'
-          }`}
+            }`}
         >
           Discussion
         </button>
@@ -140,9 +138,9 @@ export const RightDrawer: React.FC = () => {
                   <h3 className="text-xs font-bold text-[#3B82F6]">Socratic mentor</h3>
                   <p className="text-[11px] text-[#737F94] mt-0.5">A nudge in the right direction.</p>
                 </div>
-                <span className="text-[10px] font-mono font-bold text-[#3B82F6] px-1.5 py-0.5 rounded-[4px] border border-[#3B82F6]/30 bg-[#3B82F6]/10">
-                  AI
-                </span>
+                  <span className="text-[10px] font-mono font-bold text-[#3B82F6] px-1.5 py-0.5 rounded-[4px] border border-[#3B82F6]/30 bg-[#3B82F6]/10">
+                    AI
+                  </span>
               </div>
 
               {/* Conversation Messages Thread */}
@@ -185,11 +183,10 @@ export const RightDrawer: React.FC = () => {
                   chatMessages.map((msg) => (
                     <div
                       key={msg.id}
-                      className={`p-2.5 rounded-[10px] text-xs leading-relaxed ${
-                        msg.sender === 'user'
+                      className={`p-2.5 rounded-[10px] text-xs leading-relaxed ${msg.sender === 'user'
                           ? 'bg-[#121620] text-[#F2F4F8]'
                           : 'bg-[#121620]/60 text-[#99A3B5]'
-                      }`}
+                        }`}
                     >
                       {msg.text}
                     </div>
