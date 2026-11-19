@@ -4,6 +4,8 @@ import type {
   Exercise,
   LearningMode,
   LineExplanation,
+  QuizSubmissionResult,
+  SectionQuiz,
   SubmissionResult,
   Topic,
   UserProgress,
@@ -13,6 +15,7 @@ import { useCurriculum } from '../hooks/useCurriculum';
 import { useProgressTracking } from '../hooks/useProgressTracking';
 import { useAiMentor } from '../hooks/useAiMentor';
 import { useCodeExecution } from '../hooks/useCodeExecution';
+import { recordExerciseCompletionStreak } from '../utils/streakUtils';
 
 interface AppContextType {
   theme: 'dark' | 'light';
@@ -66,6 +69,13 @@ interface AppContextType {
   addFile: (name: string, content?: string) => void;
   deleteFile: (name: string) => void;
   setFiles: (files: Record<string, string>, defaultActiveFile?: string) => void;
+
+  // Section Quizzes
+  activeQuiz: SectionQuiz | null;
+  isQuizModalOpen: boolean;
+  setIsQuizModalOpen: (open: boolean) => void;
+  startTopicQuiz: (topicId: string) => Promise<void>;
+  submitQuiz: (quizId: string, answers: Record<string, string>) => Promise<QuizSubmissionResult | null>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -102,7 +112,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // 3. User progress tracking & adaptive engine
   const { userProgress, setUserProgress, recommendations, weakConcepts } =
-  useProgressTracking(userEmail, selectedLanguage);
+    useProgressTracking(userEmail, selectedLanguage);
 
   // 4. Code execution & submission
   const {
@@ -149,6 +159,61 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     askAiMentor,
     resetExerciseAiState,
   } = useAiMentor(activeExercise, code, executionResult);
+
+  // 6. Section Quizzes
+  const [activeQuiz, setActiveQuiz] = useState<SectionQuiz | null>(null);
+  const [isQuizModalOpen, setIsQuizModalOpen] = useState<boolean>(false);
+
+  const startTopicQuiz = async (topicId: string) => {
+    try {
+      const res = await fetch(`/api/quizzes/topic/${topicId}?languageId=${selectedLanguage}`);
+      if (res.ok) {
+        const quiz: SectionQuiz = await res.json();
+        setActiveQuiz(quiz);
+        setIsQuizModalOpen(true);
+      }
+    } catch (err) {
+      console.error('Failed to load quiz for topic:', topicId, err);
+    }
+  };
+
+  const submitQuiz = async (
+    quizId: string,
+    answers: Record<string, string>
+  ): Promise<QuizSubmissionResult | null> => {
+    try {
+      const res = await fetch('/api/quizzes/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quizId, answers, email: userEmail }),
+      });
+      if (res.ok) {
+        const result: QuizSubmissionResult = await res.json();
+        if (result.passed) {
+          setUserProgress((prev) => {
+            const completedQuizIds = Array.from(new Set([...(prev.completedQuizIds || []), result.quizId]));
+            const quizScores = {
+              ...(prev.quizScores || {}),
+              [result.quizId]: Math.max(result.scorePercent, prev.quizScores?.[result.quizId] || 0),
+            };
+            const streakUpdate = recordExerciseCompletionStreak(prev.streakDays || 0, prev.lastCompletedDate);
+            return {
+              ...prev,
+              completedQuizIds,
+              quizScores,
+              streakDays: streakUpdate.streakDays,
+              lastCompletedDate: streakUpdate.lastCompletedDate,
+              xp: (prev.xp || 0) + result.xpEarned,
+            };
+          });
+        }
+        return result;
+      }
+    } catch (err) {
+      console.error('Failed to submit quiz:', err);
+    }
+    return null;
+  };
 
   // Sync existing user email with Turso on initial mount
   useEffect(() => {
@@ -272,6 +337,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveFileName,
         addFile,
         deleteFile,
+
+        // Section Quizzes
+        activeQuiz,
+        isQuizModalOpen,
+        setIsQuizModalOpen,
+        startTopicQuiz,
+        submitQuiz,
       }}
     >
       {children}
