@@ -13,12 +13,15 @@ export class UserStore {
       failedAttemptsCount: {},
       hintsUsedCount: {},
       topicProgress: {},
-      unlockedTopicIds: ['go-hello-world'],
+      unlockedTopicIds: ['go-hello-world', 'py-hello-world'],
       streakDays: 1,
       totalTimeSpentSeconds: 0,
       weakConcepts: [],
       lastActiveTopicId: 'go-hello-world',
       lastActiveExerciseId: 'go-hello-1',
+      completedQuizIds: [],
+      quizScores: {},
+      xp: 0,
     };
   }
 
@@ -52,8 +55,9 @@ export class UserStore {
         sql: `INSERT INTO user_progress (
                 email, completed_exercise_ids, failed_attempts_count, hints_used_count,
                 unlocked_topic_ids, topic_progress, weak_concepts,
-                last_active_topic_id, last_active_exercise_id
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        last_active_topic_id, last_active_exercise_id,
+        completed_quiz_ids, quiz_scores
+              ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
           email,
           JSON.stringify(progress.completedExerciseIds),
@@ -64,6 +68,8 @@ export class UserStore {
           JSON.stringify(progress.weakConcepts),
           progress.lastActiveTopicId,
           progress.lastActiveExerciseId,
+          JSON.stringify(progress.completedQuizIds || []),
+          JSON.stringify(progress.quizScores || {}),
         ],
       });
     } else {
@@ -78,17 +84,21 @@ export class UserStore {
         lastActiveTopicId: (row.last_active_topic_id as string) || 'go-hello-world',
         lastActiveExerciseId: (row.last_active_exercise_id as string) || 'go-hello-1',
         lastCompletedDate: (row.last_completed_date as string) || undefined,
+        completedQuizIds: JSON.parse((row.completed_quiz_ids as string) || '[]'),
+        quizScores: JSON.parse((row.quiz_scores as string) || '{}'),
         streakDays: 1,
         totalTimeSpentSeconds: 0,
+        xp: 0,
       };
 
       const userRes = await client.execute({
-        sql: `SELECT streak_days, total_time_spent FROM users WHERE email = ?`,
+        sql: `SELECT streak_days, total_time_spent, xp FROM users WHERE email = ? `,
         args: [email],
       });
       if (userRes.rows.length > 0) {
         progress.streakDays = Number(userRes.rows[0].streak_days) || 1;
         progress.totalTimeSpentSeconds = Number(userRes.rows[0].total_time_spent) || 0;
+        progress.xp = Number(userRes.rows[0].xp) || 0;
       }
     }
 
@@ -108,36 +118,41 @@ export class UserStore {
     try {
       // Update users table stats
       await client.execute({
-        sql: `UPDATE users SET 
-                streak_days = ?, 
-                total_time_spent = ?,
-                last_active = CURRENT_TIMESTAMP
-              WHERE email = ?`,
+        sql: `UPDATE users SET
+      streak_days = ?,
+        total_time_spent = ?,
+        xp = ?,
+        last_active = CURRENT_TIMESTAMP
+              WHERE email = ? `,
         args: [
           progress.streakDays || 1,
           progress.totalTimeSpentSeconds || 0,
+          progress.xp || 0,
           email,
         ],
       });
 
       // Upsert user_progress
       await client.execute({
-        sql: `INSERT INTO user_progress (
-                email, completed_exercise_ids, failed_attempts_count, hints_used_count,
-                unlocked_topic_ids, topic_progress, weak_concepts,
-                last_active_topic_id, last_active_exercise_id, last_completed_date, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        sql: `INSERT INTO user_progress(
+          email, completed_exercise_ids, failed_attempts_count, hints_used_count,
+          unlocked_topic_ids, topic_progress, weak_concepts,
+      last_active_topic_id, last_active_exercise_id, last_completed_date,
+        completed_quiz_ids, quiz_scores, updated_at
+              ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
               ON CONFLICT(email) DO UPDATE SET
-                completed_exercise_ids = excluded.completed_exercise_ids,
-                failed_attempts_count = excluded.failed_attempts_count,
-                hints_used_count = excluded.hints_used_count,
-                unlocked_topic_ids = excluded.unlocked_topic_ids,
-                topic_progress = excluded.topic_progress,
-                weak_concepts = excluded.weak_concepts,
-                last_active_topic_id = excluded.last_active_topic_id,
-                last_active_exercise_id = excluded.last_active_exercise_id,
-                last_completed_date = excluded.last_completed_date,
-                updated_at = CURRENT_TIMESTAMP`,
+      completed_exercise_ids = excluded.completed_exercise_ids,
+        failed_attempts_count = excluded.failed_attempts_count,
+        hints_used_count = excluded.hints_used_count,
+        unlocked_topic_ids = excluded.unlocked_topic_ids,
+        topic_progress = excluded.topic_progress,
+        weak_concepts = excluded.weak_concepts,
+        last_active_topic_id = excluded.last_active_topic_id,
+        last_active_exercise_id = excluded.last_active_exercise_id,
+        last_completed_date = excluded.last_completed_date,
+        completed_quiz_ids = excluded.completed_quiz_ids,
+        quiz_scores = excluded.quiz_scores,
+        updated_at = CURRENT_TIMESTAMP`,
         args: [
           email,
           JSON.stringify(progress.completedExerciseIds || []),
@@ -149,6 +164,8 @@ export class UserStore {
           progress.lastActiveTopicId || 'go-hello-world',
           progress.lastActiveExerciseId || 'go-hello-1',
           progress.lastCompletedDate || null,
+          JSON.stringify(progress.completedQuizIds || []),
+          JSON.stringify(progress.quizScores || {}),
         ],
       });
 

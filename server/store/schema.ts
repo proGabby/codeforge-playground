@@ -33,11 +33,29 @@ export async function initSchema(client: Client): Promise<void> {
       );
     `);
 
-    // Safe migration: add last_completed_date column if existing database schema
+    // Safe migrations for newer columns
     try {
       await client.execute(`ALTER TABLE user_progress ADD COLUMN last_completed_date TEXT`);
     } catch {
       // Column already exists or table was just created
+    }
+
+    try {
+      await client.execute(`ALTER TABLE user_progress ADD COLUMN completed_quiz_ids TEXT DEFAULT '[]'`);
+    } catch {
+      // Column already exists
+    }
+
+    try {
+      await client.execute(`ALTER TABLE user_progress ADD COLUMN quiz_scores TEXT DEFAULT '{}'`);
+    } catch {
+      // Column already exists
+    }
+
+    try {
+      await client.execute(`ALTER TABLE users ADD COLUMN xp INTEGER DEFAULT 0`);
+    } catch {
+      // Column already exists
     }
 
     await client.execute(`

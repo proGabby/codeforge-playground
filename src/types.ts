@@ -145,6 +145,54 @@ export interface UserProgress {
   weakConcepts: string[]; // Concept tags where failure rate is high
   lastActiveTopicId: string;
   lastActiveExerciseId: string;
+  completedQuizIds?: string[]; // IDs of passed section quizzes
+  quizScores?: Record<string, number>; // quizId -> score percentage (0-100)
+  xp?: number; // Total earned experience points
+}
+
+export interface QuizOption {
+  id: string;
+  text: string;
+  code?: string;
+}
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  codeSnippet?: string;
+  options: QuizOption[];
+  correctOptionId: string;
+  explanation: string;
+  conceptTag?: string;
+}
+
+export interface SectionQuiz {
+  id: string;
+  topicId: string;
+  languageId: 'go' | 'python';
+  title: string;
+  description: string;
+  passingScorePercent: number; // e.g. 75
+  xpReward: number; // e.g. 50
+  questions: QuizQuestion[];
+}
+
+export interface QuizSubmissionResult {
+  quizId: string;
+  topicId: string;
+  scorePercent: number;
+  passed: boolean;
+  correctCount: number;
+  totalQuestions: number;
+  xpEarned: number;
+  streakUpdated: boolean;
+  questionResults: {
+    questionId: string;
+    selectedOptionId: string;
+    correctOptionId: string;
+    isCorrect: boolean;
+    explanation: string;
+  }[];
 }
 
 export interface ChatMessage {
