@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { CheckCircle2, Trophy, ArrowRight, Sparkles } from 'lucide-react';
+import { CheckCircle2, Trophy, ArrowRight, Sparkles, Flame } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export const CompletionModal: React.FC = () => {
@@ -11,6 +11,7 @@ export const CompletionModal: React.FC = () => {
     curriculum,
     activeExercise,
     setActiveExerciseId,
+    userProgress,
   } = useApp();
 
   useEffect(() => {
@@ -69,6 +70,26 @@ export const CompletionModal: React.FC = () => {
               ✓ Correct! All tests passed.
             </h2>
           </div>
+        </div>
+
+        {/* Daily Streak Highlight */}
+        <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-500/30 rounded-xl p-3 flex items-center justify-between">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <Flame className="w-5 h-5 fill-amber-400 animate-pulse" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-amber-300">
+                {userProgress.streakDays} Day Streak!
+              </div>
+              <div className="text-[11px] text-slate-400">
+                Daily learning momentum maintained.
+              </div>
+            </div>
+          </div>
+          <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+            ACTIVE
+          </span>
         </div>
 
         {/* Concepts Learned */}

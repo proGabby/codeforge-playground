@@ -6,6 +6,7 @@ import type {
   Topic,
   UserProgress,
 } from '../types';
+import { recordExerciseCompletionStreak } from '../utils/streakUtils';
 
 interface UseCodeExecutionProps {
   activeExercise: Exercise | null;
@@ -54,177 +55,184 @@ export function useCodeExecution({
     const targetKey = defaultActiveFile && newFiles[defaultActiveFile] !== undefined
       ? defaultActiveFile
       : (newFiles[defaultFileName] !== undefined
-    ? defaultFileName
-    : (newFiles['main.py'] !== undefined
-      ? 'main.py'
-      : (newFiles['main.go'] !== undefined
-        ? 'main.go'
-        : (keys[0] || defaultFileName))));
-  setFilesState(newFiles);
-  setActiveFileName(targetKey);
+        ? defaultFileName
+        : (newFiles['main.py'] !== undefined
+          ? 'main.py'
+          : (newFiles['main.go'] !== undefined
+            ? 'main.go'
+            : (keys[0] || defaultFileName))));
+    setFilesState(newFiles);
+    setActiveFileName(targetKey);
   }, [defaultFileName]);
 
   const addFile = useCallback((rawName: string, initialContent?: string) => {
     let name = rawName.trim();
     if (!name) return;
-      const isPy = activeExercise?.languageId === 'python' || selectedLanguage === 'python';
-      const ext = isPy ? '.py' : '.go';
-      if (!name.endsWith(ext)) {
-        name += ext;
-      }
-      const defaultTemplate = initialContent ?? (isPy ? '# Python module\n\n' : 'package main\n\n');
-      setFilesState((prev) => {
-        if (prev[name] !== undefined) return prev;
-        return { ...prev, [name]: defaultTemplate };
-      });
-      setActiveFileName(name);
-}, [activeExercise, selectedLanguage]);
+    const isPy = activeExercise?.languageId === 'python' || selectedLanguage === 'python';
+    const ext = isPy ? '.py' : '.go';
+    if (!name.endsWith(ext)) {
+      name += ext;
+    }
+    const defaultTemplate = initialContent ?? (isPy ? '# Python module\n\n' : 'package main\n\n');
+    setFilesState((prev) => {
+      if (prev[name] !== undefined) return prev;
+      return { ...prev, [name]: defaultTemplate };
+    });
+    setActiveFileName(name);
+  }, [activeExercise, selectedLanguage]);
 
-const deleteFile = useCallback((name: string) => {
-  if (name === 'main.go' || name === 'main.py') return; // Cannot delete entry point
-  setFilesState((prev) => {
-    const next = { ...prev };
-    delete next[name];
-    return next;
-  });
-setActiveFileName((current) => (current === name ? defaultFileName : current));
+  const deleteFile = useCallback((name: string) => {
+    if (name === 'main.go' || name === 'main.py') return; // Cannot delete entry point
+    setFilesState((prev) => {
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
+    setActiveFileName((current) => (current === name ? defaultFileName : current));
   }, [defaultFileName]);
 
-const runCode = useCallback(async () => {
-  if (!code && Object.keys(files).length === 0) return;
-  setIsExecuting(true);
-  setHasAttemptedCurrentExercise(true);
-  const langId = activeExercise?.languageId || selectedLanguage;
-  try {
-    const res = await fetch('/api/run', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, files, languageId: langId }),
-    });
-    const data = await res.json();
-    setExecutionResult(data);
-  } catch (err: any) {
-    setExecutionResult({
-      stdout: '',
-      stderr: err.message || 'Network error',
-      exitCode: 1,
-      executionTimeMs: 0,
-      compiledSuccessfully: false,
-    });
-  } finally {
-    setIsExecuting(false);
-  }
+  const runCode = useCallback(async () => {
+    if (!code && Object.keys(files).length === 0) return;
+    setIsExecuting(true);
+    setHasAttemptedCurrentExercise(true);
+    const langId = activeExercise?.languageId || selectedLanguage;
+    try {
+      const res = await fetch('/api/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, files, languageId: langId }),
+      });
+      const data = await res.json();
+      setExecutionResult(data);
+    } catch (err: any) {
+      setExecutionResult({
+        stdout: '',
+        stderr: err.message || 'Network error',
+        exitCode: 1,
+        executionTimeMs: 0,
+        compiledSuccessfully: false,
+      });
+    } finally {
+      setIsExecuting(false);
+    }
   }, [code, files, activeExercise, selectedLanguage, setHasAttemptedCurrentExercise]);
 
-const submitCode = useCallback(async () => {
-  if ((!code && Object.keys(files).length === 0) || !activeExercise) return;
-  setIsExecuting(true);
-  setHasAttemptedCurrentExercise(true);
-  setActiveHintLevel(0);
-  const langId = activeExercise.languageId || selectedLanguage;
+  const submitCode = useCallback(async () => {
+    if ((!code && Object.keys(files).length === 0) || !activeExercise) return;
+    setIsExecuting(true);
+    setHasAttemptedCurrentExercise(true);
+    setActiveHintLevel(0);
+    const langId = activeExercise.languageId || selectedLanguage;
 
-  try {
-    const res = await fetch('/api/submit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        code,
-        files,
-        exerciseId: activeExercise.id,
-        languageId: langId,
-        email: userEmail,
-      }),
-    });
-    const data: SubmissionResult = await res.json();
-    setSubmissionResult(data);
-    setExecutionResult(data.execution);
+    try {
+      const res = await fetch('/api/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code,
+          files,
+          exerciseId: activeExercise.id,
+          languageId: langId,
+          email: userEmail,
+        }),
+      });
+      const data: SubmissionResult = await res.json();
+      setSubmissionResult(data);
+      setExecutionResult(data.execution);
 
-    if (data.success) {
-      // Cache solution locally (serialize multi-file if multiple exist)
-      const solutionToSave = Object.keys(files).length > 1
-        ? JSON.stringify({ files })
+      if (data.success) {
+        // Cache solution locally (serialize multi-file if multiple exist)
+        const solutionToSave = Object.keys(files).length > 1
+          ? JSON.stringify({ files })
           : (files[defaultFileName] || files['main.py'] || files['main.go'] || code);
 
-setSavedSolutions((prev) => ({
-  ...prev,
-  [activeExercise.id]: solutionToSave,
-}));
+        setSavedSolutions((prev) => ({
+          ...prev,
+          [activeExercise.id]: solutionToSave,
+        }));
 
-setUserProgress((prev) => {
-  const completed = new Set(prev.completedExerciseIds);
-  completed.add(activeExercise.id);
+        setUserProgress((prev) => {
+          const completed = new Set(prev.completedExerciseIds);
+          completed.add(activeExercise.id);
 
-  const unlocked = new Set(prev.unlockedTopicIds);
-  const currentTopicIndex = curriculum.findIndex((t) => t.id === activeTopicId);
-  if (currentTopicIndex >= 0 && currentTopicIndex + 1 < curriculum.length) {
-    unlocked.add(curriculum[currentTopicIndex + 1].id);
-  }
+          const unlocked = new Set(prev.unlockedTopicIds);
+          const currentTopicIndex = curriculum.findIndex((t) => t.id === activeTopicId);
+          if (currentTopicIndex >= 0 && currentTopicIndex + 1 < curriculum.length) {
+            unlocked.add(curriculum[currentTopicIndex + 1].id);
+          }
+
+          const streakResult = recordExerciseCompletionStreak(
+            prev.streakDays || 0,
+            prev.lastCompletedDate
+          );
+
+          return {
+            ...prev,
+            completedExerciseIds: Array.from(completed),
+            unlockedTopicIds: Array.from(unlocked),
+            streakDays: streakResult.streakDays,
+            lastCompletedDate: streakResult.lastCompletedDate,
+          };
+        });
+        setShowCompletionModal(true);
+      } else {
+        setUserProgress((prev) => ({
+          ...prev,
+          failedAttemptsCount: {
+            ...prev.failedAttemptsCount,
+            [activeExercise.id]: (prev.failedAttemptsCount[activeExercise.id] || 0) + 1,
+          },
+        }));
+      }
+    } catch (err: any) {
+      setExecutionResult({
+        stdout: '',
+        stderr: err.message || 'Network error during submission evaluation',
+        exitCode: 1,
+        executionTimeMs: 0,
+        compiledSuccessfully: false,
+      });
+    } finally {
+      setIsExecuting(false);
+    }
+  }, [
+    code,
+    files,
+    activeExercise,
+    activeTopicId,
+    curriculum,
+    userEmail,
+    selectedLanguage,
+    defaultFileName,
+    setHasAttemptedCurrentExercise,
+    setSavedSolutions,
+    setUserProgress,
+  ]);
+
+  const resetExecutionState = useCallback(() => {
+    setSubmissionResult(null);
+    setExecutionResult(null);
+    setActiveHintLevel(0);
+  }, []);
 
   return {
-    ...prev,
-    completedExerciseIds: Array.from(completed),
-    unlockedTopicIds: Array.from(unlocked),
+    code,
+    setCode,
+    files,
+    setFiles,
+    activeFileName,
+    setActiveFileName,
+    addFile,
+    deleteFile,
+    isExecuting,
+    executionResult,
+    submissionResult,
+    activeHintLevel,
+    setActiveHintLevel,
+    showCompletionModal,
+    setShowCompletionModal,
+    runCode,
+    submitCode,
+    resetExecutionState,
   };
-});
-setShowCompletionModal(true);
-      } else {
-  setUserProgress((prev) => ({
-    ...prev,
-    failedAttemptsCount: {
-      ...prev.failedAttemptsCount,
-      [activeExercise.id]: (prev.failedAttemptsCount[activeExercise.id] || 0) + 1,
-    },
-  }));
-}
-    } catch (err: any) {
-  setExecutionResult({
-    stdout: '',
-    stderr: err.message || 'Network error during submission evaluation',
-    exitCode: 1,
-    executionTimeMs: 0,
-    compiledSuccessfully: false,
-  });
-} finally {
-  setIsExecuting(false);
-}
-  }, [
-  code,
-  files,
-  activeExercise,
-  activeTopicId,
-  curriculum,
-  userEmail,
-  selectedLanguage,
-  defaultFileName,
-  setHasAttemptedCurrentExercise,
-  setSavedSolutions,
-  setUserProgress,
-]);
-
-const resetExecutionState = useCallback(() => {
-  setSubmissionResult(null);
-  setExecutionResult(null);
-  setActiveHintLevel(0);
-}, []);
-
-return {
-  code,
-  setCode,
-  files,
-  setFiles,
-  activeFileName,
-  setActiveFileName,
-  addFile,
-  deleteFile,
-  isExecuting,
-  executionResult,
-  submissionResult,
-  activeHintLevel,
-  setActiveHintLevel,
-  showCompletionModal,
-  setShowCompletionModal,
-  runCode,
-  submitCode,
-  resetExecutionState,
-};
 }

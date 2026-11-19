@@ -1,6 +1,7 @@
 import React from 'react';
 import { Code2, Flame, Moon, Sun, ShieldAlert, Cpu, Cloud } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { getLocalDateString, getCalendarDayDiff } from '../utils/streakUtils';
 
 export const Navbar: React.FC = () => {
   const {
@@ -15,6 +16,18 @@ export const Navbar: React.FC = () => {
     userEmail,
     setShowEmailModal,
   } = useApp();
+
+  const isStreakActiveToday = Boolean(
+    userProgress.lastCompletedDate &&
+    getCalendarDayDiff(userProgress.lastCompletedDate, getLocalDateString()) <= 0
+  );
+
+  const streakDays = userProgress.streakDays || 0;
+  const streakTooltip = isStreakActiveToday
+    ? `Streak active for today (${streakDays} day${streakDays === 1 ? '' : 's'})! Keep up the momentum!`
+    : streakDays > 0
+      ? `Practice today to extend your streak to ${streakDays + 1} days!`
+      : 'Complete an exercise today to start your daily streak!';
 
   return (
     <header className="h-14 bg-slate-900 border-b border-slate-800 text-slate-100 flex items-center justify-between px-4 select-none z-20">
@@ -39,32 +52,32 @@ export const Navbar: React.FC = () => {
           <Cpu className="w-3.5 h-3.5 text-indigo-400" /> Language:
         </span>
         <div className="flex items-center bg-slate-800 p-1 rounded-lg border border-slate-700">
-            <button
-              onClick={() => setSelectedLanguage('go')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold shadow-sm transition-all cursor-pointer ${selectedLanguage === 'go'
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
-                }`}
-            >
-              {selectedLanguage === 'go' && (
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              )}
-              Go (Golang)
-            </button>
-            <button
-              onClick={() => setSelectedLanguage('python')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold shadow-sm transition-all cursor-pointer ${selectedLanguage === 'python'
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
-                }`}
-            >
-              {selectedLanguage === 'python' && (
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              )}
-              Python
-            </button>
-            <span className="px-2 text-xs text-slate-500 font-mono cursor-not-allowed" title="Coming soon">Rust</span>
-            <span className="px-2 text-xs text-slate-500 font-mono cursor-not-allowed" title="Coming soon">JS/TS</span>
+          <button
+            onClick={() => setSelectedLanguage('go')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold shadow-sm transition-all cursor-pointer ${selectedLanguage === 'go'
+              ? 'bg-indigo-600 text-white'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+              }`}
+          >
+            {selectedLanguage === 'go' && (
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            )}
+            Go (Golang)
+          </button>
+          <button
+            onClick={() => setSelectedLanguage('python')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold shadow-sm transition-all cursor-pointer ${selectedLanguage === 'python'
+              ? 'bg-indigo-600 text-white'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+              }`}
+          >
+            {selectedLanguage === 'python' && (
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            )}
+            Python
+          </button>
+          <span className="px-2 text-xs text-slate-500 font-mono cursor-not-allowed" title="Coming soon">Rust</span>
+          <span className="px-2 text-xs text-slate-500 font-mono cursor-not-allowed" title="Coming soon">JS/TS</span>
         </div>
       </div>
 
@@ -104,54 +117,72 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* Streak & Mastery Stats */}
-        <div className="flex items-center space-x-2 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg">
-          <Flame className="w-4 h-4 text-amber-400 fill-amber-400" />
-          <span className="text-xs font-semibold text-amber-300 font-mono">
-            {userProgress.streakDays} Day Streak
-          </span>
+            <div
+              className={`flex items-center space-x-2 px-2.5 py-1 rounded-lg border transition-all select-none cursor-pointer ${isStreakActiveToday
+                  ? 'bg-amber-500/15 border-amber-500/30 text-amber-300 shadow-sm shadow-amber-500/10'
+                  : streakDays > 0
+                    ? 'bg-amber-500/10 border-amber-500/20 text-amber-400/80 hover:border-amber-500/40'
+                    : 'bg-slate-800/60 border-slate-700/60 text-slate-400'
+                }`}
+              title={streakTooltip}
+            >
+              <Flame
+                className={`w-4 h-4 transition-transform ${isStreakActiveToday
+                    ? 'text-amber-400 fill-amber-400 animate-pulse'
+                    : streakDays > 0
+                      ? 'text-amber-400/70 fill-amber-400/40'
+                      : 'text-slate-500'
+                  }`}
+              />
+              <span className="text-xs font-semibold font-mono">
+                {streakDays} Day{streakDays === 1 ? '' : 's'}
+              </span>
+              {isStreakActiveToday && (
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" title="Daily goal achieved!"></span>
+              )}
+            </div>
+
+            {/* Weak Concept Warning Badge */}
+            {weakConcepts.length > 0 && (
+              <div
+                className="flex items-center space-x-1.5 bg-rose-500/10 border border-rose-500/30 px-2 py-1 rounded-lg text-rose-300 text-xs font-medium animate-pulse cursor-pointer"
+                title={`Focus needed on: ${weakConcepts.join(', ')}`}
+              >
+                <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+                <span>Weak: {weakConcepts[0]}</span>
+              </div>
+            )}
+
+            {/* Cloud Sync / Email Status */}
+            {userEmail ? (
+              <button
+                onClick={() => setShowEmailModal(true)}
+                className="flex items-center space-x-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-500/50 px-2.5 py-1 rounded-lg text-emerald-300 text-xs font-medium transition-colors cursor-pointer"
+                title={`Synced with Turso as ${userEmail}. Click to switch or log out.`}
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="max-w-[130px] truncate font-mono">{userEmail}</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowEmailModal(true)}
+                className="flex items-center space-x-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 px-2.5 py-1 rounded-lg text-indigo-300 text-xs font-semibold transition-colors cursor-pointer"
+                title="Sync your progress & solutions to Turso DB"
+              >
+                <Cloud className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Sync Account</span>
+              </button>
+            )}
+
+            {/* Theme Toggle */}
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-2 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors cursor-pointer"
+              title="Toggle Light / Dark Theme"
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
         </div>
-
-        {/* Weak Concept Warning Badge */}
-        {weakConcepts.length > 0 && (
-          <div
-            className="flex items-center space-x-1.5 bg-rose-500/10 border border-rose-500/30 px-2 py-1 rounded-lg text-rose-300 text-xs font-medium animate-pulse cursor-pointer"
-            title={`Focus needed on: ${weakConcepts.join(', ')}`}
-          >
-            <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-            <span>Weak: {weakConcepts[0]}</span>
-          </div>
-        )}
-
-        {/* Cloud Sync / Email Status */}
-        {userEmail ? (
-          <button
-            onClick={() => setShowEmailModal(true)}
-            className="flex items-center space-x-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-500/50 px-2.5 py-1 rounded-lg text-emerald-300 text-xs font-medium transition-colors cursor-pointer"
-            title={`Synced with Turso as ${userEmail}. Click to switch or log out.`}
-          >
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span className="max-w-[130px] truncate font-mono">{userEmail}</span>
-          </button>
-        ) : (
-          <button
-            onClick={() => setShowEmailModal(true)}
-            className="flex items-center space-x-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 px-2.5 py-1 rounded-lg text-indigo-300 text-xs font-semibold transition-colors cursor-pointer"
-            title="Sync your progress & solutions to Turso DB"
-          >
-            <Cloud className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Sync Account</span>
-          </button>
-        )}
-
-        {/* Theme Toggle */}
-        <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="p-2 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors cursor-pointer"
-          title="Toggle Light / Dark Theme"
-        >
-          {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-        </button>
-      </div>
     </header>
   );
 };
