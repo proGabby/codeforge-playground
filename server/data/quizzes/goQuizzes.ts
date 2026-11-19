@@ -472,6 +472,20 @@ export const GO_QUIZZES: SectionQuiz[] = [
         explanation: 'Slicing `original[1:3]` creates a view referencing the *same* underlying backing array. Modifying `sub[0]` modifies `original[1]`.',
         conceptTag: 'go-slice-view-mutation',
       },
+      {
+        id: 'go-q-slice-4',
+        question: 'What does this program print?',
+        codeSnippet: `values := []int{2, 4, 6}\ntotal := 0\nfor _, value := range values {\n    total += value\n}\nfmt.Println(total)`,
+        options: [
+          { id: 'a', text: '6' },
+          { id: 'b', text: '12' },
+          { id: 'c', text: '0' },
+          { id: 'd', text: 'A compiler error' },
+        ],
+        correctOptionId: 'b',
+        explanation: 'range visits 2, 4, and 6. Each value is added to total, so the program prints 12.',
+        conceptTag: 'go-slice-iteration-sum',
+      },
     ],
   },
 

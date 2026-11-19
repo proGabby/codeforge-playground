@@ -3,10 +3,8 @@ import { AppProvider, useApp } from './context/AppContext';
 import { Navbar } from './components/Navbar';
 import { CurriculumTree } from './components/Sidebar/CurriculumTree';
 import { CodeEditor } from './components/Editor/CodeEditor';
-import { GuidedCorrectionCard } from './components/Tutor/GuidedCorrectionCard';
-import { ExplanationPanel } from './components/Tutor/ExplanationPanel';
 import { TestRunnerPanel } from './components/Terminal/TestRunnerPanel';
-import { RecommendationBanner } from './components/Adaptive/RecommendationBanner';
+import { RightDrawer } from './components/Tutor/RightDrawer';
 import { CompletionModal } from './components/Adaptive/CompletionModal';
 import { EmailModal } from './components/User/EmailModal';
 import { QuizModal } from './components/Quiz/QuizModal';
@@ -56,17 +54,15 @@ const AppContent: React.FC = () => {
           onOpenEmailModal={handleOpenEmailModal}
         />
       ) : (
-        <div className="h-screen w-screen flex flex-col bg-slate-950 text-slate-100 overflow-hidden font-sans">
+        <div className="h-screen w-screen flex flex-col bg-[#0B0E14] text-[#F2F4F8] overflow-hidden font-sans">
           <Navbar onNavigateHome={navigateToLanding} />
-          <RecommendationBanner />
           <div className="flex-1 flex overflow-hidden relative">
             <CurriculumTree />
-            <div className="flex-1 flex flex-col overflow-hidden border-r border-slate-800 relative">
+            <main className="flex-1 flex flex-col overflow-hidden relative">
               <CodeEditor />
-              <GuidedCorrectionCard />
               <TestRunnerPanel />
-            </div>
-            <ExplanationPanel />
+            </main>
+            <RightDrawer />
           </div>
           <CompletionModal />
           <QuizModal />

@@ -1,73 +1,222 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import Editor, { type OnMount } from '@monaco-editor/react';
-import { Play, Send, Sparkles, FileCode, Plus, X, FileCheck, Layers } from 'lucide-react';
+import { Check, X, Plus } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export const CodeEditor: React.FC = () => {
   const {
-    theme,
     code,
     setCode,
     files,
+    setFiles,
     activeFileName,
     setActiveFileName,
     addFile,
     deleteFile,
-    runCode,
-    submitCode,
-    isExecuting,
+    executionResult,
     submissionResult,
-    explainSelectedLine,
-    setSelectedLineNumber,
-    selectedLineNumber,
     activeExercise,
+    activeTopic,
     selectedLanguage,
+    setSelectedLineNumber,
   } = useApp();
 
   const isPy = activeExercise?.languageId === 'python' || selectedLanguage === 'python' || activeFileName.endsWith('.py');
-  const editorLanguage = isPy ? 'python' : 'go';
+  const defaultEntry = isPy ? 'main.py' : 'main.go';
+  const testFileName = isPy ? 'test_solution.py' : 'solution_test.go';
 
   const editorRef = useRef<any>(null);
+  const monacoRef = useRef<any>(null);
   const decorationsRef = useRef<string[]>([]);
+  const zoneIdRef = useRef<string | null>(null);
+
+  const [cursorPos, setCursorPos] = useState({ lineNumber: 1, column: 1 });
   const [showNewFileModal, setShowNewFileModal] = useState(false);
   const [newFileName, setNewFileName] = useState('');
   const [fileError, setFileError] = useState('');
 
-  const handleEditorDidMount: OnMount = (editor) => {
-    editorRef.current = editor;
+  // Generate synthetic test file content if not already in files
+  useEffect(() => {
+    if (!files[testFileName]) {
+      const isGo = !isPy;
+      let generatedTest = '';
+      if (isGo) {
+        generatedTest = `package main
 
-    // Track line selection for "Explain This Line"
+import "testing"
+
+func TestPositiveValues(t *testing.T) {
+\tresult := Sum([]int{2, 4, 6})
+\tif result != 12 {
+\t\tt.Errorf("expected 12, got %d", result)
+\t}
+}
+
+func TestEmptySlice(t *testing.T) {
+\tresult := Sum([]int{})
+\tif result != 0 {
+\t\tt.Errorf("expected 0, got %d", result)
+\t}
+}
+
+func TestNegativeValues(t *testing.T) {
+\tresult := Sum([]int{-1, -2, -3})
+\tif result != -6 {
+\t\tt.Errorf("expected -6, got %d", result)
+\t}
+}
+`;
+      } else {
+        generatedTest = `import pytest
+from main import sum_slice
+
+def test_positive_values():
+    assert sum_slice([2, 4, 6]) == 12
+
+def test_empty_slice():
+    assert sum_slice([]) == 0
+
+def test_negative_values():
+    assert sum_slice([-1, -2, -3]) == -6
+`;
+      }
+
+      setFiles({
+        ...(files || {}),
+        [defaultEntry]: code || files[defaultEntry] || '',
+        [testFileName]: generatedTest,
+      }, activeFileName || defaultEntry);
+    }
+  }, [testFileName, isPy, defaultEntry]);
+
+  // Extract compiler diagnostic details
+  const compilerDiagnostic = useMemo(() => {
+    // 1. From submissionResult.correction
+    if (submissionResult?.correction?.lineIndex) {
+      return {
+        line: submissionResult.correction.lineIndex,
+        message:
+          submissionResult.correction.rawCompilerError ||
+          submissionResult.correction.whatHappened ||
+          'type mismatch or syntax error',
+      };
+    }
+
+    // 2. From executionResult if compilation failed
+    if (executionResult && !executionResult.compiledSuccessfully && executionResult.stderr) {
+      const stderr = executionResult.stderr;
+      // Match Go line: e.g. main.go:10:23: cannot use total as string
+      const goMatch = stderr.match(/(?:main\.go|solution\.go):(\d+)(?::\d+)?:?\s*(.*)/i);
+      if (goMatch) {
+        return {
+          line: parseInt(goMatch[1], 10),
+          message: goMatch[2]?.trim() || 'compiler error',
+        };
+      }
+
+      // Match Python line: File "main.py", line 10, in ... \n TypeError: ...
+      const pyLineMatch = stderr.match(/line (\d+)/i);
+      const pyErrMatch = stderr.match(/([A-Za-z]+Error:\s*.*)/);
+      if (pyLineMatch) {
+        return {
+          line: parseInt(pyLineMatch[1], 10),
+          message: pyErrMatch ? pyErrMatch[1].trim() : 'runtime error',
+        };
+      }
+
+      return {
+        line: 1,
+        message: stderr.split('\n')[0] || 'compilation error',
+      };
+    }
+
+    return null;
+  }, [submissionResult, executionResult]);
+
+  // Monaco Mount Handler
+  const handleEditorDidMount: OnMount = (editor, monaco) => {
+    editorRef.current = editor;
+    monacoRef.current = monaco;
+
+    // Define CodeForge dark theme matching Figma #0B0E14
+    monaco.editor.defineTheme('codeforge-dark', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: 'comment', foreground: '737F94', fontStyle: 'italic' },
+        { token: 'keyword', foreground: '3B82F6', fontStyle: 'bold' },
+        { token: 'string', foreground: '10B981' },
+        { token: 'number', foreground: 'F59E0B' },
+        { token: 'type', foreground: '60A5FA' },
+        { token: 'function', foreground: '93C5FD' },
+        { token: 'variable', foreground: 'F2F4F8' },
+      ],
+      colors: {
+        'editor.background': '#0B0E14',
+        'editor.foreground': '#F2F4F8',
+        'editorLineNumber.foreground': '#737F94',
+        'editorLineNumber.activeForeground': '#F2F4F8',
+        'editor.lineHighlightBackground': '#121620',
+        'editorCursor.foreground': '#3B82F6',
+        'editorIndentGuide.background': '#161D2B',
+        'editorIndentGuide.activeBackground': '#1E2536',
+      },
+    });
+
+    monaco.editor.setTheme('codeforge-dark');
+
     editor.onDidChangeCursorPosition((e) => {
+      setCursorPos({ lineNumber: e.position.lineNumber, column: e.position.column });
       setSelectedLineNumber(e.position.lineNumber);
     });
   };
 
-  // Update inline error line markers on Monaco Editor
+  // Update inline error line markers & ViewZone banner
   useEffect(() => {
-    if (!editorRef.current) return;
+    if (!editorRef.current || !monacoRef.current) return;
+    const editor = editorRef.current;
+    const monaco = monacoRef.current;
 
-    if (submissionResult?.correction?.lineIndex) {
-      const errLine = submissionResult.correction.lineIndex;
-      decorationsRef.current = editorRef.current.deltaDecorations(decorationsRef.current, [
+    // 1. Line highlight decorations
+    if (compilerDiagnostic && compilerDiagnostic.line) {
+      const errLine = compilerDiagnostic.line;
+      decorationsRef.current = editor.deltaDecorations(decorationsRef.current, [
         {
-          range: {
-            startLineNumber: errLine,
-            startColumn: 1,
-            endLineNumber: errLine,
-            endColumn: 100,
-          },
+          range: new monaco.Range(errLine, 1, errLine, 1),
           options: {
             isWholeLine: true,
-            className: 'bg-rose-500/20 border-l-4 border-rose-500',
-            glyphMarginClassName: 'myGlyphMarginClass',
-            hoverMessage: { value: submissionResult.correction.whatHappened },
+            className: 'bg-red-500/15',
+            lineNumberClassName: 'text-red-400 font-bold',
+            hoverMessage: { value: `compiler error: ${compilerDiagnostic.message}` },
           },
         },
       ]);
     } else {
-      decorationsRef.current = editorRef.current.deltaDecorations(decorationsRef.current, []);
+      decorationsRef.current = editor.deltaDecorations(decorationsRef.current, []);
     }
-  }, [submissionResult]);
+
+    // 2. ViewZone for inline error banner directly underneath the offending line
+    editor.changeViewZones((changeAccessor: any) => {
+      if (zoneIdRef.current) {
+        changeAccessor.removeZone(zoneIdRef.current);
+        zoneIdRef.current = null;
+      }
+
+      if (compilerDiagnostic && compilerDiagnostic.line) {
+        const domNode = document.createElement('div');
+        domNode.className = 'w-full py-1 px-4 my-0.5 text-xs font-mono select-none flex items-center gap-2 text-red-400 bg-red-950/30 border-l-2 border-red-500 rounded-r';
+        domNode.innerHTML = `<span class="font-bold text-sm leading-none">&times;</span><span>compiler error: ${escapeHtml(
+          compilerDiagnostic.message
+        )}</span>`;
+
+        zoneIdRef.current = changeAccessor.addZone({
+          afterLineNumber: compilerDiagnostic.line,
+          heightInLines: 1.5,
+          domNode,
+        });
+      }
+    });
+  }, [compilerDiagnostic]);
 
   const handleCreateFile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,218 +225,190 @@ export const CodeEditor: React.FC = () => {
       setFileError('File name cannot be empty.');
       return;
     }
-      const ext = isPy ? '.py' : '.go';
-      if (!name.endsWith(ext)) {
-        name += ext;
-      }
-      if (files[name]) {
-        setFileError(`File "${name}" already exists.`);
-        return;
-      }
-        const validPattern = isPy ? /^[a-z0-9_]+(\.py)$/ : /^[a-z0-9_]+(\.go)$/;
-        if (!validPattern.test(name)) {
-          setFileError(
-            isPy
-              ? 'Use standard Python naming (lowercase letters, numbers, and underscores).'
-              : 'Use standard Go naming (lowercase letters, numbers, and underscores).'
-          );
-          return;
-        }
+    const ext = isPy ? '.py' : '.go';
+    if (!name.endsWith(ext)) {
+      name += ext;
+    }
+    if (files[name]) {
+      setFileError(`File "${name}" already exists.`);
+      return;
+    }
 
-        setFileError('');
-        const defaultTemplate = isPy
-          ? '# Python module\n'
-          : (name.endsWith('_test.go')
-            ? 'package main\n\nimport "testing"\n\nfunc TestExample(t *testing.T) {\n\t// Test implementation\n}\n'
-            : 'package main\n\n// Package declarations and functions\n');
+    addFile(name, isPy ? '# Python module\n' : 'package main\n\n');
+    setNewFileName('');
+    setShowNewFileModal(false);
+  };
 
-        addFile(name, defaultTemplate);
-        setNewFileName('');
-        setShowNewFileModal(false);
-      };
+  const fileList = Object.keys(files || { [defaultEntry]: code });
+  const topicOrder = activeTopic?.order ? String(activeTopic.order).padStart(2, '0') : '02';
+  const exIndex = activeExercise?.difficulty ? String(activeExercise.difficulty).padStart(2, '0') : '04';
+  const exerciseLabel = `${topicOrder}.${exIndex}`;
+  const exerciseTitle = activeExercise?.title || 'Sum a slice';
 
-      const defaultEntry = isPy ? 'main.py' : 'main.go';
-      const fileList = Object.keys(files || { [defaultEntry]: code });
+  return (
+    <div className="flex-1 flex flex-col h-full bg-[#0B0E14] overflow-hidden relative">
+      {/* 1. Top File Tabs Bar */}
+      <div className="h-10 bg-[#0B0E14] border-b border-[#121620] flex items-center justify-between px-3 select-none shrink-0">
+        <div className="flex items-center space-x-1 overflow-x-auto scrollbar-none py-1">
+          {fileList.map((fileName) => {
+            const isActive = fileName === activeFileName;
+            const isMain = fileName === 'main.go' || fileName === 'main.py';
 
-      return (
-        <div className="flex-1 flex flex-col h-full bg-slate-950 overflow-hidden relative">
-          {/* Editor Top Bar with Multi-File Tabs */}
-          <div className="h-11 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-3 select-none">
-            {/* File Tabs Carousel */}
-            <div className="flex items-center space-x-1.5 overflow-x-auto scrollbar-none py-1 max-w-[60%]">
-              {fileList.map((fileName) => {
-                const isActive = fileName === activeFileName;
-                const isTestFile = fileName.endsWith('_test.go') || fileName.startsWith('test_') || fileName.endsWith('_test.py');
-                const isMain = fileName === 'main.go' || fileName === 'main.py';
-                return (
-                  <div
-                    key={fileName}
-                    onClick={() => setActiveFileName(fileName)}
-                    className={`group flex items-center space-x-1.5 px-3 py-1 rounded-t-md text-xs font-mono transition-all cursor-pointer border-t border-x ${isActive
-                        ? 'bg-slate-950 text-indigo-300 border-slate-700 font-semibold shadow-sm'
-                        : 'bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border-slate-800/80'
-                      }`}
-                  >
-                    {isTestFile ? (
-                      <FileCheck className={`w-3.5 h-3.5 ${isActive ? 'text-amber-400' : 'text-slate-500'}`} />
-                    ) : (
-                      <FileCode className={`w-3.5 h-3.5 ${isActive ? 'text-indigo-400' : 'text-slate-500'}`} />
-                    )}
-                    <span>{fileName}</span>
-
-                      {/* Close Button on non-main entry files */ }
-                {!isMain && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteFile(fileName);
-                        }}
-                        className="opacity-0 group-hover:opacity-100 p-0.5 ml-1 text-slate-500 hover:text-rose-400 rounded transition-opacity"
-                        title={`Delete ${fileName}`}
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-
-              {/* Add File Button */}
+            return (
               <button
-                onClick={() => {
-                  setFileError('');
-                  setShowNewFileModal(true);
-                }}
-                className="flex items-center space-x-1 px-2 py-1 rounded text-xs text-slate-400 hover:text-indigo-300 hover:bg-slate-800 transition-colors cursor-pointer"
-                title={`Create new ${isPy ? 'Python' : 'Go'} file`}
+                key={fileName}
+                onClick={() => setActiveFileName(fileName)}
+                className={`group flex items-center space-x-2 px-3 py-1.5 rounded-[6px] text-xs font-mono transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#121620] text-[#F2F4F8] font-medium'
+                    : 'text-[#737F94] hover:text-[#99A3B5] hover:bg-[#121620]/50'
+                }`}
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span className="text-[11px] font-medium hidden sm:inline">Add File</span>
+                <span>{fileName}</span>
+                {isActive ? (
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6]" />
+                ) : !isMain ? (
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteFile(fileName);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 text-[#737F94] hover:text-red-400 transition-opacity"
+                  >
+                    ×
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+
+          <button
+            onClick={() => {
+              setFileError('');
+              setShowNewFileModal(true);
+            }}
+            className="p-1 rounded text-[#737F94] hover:text-[#F2F4F8] hover:bg-[#121620] transition-colors cursor-pointer"
+            title="Create new file"
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* 2. Exercise Subheader */}
+      <div className="h-9 px-4 bg-[#0B0E14] flex items-center justify-between border-b border-[#121620] select-none shrink-0">
+        <div className="flex items-center space-x-2">
+          <span className="text-xs font-mono font-bold text-[#3B82F6]">{exerciseLabel}</span>
+          <span className="text-xs font-bold text-[#F2F4F8]">{exerciseTitle}</span>
+        </div>
+        <div className="text-[11px] font-mono text-[#737F94]">
+          {isPy ? 'Python 3.12 · UTF-8' : 'Go 1.22 · UTF-8'}
+        </div>
+      </div>
+
+      {/* 3. New File Creation Modal */}
+      {showNewFileModal && (
+        <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-xs bg-[#121620] rounded-[10px] p-4 shadow-2xl">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-semibold text-[#F2F4F8]">
+                New {isPy ? 'Python' : 'Go'} File
+              </h3>
+              <button
+                onClick={() => setShowNewFileModal(false)}
+                className="text-[#737F94] hover:text-[#F2F4F8]"
+              >
+                <X className="w-4 h-4" />
               </button>
             </div>
-
-            {/* Action Controls */}
-            <div className="flex items-center space-x-2">
-              {fileList.length > 1 && (
-                <div className="flex items-center space-x-1 text-[11px] text-slate-400 bg-slate-800/70 border border-slate-700/60 px-2 py-0.5 rounded font-mono">
-                  <Layers className="w-3 h-3 text-indigo-400" />
-                  <span>{fileList.length} files</span>
-                </div>
-              )}
-
-              {/* Explain Line Button */}
-              <button
-                onClick={() => explainSelectedLine(selectedLineNumber || 1)}
-                className="flex items-center space-x-1 px-2.5 py-1 bg-purple-600/20 text-purple-300 hover:bg-purple-600/30 border border-purple-500/30 rounded-lg text-xs font-medium transition-all cursor-pointer"
-                title="Highlight/select a line and click to get detailed syntax explanation"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                <span className="hidden md:inline">Explain Line</span>
-                <span>{selectedLineNumber ? `#${selectedLineNumber}` : ''}</span>
-              </button>
-
-              {/* Run Button */}
-              <button
-                onClick={runCode}
-                disabled={isExecuting}
-                className="flex items-center space-x-1.5 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer"
-                title="Compile and run code"
-              >
-                <Play className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
-                <span>Run</span>
-              </button>
-
-              {/* Submit Button */}
-              <button
-                onClick={submitCode}
-                disabled={isExecuting}
-                className="flex items-center space-x-1.5 px-4 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold shadow-md shadow-indigo-600/20 transition-all disabled:opacity-50 cursor-pointer"
-                title="Submit solution for automated test evaluation"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>{isExecuting ? 'Evaluating...' : 'Submit'}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* New File Creation Modal Dialog */}
-          {showNewFileModal && (
-            <div className="absolute inset-0 z-30 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-              <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-2xl">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center space-x-2">
-                    <FileCode className="w-4 h-4 text-indigo-400" />
-                    <h3 className="text-sm font-semibold text-slate-100">Create New {isPy ? 'Python' : 'Go'} File</h3>
-                  </div>
-                  <button
-                    onClick={() => setShowNewFileModal(false)}
-                    className="text-slate-400 hover:text-slate-200"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <form onSubmit={handleCreateFile} className="space-y-3">
-                  <div>
-                    <label className="block text-[11px] font-medium text-slate-400 mb-1">
-                      File Name (e.g. <span className="font-mono text-indigo-300">{isPy ? 'task.py' : 'task.go'}</span> or <span className="font-mono text-indigo-300">{isPy ? 'models.py' : 'models.go'}</span>)
-                    </label>
-                    <input
-                      type="text"
-                      value={newFileName}
-                      onChange={(e) => setNewFileName(e.target.value)}
-                      placeholder={isPy ? 'task.py' : 'task.go'}
-                      autoFocus
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-mono text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
-                    />
-                    {fileError && <p className="text-rose-400 text-[11px] mt-1">{fileError}</p>}
-                  </div>
-
-                  <div className="flex justify-end space-x-2 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowNewFileModal(false)}
-                      className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow"
-                    >
-                      Create File
-                    </button>
-                  </div>
-                </form>
+            <form onSubmit={handleCreateFile} className="space-y-3">
+              <input
+                type="text"
+                value={newFileName}
+                onChange={(e) => setNewFileName(e.target.value)}
+                placeholder={isPy ? 'helper.py' : 'helper.go'}
+                autoFocus
+                className="w-full bg-[#0B0E14] border-0 rounded-[8px] px-3 py-2 text-xs font-mono text-[#F2F4F8] placeholder-[#737F94] focus:outline-none focus:ring-1 focus:ring-[#3B82F6]"
+              />
+              {fileError && <p className="text-red-400 text-[11px]">{fileError}</p>}
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowNewFileModal(false)}
+                  className="px-3 py-1.5 text-xs text-[#737F94] hover:text-[#F2F4F8]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-3.5 py-1.5 bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-[8px] text-xs font-semibold"
+                >
+                  Create
+                </button>
               </div>
-            </div>
-          )}
-
-          {/* Monaco Editor Canvas */}
-          <div className="flex-1 relative">
-            <Editor
-              height="100%"
-              language={editorLanguage}
-              defaultLanguage={editorLanguage}
-              theme={theme === 'dark' ? 'vs-dark' : 'light'}
-              value={code}
-              onChange={(val) => setCode(val || '')}
-              onMount={handleEditorDidMount}
-              options={{
-                fontSize: 14,
-                fontFamily: "'Fira Code', 'Cascadia Code', Consolas, monospace",
-                minimap: { enabled: false },
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                tabSize: 4,
-                insertSpaces: isPy,
-                lineNumbersMinChars: 3,
-                bracketPairColorization: { enabled: true },
-                cursorBlinking: 'smooth',
-                padding: { top: 12, bottom: 12 },
-              }}
-            />
+            </form>
           </div>
         </div>
-      );
-    };
+      )}
+
+      {/* 4. Monaco Editor Canvas */}
+      <div className="flex-1 relative min-h-0">
+        <Editor
+          height="100%"
+          language={isPy ? 'python' : 'go'}
+          defaultLanguage={isPy ? 'python' : 'go'}
+          theme="codeforge-dark"
+          value={code}
+          onChange={(val) => setCode(val || '')}
+          onMount={handleEditorDidMount}
+          options={{
+            fontSize: 13,
+            fontFamily: "'JetBrains Mono', 'Geist', monospace",
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+            tabSize: 4,
+            insertSpaces: isPy,
+            lineNumbersMinChars: 3,
+            bracketPairColorization: { enabled: true },
+            cursorBlinking: 'smooth',
+            padding: { top: 12, bottom: 12 },
+            lineDecorationsWidth: 6,
+          }}
+        />
+      </div>
+
+      {/* 5. Editor Status Bar */}
+      <div className="h-6 bg-[#0B0E14] border-t border-[#121620] px-4 flex items-center justify-between text-[11px] select-none shrink-0">
+        <div className="flex items-center space-x-2">
+          {compilerDiagnostic ? (
+            <span className="text-red-400 font-medium flex items-center gap-1">
+              <span>×</span>
+              <span>1 compiler error</span>
+            </span>
+          ) : (
+            <span className="text-[#737F94] flex items-center gap-1.5">
+              <Check className="w-3 h-3 text-[#737F94]" />
+              <span>All changes saved</span>
+            </span>
+          )}
+        </div>
+        <div className="flex items-center space-x-4 text-[#737F94] font-mono">
+          <span>
+            Ln {cursorPos.lineNumber}, Col {cursorPos.column}
+          </span>
+          <span>Spaces: 4</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
