@@ -58,6 +58,7 @@ export function useAiMentor(
             stderr: executionResult?.stderr || '',
             question,
             chatHistory: chatMessages,
+            languageId: activeExercise?.languageId || 'go',
           }),
         });
         const data = await res.json();

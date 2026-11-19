@@ -7,6 +7,7 @@ export interface MentorRequestParams {
   stderr?: string;
   question: string;
   chatHistory?: { sender: 'user' | 'ai'; text: string }[];
+  languageId?: string;
 }
 
 export class GeminiMentorEngine {
@@ -27,21 +28,25 @@ export class GeminiMentorEngine {
   }
 
   private static async callGeminiAPI(apiKey: string, params: MentorRequestParams): Promise<string | null> {
-    const systemPrompt = `You are CodeForge AI Mentor, an expert Socratic Go (Golang) programming tutor.
-Your mission is to help students learn Go deeply by guiding them through code exercises.
+    const isPython = params.languageId === 'python';
+    const langName = isPython ? 'Python' : 'Go (Golang)';
+    const codeFence = isPython ? 'python' : 'go';
 
-RULES:
-1. Be encouraging, concise, and clear.
-2. Explain compiler errors or test failures in plain English.
+    const systemPrompt = `You are CodeForge AI Mentor, an expert Socratic ${ langName } programming tutor.
+      Your mission is to help students learn ${ langName } deeply by guiding them through code exercises.
+
+      RULES:
+        1. Be encouraging, concise, and clear.
+2. Explain errors or test failures in plain English.
 3. Use Socratic questioning to guide the student toward fixing their code.
 4. DO NOT dump the full complete solution code unless the user explicitly demands "give me the solution".
 5. Use markdown formatting with code snippets when demonstrating syntax patterns.`;
 
-    const contextPrompt = `EXERCISE: ${params.exerciseTitle} (${params.concept})
-INSTRUCTIONS: ${params.instructions}
+    const contextPrompt = `EXERCISE: ${ params.exerciseTitle } (${ params.concept })
+    INSTRUCTIONS: ${ params.instructions }
 
 STUDENT'S CURRENT CODE:
-\`\`\`go
+\`\`\`${codeFence}
 ${params.userCode}
 \`\`\`
 
@@ -88,25 +93,45 @@ STUDENT QUESTION: "${params.question}"`;
   private static generateFallbackResponse(params: MentorRequestParams): string {
     const q = params.question.toLowerCase();
     const stderr = (params.stderr || '').toLowerCase();
+    const isPython = params.languageId === 'python';
 
     if (q.includes('error') || stderr.length > 0) {
-      if (stderr.includes('undefined')) {
-        return `It looks like Go can't find a variable or function in your code!\n\n💡 **Tip**: Check if you misspelled the identifier or forgot to declare it with \`:=\` or \`var\`. In Go, all variables must be declared before use.`;
+        if (isPython) {
+          if (stderr.includes('indentationerror')) {
+            return `Python requires consistent indentation!\n\n💡 **Tip**: Make sure your indented blocks under \`def\`, \`if\`, \`for\`, or \`class\` are indented consistently using 4 spaces.`;
+          }
+          if (stderr.includes('nameerror')) {
+            return `Python encountered a NameError!\n\n💡 **Tip**: Check if you misspelled a variable or function name, or used it before assigning or defining it.`;
+          }
+          if (stderr.includes('syntaxerror')) {
+            return `Python encountered a SyntaxError!\n\n💡 **Tip**: Make sure you included a colon \`:\` at the end of \`def\`, \`if\`, \`for\`, or \`class\` headers, and that all parenthesis \`()\` and quotes match.`;
+          }
+          if (stderr.includes('typeerror')) {
+            return `Python reported a TypeError!\n\n💡 **Tip**: Check if you are performing an operation between incompatible types (e.g. adding a string and an integer) without casting with \`str()\` or \`int()\`.`;
+          }
+          if (stderr.includes('zerodivisionerror')) {
+            return `Python raised a ZeroDivisionError!\n\n💡 **Tip**: Division by zero is undefined. Ensure your divisor value cannot evaluate to 0.`;
+          }
+          return `Let's break down your Python execution attempt:\n\nPython reported an issue in your traceback. Check the line numbers in your console or click line numbers in the Monaco editor for token explanations!`;
+        } else {
+          if (stderr.includes('undefined')) {
+            return `It looks like Go can't find a variable or function in your code!\n\n💡 **Tip**: Check if you misspelled the identifier or forgot to declare it with \`:=\` or \`var\`. In Go, all variables must be declared before use.`;
+          }
+          if (stderr.includes('expected')) {
+            return `Notice the syntax error in your Go code!\n\n💡 **Tip**: Go requires strict syntax around parentheses \`()\`, braces \`{}\`, and package imports. Take a look at the line highlighted in your editor.`;
+          }
+          return `Let's break down what happened in your execution attempt:\n\nGo reported an issue during compilation. Check the line numbers in your console or try clicking line numbers in the Monaco editor to see line explanations!`;
+        }
       }
-      if (stderr.includes('expected')) {
-        return `Notice the syntax error in your Go code!\n\n💡 **Tip**: Go requires strict syntax around parentheses \`()\`, braces \`{}\`, and package imports. Take a look at the line highlighted in your editor.`;
+
+      if (q.includes('hint') || q.includes('help')) {
+        return `Here is a Socratic hint for **${params.exerciseTitle}**:\n\nThink about what the exercise concept (\`${params.concept}\`) requires. Review how ${isPython ? 'Python' : 'Go'} handles syntax and types, and verify that your solution produces the expected output.`;
       }
-      return `Let's break down what happened in your execution attempt:\n\nGo reported an issue during compilation. Check the line numbers in your console or try clicking line numbers in the Monaco editor to see line explanations!`;
-    }
 
-    if (q.includes('hint') || q.includes('help')) {
-      return `Here is a Socratic hint for **${params.exerciseTitle}**:\n\nThink about what the exercise concept (\`${params.concept}\`) requires. Review how Go handles variables and types, and verify that your function returns or prints the expected result.`;
-    }
+      if (q.includes('concept') || q.includes('explain')) {
+        return `The concept here is **${params.concept}**.\n\nIn ${isPython ? 'Python' : 'Go'}, this dictates how data or control flow is managed. Try modifying your code and clicking **Run** to see how the output changes!`;
+      }
 
-    if (q.includes('concept') || q.includes('explain')) {
-      return `The concept here is **${params.concept}**.\n\nIn Go, this dictates how data or control flow is managed. Try modifying your code and clicking **Run** to see how the output changes!`;
+      return `Great question! Looking at your code attempt for **${params.exerciseTitle}**, you're on the right track with **${params.concept}**. Modify your solution based on the instructions and hit **Run** to test your logic!`;
     }
-
-    return `Great question! Looking at your code attempt for **${params.exerciseTitle}**, you're on the right track with **${params.concept}**. Modify your solution based on the instructions and hit **Run** to test your logic!`;
   }
-}

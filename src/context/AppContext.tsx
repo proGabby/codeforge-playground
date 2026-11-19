@@ -102,7 +102,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // 3. User progress tracking & adaptive engine
   const { userProgress, setUserProgress, recommendations, weakConcepts } =
-    useProgressTracking(userEmail);
+  useProgressTracking(userEmail, selectedLanguage);
 
   // 4. Code execution & submission
   const {
