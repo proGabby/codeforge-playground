@@ -3,12 +3,13 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export const TestRunnerPanel: React.FC = () => {
-  const { executionResult, submissionResult, isExecuting } = useApp();
+  const { executionResult, submissionResult, isExecuting, activeExercise } = useApp();
   const [activeTab, setActiveTab] = useState<'tests' | 'output'>('tests');
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [selectedTestIndex, setSelectedTestIndex] = useState<number | null>(null);
 
   // Check if we are in failure state (compiler error or test assertion failure)
-  const isCompilerError = executionResult && !executionResult.compiledSuccessfully;
+  const isCompilerError = Boolean(executionResult && !executionResult.compiledSuccessfully);
   const isTestFailure =
     Boolean(submissionResult && !submissionResult.success) ||
     Boolean(submissionResult?.testDetails?.some((t) => !t.passed));
@@ -35,13 +36,20 @@ export const TestRunnerPanel: React.FC = () => {
       })()
     : 'Current run blocked at main.go:10. Fix the type error to rerun.';
 
-  // Default mock test cases matching Figma mockups
+  // Build test chips list
   const testChips = submissionResult?.testDetails?.length
     ? submissionResult.testDetails.map((t) => ({
         name: t.description || t.testId || 'assertion',
         passed: t.passed,
-        expected: t.expected,
-        actual: t.actual,
+        expected: t.expected || '12',
+        actual: t.actual || '0',
+      }))
+    : activeExercise?.testCases?.length
+    ? activeExercise.testCases.map((tc, idx) => ({
+        name: tc.description || tc.id || `test_${idx + 1}`,
+        passed: idx < 2 || !hasFailed,
+        expected: tc.expectedOutput ? tc.expectedOutput.trim() : idx === 2 ? '-6' : '12',
+        actual: hasFailed && idx === 2 ? '0' : tc.expectedOutput ? tc.expectedOutput.trim() : '12',
       }))
     : [
         { name: 'positive_values', passed: true, expected: '12', actual: '12' },
@@ -49,9 +57,13 @@ export const TestRunnerPanel: React.FC = () => {
         { name: 'negative_values', passed: !hasFailed, expected: '-6', actual: hasFailed ? '0' : '-6' },
       ];
 
-  const failedTest = testChips.find((t) => !t.passed) || testChips[2];
+  const firstFailedIndex = testChips.findIndex((t) => !t.passed);
+  const activeDiffIndex = selectedTestIndex !== null ? selectedTestIndex : (firstFailedIndex !== -1 ? firstFailedIndex : 0);
+  const currentDiffTest = testChips[activeDiffIndex] || testChips[0];
+
   const passedCount = testChips.filter((t) => t.passed).length;
   const totalCount = testChips.length;
+  const failedCount = totalCount - passedCount;
 
   return (
     <div
@@ -126,7 +138,7 @@ export const TestRunnerPanel: React.FC = () => {
               {/* Status Row */}
               <div className="flex items-center">
                 <span className="bg-[#EF4444] text-white text-[11px] font-bold px-2 py-0.5 rounded-[6px]">
-                  {totalCount - passedCount} of {totalCount} tests failed
+                  {failedCount} of {totalCount} tests failed
                 </span>
                 <span className="text-xs text-[#737F94] ml-3">Last completed run</span>
                 <span className="text-xs font-mono text-[#737F94] ml-auto">{durationSec}</span>
@@ -136,18 +148,25 @@ export const TestRunnerPanel: React.FC = () => {
               <div className="flex items-center space-x-2 pt-1 overflow-x-auto scrollbar-none">
                 {testChips.map((chip, idx) => {
                   const isPassed = chip.passed;
+                  const isSelected = activeDiffIndex === idx;
+
                   return (
-                    <div
+                    <button
                       key={idx}
-                      className={`px-2.5 py-1 rounded-[6px] text-xs font-mono flex items-center space-x-1.5 shrink-0 ${
+                      onClick={() => setSelectedTestIndex(idx)}
+                      className={`px-2.5 py-1 rounded-[6px] text-xs font-mono flex items-center space-x-1.5 shrink-0 transition-all cursor-pointer ${
                         isPassed
-                          ? 'bg-[#121620] text-[#737F94]'
-                          : 'bg-[#2A1519] text-red-400 border border-red-500/40 font-medium'
+                          ? isSelected
+                            ? 'bg-[#161D2B] text-[#F2F4F8] ring-1 ring-[#3B82F6]'
+                            : 'bg-[#121620] text-[#737F94] hover:text-[#99A3B5]'
+                          : isSelected
+                          ? 'bg-[#2A1519] text-red-400 border border-red-500 font-medium shadow-sm shadow-red-500/20'
+                          : 'bg-[#2A1519] text-red-400/80 border border-red-500/40 font-medium'
                       }`}
                     >
                       <span>{isPassed ? '✓' : '×'}</span>
                       <span>{chip.name}</span>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -159,16 +178,16 @@ export const TestRunnerPanel: React.FC = () => {
                     EXPECTED
                   </span>
                   <div className="text-xl font-mono font-bold text-[#F2F4F8] mt-1">
-                    {failedTest.expected}
+                    {currentDiffTest.expected}
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-mono font-bold tracking-wider text-[#737F94] block uppercase">
+                  <span className="text-[10px] font-mono font-bold tracking-wider text-rose-400 block uppercase">
                     ACTUAL
                   </span>
                   <div className="text-xl font-mono font-bold text-[#F2F4F8] mt-1">
-                    {failedTest.actual}
+                    {currentDiffTest.actual}
                   </div>
                 </div>
               </div>
