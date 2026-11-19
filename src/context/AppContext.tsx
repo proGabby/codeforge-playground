@@ -19,6 +19,8 @@ interface AppContextType {
   setTheme: (theme: 'dark' | 'light') => void;
   learningMode: LearningMode;
   setLearningMode: (mode: LearningMode) => void;
+  selectedLanguage: 'go' | 'python';
+  setSelectedLanguage: (lang: 'go' | 'python') => void;
   curriculum: Topic[];
   activeTopic: Topic | null;
   activeExercise: Exercise | null;
@@ -86,6 +88,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // 2. Curriculum navigation
   const {
+    selectedLanguage,
+    setSelectedLanguage,
     curriculum,
     activeTopicId,
     setActiveTopicId,
@@ -128,6 +132,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUserProgress,
     setSavedSolutions,
     setHasAttemptedCurrentExercise: (attempted) => setHasAttemptedCurrentExercise(attempted),
+    selectedLanguage,
   });
 
   // 5. AI Mentor & line explanations
@@ -152,15 +157,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       syncUserWithTurso(existingEmail, setUserProgress).then((data) => {
         if (data?.solutions && activeExerciseId && data.solutions[activeExerciseId]) {
           const rawSol = data.solutions[activeExerciseId];
+          const defaultFileName =
+            activeExercise?.languageId === 'python' || selectedLanguage === 'python'
+              ? 'main.py'
+              : 'main.go';
           try {
             if (rawSol.startsWith('{"files":')) {
               const parsed = JSON.parse(rawSol);
-              setFiles(parsed.files || { 'main.go': rawSol });
+              setFiles(parsed.files || { [defaultFileName]: rawSol });
             } else {
-              setFiles({ 'main.go': rawSol });
+              setFiles({ [defaultFileName]: rawSol });
             }
           } catch {
-            setFiles({ 'main.go': rawSol });
+            setFiles({ [defaultFileName]: rawSol });
           }
         }
       });
@@ -176,23 +185,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setActiveTopicId(topic.id);
           setActiveExercise(ex);
 
+          const defaultFileName = ex.languageId === 'python' ? 'main.py' : 'main.go';
+
           // Restore previously saved answer from Turso/local cache if available
           const previousSolution = savedSolutions[ex.id];
           if (previousSolution) {
             try {
               if (previousSolution.startsWith('{"files":')) {
                 const parsed = JSON.parse(previousSolution);
-                setFiles(parsed.files || { 'main.go': previousSolution });
+                setFiles(parsed.files || { [defaultFileName]: previousSolution });
               } else {
-                setFiles({ 'main.go': previousSolution });
+                setFiles({ [defaultFileName]: previousSolution });
               }
             } catch {
-              setFiles({ 'main.go': previousSolution });
+              setFiles({ [defaultFileName]: previousSolution });
             }
           } else if (ex.starterFiles && Object.keys(ex.starterFiles).length > 0) {
             setFiles(ex.starterFiles);
           } else {
-            setFiles({ 'main.go': ex.starterCode });
+            setFiles({ [defaultFileName]: ex.starterCode });
           }
 
           resetExecutionState();
@@ -214,6 +225,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setTheme,
         learningMode,
         setLearningMode,
+        selectedLanguage,
+        setSelectedLanguage,
         curriculum,
         activeTopic,
         activeExercise,
