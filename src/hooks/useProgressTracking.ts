@@ -1,59 +1,69 @@
 import { useState, useEffect } from 'react';
 import type { UserProgress } from '../types';
+import { evaluateStreakStatus } from '../utils/streakUtils';
 
 const INITIAL_PROGRESS: UserProgress = {
   completedExerciseIds: [],
   failedAttemptsCount: {},
   hintsUsedCount: {},
   topicProgress: {},
-  unlockedTopicIds: ['go-hello-world'],
-  streakDays: 1,
+  unlockedTopicIds: ['go-hello-world', 'py-hello-world'],
+  streakDays: 0,
   totalTimeSpentSeconds: 0,
   weakConcepts: [],
   lastActiveTopicId: 'go-hello-world',
   lastActiveExerciseId: 'go-hello-1',
 };
 
-export function useProgressTracking(userEmail: string | null) {
-  const [userProgress, setUserProgress] = useState<UserProgress>(() => {
-    const saved = localStorage.getItem('codeforge_progress');
-    return saved ? JSON.parse(saved) : INITIAL_PROGRESS;
-  });
+  export function useProgressTracking(userEmail: string | null, selectedLanguage: 'go' | 'python' = 'go') {
+    const [userProgress, setUserProgress] = useState<UserProgress>(() => {
+      const saved = localStorage.getItem('codeforge_progress');
+      const progress: UserProgress = saved ? JSON.parse(saved) : INITIAL_PROGRESS;
+      const { streakDays } = evaluateStreakStatus(
+        progress.streakDays || 0,
+        progress.lastCompletedDate,
+        progress.completedExerciseIds?.length || 0
+      );
+      return {
+        ...progress,
+        streakDays,
+      };
+    });
 
-  const [recommendations, setRecommendations] = useState<any[]>([]);
-  const [weakConcepts, setWeakConcepts] = useState<string[]>([]);
+    const [recommendations, setRecommendations] = useState<any[]>([]);
+    const [weakConcepts, setWeakConcepts] = useState<string[]>([]);
 
-  // Update localStorage & Turso on progress changes
-  useEffect(() => {
-    localStorage.setItem('codeforge_progress', JSON.stringify(userProgress));
+    // Update localStorage & Turso on progress changes
+    useEffect(() => {
+      localStorage.setItem('codeforge_progress', JSON.stringify(userProgress));
 
-    // Sync to Turso persistent store
-    const emailToSync = userEmail || 'guest-user@codeforge.local';
-    fetch(`/api/progress/${encodeURIComponent(emailToSync)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ progress: userProgress }),
-    }).catch(() => { });
+      // Sync to Turso persistent store
+      const emailToSync = userEmail || 'guest-user@codeforge.local';
+      fetch(`/api/progress/${encodeURIComponent(emailToSync)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ progress: userProgress }),
+      }).catch(() => { });
 
-    // Adaptive recommendations check
-    fetch('/api/adaptive-recommendations', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userProgress }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setRecommendations(data.recommendations || []);
-        setWeakConcepts(data.weakConcepts || []);
+      // Adaptive recommendations check
+      fetch('/api/adaptive-recommendations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userProgress, languageId: selectedLanguage }),
       })
-      .catch(() => { });
-  }, [userProgress, userEmail]);
+        .then((res) => res.json())
+        .then((data) => {
+          setRecommendations(data.recommendations || []);
+          setWeakConcepts(data.weakConcepts || []);
+        })
+        .catch(() => { });
+    }, [userProgress, userEmail, selectedLanguage]);
 
-  return {
-    userProgress,
-    setUserProgress,
-    recommendations,
-    weakConcepts,
-  };
-}
+    return {
+      userProgress,
+      setUserProgress,
+      recommendations,
+      weakConcepts,
+    };
+  }
 

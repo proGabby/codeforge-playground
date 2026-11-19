@@ -140,6 +140,7 @@ export interface UserProgress {
   topicProgress: Record<string, number>; // topicId -> percentage 0-100
   unlockedTopicIds: string[];
   streakDays: number;
+  lastCompletedDate?: string; // YYYY-MM-DD of last completed exercise
   totalTimeSpentSeconds: number;
   weakConcepts: string[]; // Concept tags where failure rate is high
   lastActiveTopicId: string;

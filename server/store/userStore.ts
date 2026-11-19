@@ -77,6 +77,7 @@ export class UserStore {
         weakConcepts: JSON.parse((row.weak_concepts as string) || '[]'),
         lastActiveTopicId: (row.last_active_topic_id as string) || 'go-hello-world',
         lastActiveExerciseId: (row.last_active_exercise_id as string) || 'go-hello-1',
+        lastCompletedDate: (row.last_completed_date as string) || undefined,
         streakDays: 1,
         totalTimeSpentSeconds: 0,
       };
@@ -124,8 +125,8 @@ export class UserStore {
         sql: `INSERT INTO user_progress (
                 email, completed_exercise_ids, failed_attempts_count, hints_used_count,
                 unlocked_topic_ids, topic_progress, weak_concepts,
-                last_active_topic_id, last_active_exercise_id, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                last_active_topic_id, last_active_exercise_id, last_completed_date, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
               ON CONFLICT(email) DO UPDATE SET
                 completed_exercise_ids = excluded.completed_exercise_ids,
                 failed_attempts_count = excluded.failed_attempts_count,
@@ -135,6 +136,7 @@ export class UserStore {
                 weak_concepts = excluded.weak_concepts,
                 last_active_topic_id = excluded.last_active_topic_id,
                 last_active_exercise_id = excluded.last_active_exercise_id,
+                last_completed_date = excluded.last_completed_date,
                 updated_at = CURRENT_TIMESTAMP`,
         args: [
           email,
@@ -146,6 +148,7 @@ export class UserStore {
           JSON.stringify(progress.weakConcepts || []),
           progress.lastActiveTopicId || 'go-hello-world',
           progress.lastActiveExerciseId || 'go-hello-1',
+          progress.lastCompletedDate || null,
         ],
       });
 

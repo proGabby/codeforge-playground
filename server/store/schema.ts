@@ -27,10 +27,18 @@ export async function initSchema(client: Client): Promise<void> {
         weak_concepts TEXT DEFAULT '[]',
         last_active_topic_id TEXT DEFAULT 'go-hello-world',
         last_active_exercise_id TEXT DEFAULT 'go-hello-1',
+        last_completed_date TEXT,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(email) REFERENCES users(email) ON DELETE CASCADE
       );
     `);
+
+    // Safe migration: add last_completed_date column if existing database schema
+    try {
+      await client.execute(`ALTER TABLE user_progress ADD COLUMN last_completed_date TEXT`);
+    } catch {
+      // Column already exists or table was just created
+    }
 
     await client.execute(`
       CREATE TABLE IF NOT EXISTS submissions (

@@ -43,7 +43,7 @@ export class ProgressStore {
       if (fs.existsSync(PROGRESS_FILE)) {
         try {
           store = JSON.parse(fs.readFileSync(PROGRESS_FILE, 'utf-8'));
-        } catch {}
+        } catch { }
       }
       store[userId] = progress;
 
@@ -64,8 +64,9 @@ export class ProgressStore {
       failedAttemptsCount: {},
       hintsUsedCount: {},
       topicProgress: {},
-      unlockedTopicIds: ['go-hello-world'],
-      streakDays: 1,
+      unlockedTopicIds: ['go-hello-world', 'py-hello-world'],
+      streakDays: 0,
+      lastCompletedDate: undefined,
       totalTimeSpentSeconds: 0,
       weakConcepts: [],
       lastActiveTopicId: 'go-hello-world',
