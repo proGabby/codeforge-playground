@@ -5,6 +5,7 @@ import * as os from 'os';
 import { ExecutionResult, GuidedCorrection, LineExplanation, SubmissionResult, TestCase } from '../../src/types';
 import { PythonCorrectionEngine } from '../engine/PythonCorrectionEngine';
 import { PythonLineExplanationEngine } from '../engine/PythonLineExplanationEngine';
+import { PythonLinterEngine } from '../engine/PythonLinterEngine';
 import { LanguageAdapter } from './LanguageAdapter';
 
 export class PythonAdapter implements LanguageAdapter {
@@ -220,6 +221,7 @@ export class PythonAdapter implements LanguageAdapter {
     }
 
     const allPassed = passedCount === casesToRun.length;
+    const bestPractices = PythonLinterEngine.analyze(codeOrFiles, isProject, exerciseConcept);
 
     return {
       success: allPassed,
@@ -228,6 +230,7 @@ export class PythonAdapter implements LanguageAdapter {
       totalTestCount: casesToRun.length,
       testDetails,
       correction: failingCorrection,
+      bestPractices,
       codeQualityNotes: allPassed
         ? [
           'Code conforms to Python 3 execution standards.',
