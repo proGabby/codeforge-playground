@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { LanguageRegistry } from '../adapters/LanguageAdapter';
 import { GO_CURRICULUM } from '../data/GoCurriculum';
+import { PYTHON_CURRICULUM } from '../data/PythonCurriculum';
 import { TursoStore } from '../store/TursoStore';
 
 export const codeRouter = Router();
@@ -32,12 +33,19 @@ codeRouter.post('/submit', async (req, res) => {
   }
 
   let exercise = undefined;
-  for (const topic of GO_CURRICULUM.topics) {
-    const ex = topic.exercises.find((e) => e.id === exerciseId);
-    if (ex) {
-      exercise = ex;
-      break;
+  const curriculums = languageId === 'python'
+    ? [PYTHON_CURRICULUM, GO_CURRICULUM]
+    : [GO_CURRICULUM, PYTHON_CURRICULUM];
+
+  for (const curriculum of curriculums) {
+    for (const topic of curriculum.topics) {
+      const ex = topic.exercises.find((e) => e.id === exerciseId);
+      if (ex) {
+        exercise = ex;
+        break;
+      }
     }
+    if (exercise) break;
   }
 
   if (!exercise) {

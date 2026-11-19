@@ -14,6 +14,10 @@ export const CurriculumTree: React.FC = () => {
   } = useApp();
 
   const isTopicUnlocked = (topicId: string) => {
+    const topic = curriculum.find((t) => t.id === topicId);
+    if (topic && (!topic.prerequisites || topic.prerequisites.length === 0)) {
+      return true;
+    }
     return userProgress.unlockedTopicIds.includes(topicId);
   };
 
@@ -43,7 +47,9 @@ export const CurriculumTree: React.FC = () => {
         <div className="flex items-center space-x-2">
           <Layers className="w-4 h-4 text-indigo-400" />
           <h2 className="font-semibold text-sm text-slate-200 uppercase tracking-wider">
-            Go Skill Path
+            {activeExercise?.languageId === 'python' || curriculum[0]?.id?.startsWith('py-')
+              ? 'Python Skill Path'
+              : 'Go Skill Path'}
           </h2>
         </div>
         <span className="text-xs font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
