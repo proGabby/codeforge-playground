@@ -80,7 +80,7 @@ export const LandingNav: React.FC<LandingNavProps> = ({
           </div>
 
           <button
-            onClick={onOpenEmailModal}
+            onClick={() => onOpenEmailModal()}
             className="px-4 py-1.5 rounded-[10px] bg-[#3B82F6] hover:bg-[#2563EB] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer transform active:scale-98"
           >
             Start Free

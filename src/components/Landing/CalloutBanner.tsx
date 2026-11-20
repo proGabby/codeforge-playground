@@ -19,7 +19,7 @@ export const CalloutBanner: React.FC<CalloutBannerProps> = ({ onOpenEmailModal }
         </div>
 
         <button
-          onClick={onOpenEmailModal}
+          onClick={() => onOpenEmailModal()}
           className="self-start sm:self-auto px-5 py-2.5 rounded-[10px] bg-[#3B82F6] hover:bg-[#2563EB] text-white text-xs font-semibold flex items-center space-x-2 shadow-md shadow-[#3B82F6]/20 transition-all cursor-pointer transform active:scale-98 whitespace-nowrap"
         >
           <span>Start learning for free</span>

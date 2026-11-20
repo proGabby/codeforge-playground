@@ -4,10 +4,11 @@ import { useApp } from '../../context/AppContext';
 
 interface EmailModalProps {
   onSuccess?: () => void;
-  onSkip?: () => void;
+  onGuestContinue?: () => void;
+  onClose?: () => void;
 }
 
-export const EmailModal: React.FC<EmailModalProps> = ({ onSuccess, onSkip }) => {
+export const EmailModal: React.FC<EmailModalProps> = ({ onSuccess, onGuestContinue, onClose }) => {
   const { showEmailModal, setShowEmailModal, userEmail, setUserEmail, logoutUser } = useApp();
   const [emailInput, setEmailInput] = useState(userEmail || '');
   const [isLoading, setIsLoading] = useState(false);
@@ -17,11 +18,26 @@ export const EmailModal: React.FC<EmailModalProps> = ({ onSuccess, onSkip }) => 
     setEmailInput(userEmail || '');
   }, [userEmail]);
 
+  const handleClose = () => {
+    setShowEmailModal(false);
+    if (onClose) {
+      onClose();
+    }
+  };
+
+  const handleGuestContinue = () => {
+    localStorage.setItem('codeforge_skipped_email', 'true');
+    setShowEmailModal(false);
+    if (onGuestContinue) {
+      onGuestContinue();
+    }
+  };
+
   // Keyboard shortcut listener for Esc
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && showEmailModal) {
-        handleSkip();
+        handleClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -53,31 +69,26 @@ export const EmailModal: React.FC<EmailModalProps> = ({ onSuccess, onSkip }) => 
     }
   };
 
-  const handleSkip = () => {
-    localStorage.setItem('codeforge_skipped_email', 'true');
-    setShowEmailModal(false);
-    if (onSkip) {
-      onSkip();
-    }
-  };
-
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
-      onClick={handleSkip}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto"
+      onClick={handleClose}
     >
       <div
-        className="relative w-full max-w-md bg-[#0E121B] border border-[#1E2536] rounded-2xl shadow-2xl shadow-black/80 p-6 sm:p-7 overflow-hidden text-[#F2F4F8]"
+        className="relative w-full max-w-md bg-[#0E121B] border border-[#1E2536] rounded-2xl shadow-2xl shadow-black p-6 sm:p-7 overflow-hidden text-[#F2F4F8] my-auto flex flex-col ring-1 ring-white/[0.08]"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Top Gradient Highlight */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-400"></div>
+
         {/* Top Eyebrow Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between pt-1">
           <span className="text-[10px] font-mono tracking-widest text-[#737F94] uppercase font-semibold">
             CLOUD SYNC / TURSO DATABASE
           </span>
 
           <button
-            onClick={handleSkip}
+            onClick={handleClose}
             className="flex items-center gap-1.5 text-xs font-mono text-[#737F94] hover:text-[#F2F4F8] transition-colors py-0.5 px-1 rounded cursor-pointer"
             title="Close (esc)"
           >
@@ -162,7 +173,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({ onSuccess, onSkip }) => 
         <div className="mt-4 flex items-center justify-between text-xs text-[#737F94]">
           <button
             type="button"
-            onClick={handleSkip}
+            onClick={userEmail ? handleClose : handleGuestContinue}
             className="hover:text-[#F2F4F8] transition-colors cursor-pointer"
           >
             {userEmail ? 'Close window' : 'Continue as Guest (browser only)'}

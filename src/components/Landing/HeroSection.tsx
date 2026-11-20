@@ -30,7 +30,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       {/* Action Buttons */}
       <div className="mt-8 flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
         <button
-          onClick={onEnterPlayground}
+          onClick={() => onEnterPlayground()}
           className="w-full sm:w-auto px-5 py-2.5 rounded-[10px] bg-[#3B82F6] hover:bg-[#2563EB] text-white text-xs font-semibold flex items-center justify-center space-x-1.5 shadow-md shadow-[#3B82F6]/20 transition-all cursor-pointer transform active:scale-98"
         >
           <span>Explore Playground</span>

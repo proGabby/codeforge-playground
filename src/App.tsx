@@ -47,38 +47,48 @@ const AppContent: React.FC = () => {
   };
 
   // From the landing page, exploring playground or starting free asks for user's email if not already provided
-  const handleLandingEnterPlayground = (lang?: 'go' | 'python') => {
-    if (lang) {
-      setSelectedLanguage(lang);
+  const handleLandingEnterPlayground = (lang?: unknown) => {
+    const validLang: 'go' | 'python' | undefined = lang === 'python' ? 'python' : lang === 'go' ? 'go' : undefined;
+    if (validLang) {
+      setSelectedLanguage(validLang);
     }
     if (!userEmail) {
-      setPendingNavigation({ targetLang: lang });
+      setPendingNavigation({ targetLang: validLang });
       setShowEmailModal(true);
     } else {
-      navigateToPlayground(lang);
+      navigateToPlayground(validLang);
     }
   };
 
-  const handleOpenEmailModal = (lang?: 'go' | 'python') => {
-    if (lang) {
-      setSelectedLanguage(lang);
+  const handleOpenEmailModal = (lang?: unknown) => {
+    const validLang: 'go' | 'python' | undefined = lang === 'python' ? 'python' : lang === 'go' ? 'go' : undefined;
+    if (validLang) {
+      setSelectedLanguage(validLang);
     }
-    setPendingNavigation({ targetLang: lang });
+    setPendingNavigation({ targetLang: validLang });
     setShowEmailModal(true);
   };
 
-  const handleEmailModalComplete = () => {
+  const handleEmailModalSuccess = () => {
     if (pendingNavigation) {
       navigateToPlayground(pendingNavigation.targetLang);
       setPendingNavigation(null);
+    } else if (currentView === 'landing') {
+      navigateToPlayground();
     }
   };
 
-  const handleEmailModalSkip = () => {
+  const handleEmailModalGuestContinue = () => {
     if (pendingNavigation) {
       navigateToPlayground(pendingNavigation.targetLang);
       setPendingNavigation(null);
+    } else if (currentView === 'landing') {
+      navigateToPlayground();
     }
+  };
+
+  const handleEmailModalClose = () => {
+    setPendingNavigation(null);
   };
 
   return (
@@ -104,8 +114,9 @@ const AppContent: React.FC = () => {
         </div>
       )}
       <EmailModal
-        onSuccess={handleEmailModalComplete}
-        onSkip={handleEmailModalSkip}
+        onSuccess={handleEmailModalSuccess}
+        onGuestContinue={handleEmailModalGuestContinue}
+        onClose={handleEmailModalClose}
       />
     </>
   );
