@@ -36,9 +36,8 @@ export const QuizProgressBar: React.FC<QuizProgressBarProps> = ({
             key={q.id}
             type="button"
             onClick={() => onSelectQuestion(idx)}
-            className={`h-1 flex-1 rounded-full transition-all ${segmentColor} hover:opacity-90 cursor-pointer ${
-              isCurrent ? 'ring-1 ring-[#3B82F6]/50' : ''
-            }`}
+            className={`h-1 flex-1 rounded-full transition-all ${segmentColor} hover:opacity-90 cursor-pointer ${isCurrent ? 'ring-1 ring-[#3B82F6]/50' : ''
+              }`}
             title={`Question ${idx + 1}`}
           />
         );

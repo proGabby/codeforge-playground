@@ -151,166 +151,169 @@ export const QuizModal: React.FC = () => {
 
   // Active Taking or Question Review View (Matching Figma Question Mockup)
   return (
-    <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in"
-      onClick={handleClose}
-    >
-      <div
-        className="bg-[#0E121B] border border-[#1E2536] rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl text-[#F2F4F8] relative overflow-hidden my-auto flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Top Eyebrow Header */}
-        <QuizHeader languageId={activeQuiz.languageId} onClose={handleClose} />
+          <div
+            className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in"
+            onClick={handleClose}
+          >
+            <div
+              className="bg-[#0E121B] border border-[#1E2536] rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl text-[#F2F4F8] relative overflow-hidden my-auto flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Top Eyebrow Header */}
+              <QuizHeader languageId={activeQuiz.languageId} onClose={handleClose} />
 
-        {/* Title */}
-        <h2 className="text-2xl sm:text-[26px] font-bold text-[#F2F4F8] mt-3 tracking-tight">
-          A small check. A stronger foundation.
-        </h2>
+            {/* Title */}
+            <h2 className="text-2xl sm:text-[26px] font-bold text-[#F2F4F8] mt-3 tracking-tight">
+              A small check. A stronger foundation.
+            </h2>
 
-        {/* Subtitle Row */}
-        <div className="flex items-center justify-between mt-2 mb-3 text-xs">
-          <span className="text-[#737F94] font-medium">
-            Question {currentQuestionIndex + 1} of {totalQuestions} ·{' '}
-            {submissionResult ? 'Review' : 'Active recall'}
-          </span>
-          <span className="font-mono font-semibold text-[#3B82F6]">
-            +{activeQuiz.xpReward} XP
-          </span>
-        </div>
+            {/* Subtitle Row */}
+            <div className="flex items-center justify-between mt-2 mb-3 text-xs">
+              <span className="text-[#737F94] font-medium">
+                Question {currentQuestionIndex + 1} of {totalQuestions} ·{' '}
+                {submissionResult ? 'Review' : 'Active recall'}
+              </span>
+              <span className="font-mono font-semibold text-[#3B82F6]">
+                +{activeQuiz.xpReward} XP
+              </span>
+            </div>
 
-        {/* Segmented Progress Bar */}
-        <QuizProgressBar
-          questions={questions}
-          currentQuestionIndex={currentQuestionIndex}
-          answers={answers}
-          submissionResult={submissionResult}
-          onSelectQuestion={(idx) => {
-            setCurrentQuestionIndex(idx);
-            if (viewMode === 'all_answers') setViewMode('review');
-          }}
-        />
-
-        {/* Main Content Area */}
-        {viewMode === 'all_answers' && submissionResult ? (
-          <QuizAllAnswersView
-            questions={questions}
-            answers={answers}
-            submissionResult={submissionResult}
-            onSelectQuestion={(idx) => {
-              setCurrentQuestionIndex(idx);
-              setViewMode('review');
-            }}
-          />
-        ) : (
-          <>
-            <QuizQuestionCard
-              currentQ={currentQ}
-              questionIndex={currentQuestionIndex}
-              totalQuestions={totalQuestions}
-              xpReward={activeQuiz.xpReward}
-              isReviewMode={!!submissionResult}
+            {/* Segmented Progress Bar */}
+            <QuizProgressBar
+              questions={questions}
+              currentQuestionIndex={currentQuestionIndex}
               answers={answers}
-              onSelectOption={handleSelectOption}
+              submissionResult={submissionResult}
+              onSelectQuestion={(idx) => {
+                setCurrentQuestionIndex(idx);
+                if (viewMode === 'all_answers') setViewMode('review');
+              }}
             />
 
-            {/* Feedback / Mastery Card in Review Mode */}
-            {submissionResult && (
-              <QuizFeedbackCard
-                correctCount={submissionResult.correctCount}
-                totalQuestions={submissionResult.totalQuestions}
-                scorePercent={submissionResult.scorePercent}
-                explanation={currentQResult?.explanation || currentQ.explanation}
-                revisitConceptText={revisitConceptText}
-                onRevisit={handleRevisit}
-              />
-            )}
+                {/* Main Content Area */ }
+                {
+                  viewMode === 'all_answers' && submissionResult ? (
+                    <QuizAllAnswersView
+                      questions={questions}
+                      answers={answers}
+                      submissionResult={submissionResult}
+                      onSelectQuestion={(idx) => {
+                        setCurrentQuestionIndex(idx);
+                        setViewMode('review');
+                      }}
+                    />
+                  ) : (
+                  <>
+                    <QuizQuestionCard
+                      currentQ={currentQ}
+                      questionIndex={currentQuestionIndex}
+                      totalQuestions={totalQuestions}
+                      xpReward={activeQuiz.xpReward}
+                      isReviewMode={!!submissionResult}
+                      answers={answers}
+                      onSelectOption={handleSelectOption}
+                    />
+
+            {/* Feedback / Mastery Card in Review Mode */ }
+                    {
+                      submissionResult && (
+                        <QuizFeedbackCard
+                          correctCount={submissionResult.correctCount}
+                          totalQuestions={submissionResult.totalQuestions}
+                          scorePercent={submissionResult.scorePercent}
+                          explanation={currentQResult?.explanation || currentQ.explanation}
+                          revisitConceptText={revisitConceptText}
+                          onRevisit={handleRevisit}
+                        />
+                      )
+                    }
           </>
         )}
 
-        {/* Modal Footer Controls */}
-        <div className="flex items-center justify-between pt-1">
-          {submissionResult ? (
-            /* Review Mode Footer */
-            <>
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setViewMode(viewMode === 'all_answers' ? 'review' : 'all_answers')
-                  }
-                  className="text-xs sm:text-sm text-[#737F94] hover:text-[#F2F4F8] transition-colors cursor-pointer"
-                >
-                  {viewMode === 'all_answers' ? 'Single question view' : 'Review all answers'}
-                </button>
+                    {/* Modal Footer Controls */}
+                    <div className="flex items-center justify-between pt-1">
+                      {submissionResult ? (
+                        /* Review Mode Footer */
+                        <>
+                          <div className="flex items-center gap-4">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setViewMode(viewMode === 'all_answers' ? 'review' : 'all_answers')
+                              }
+                              className="text-xs sm:text-sm text-[#737F94] hover:text-[#F2F4F8] transition-colors cursor-pointer"
+                            >
+                              {viewMode === 'all_answers' ? 'Single question view' : 'Review all answers'}
+                            </button>
 
                 {submissionResult.passed && (
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('success')}
-                    className="text-xs sm:text-sm text-[#737F94] hover:text-[#F2F4F8] transition-colors cursor-pointer"
-                  >
-                    View milestone summary
-                  </button>
-                )}
+                              <button
+                                type="button"
+                                onClick={() => setViewMode('success')}
+                                className="text-xs sm:text-sm text-[#737F94] hover:text-[#F2F4F8] transition-colors cursor-pointer"
+                              >
+                                View milestone summary
+                              </button>
+                            )}
 
-                {!submissionResult.passed && (
-                  <button
-                    type="button"
-                    onClick={handleRetake}
-                    className="text-xs sm:text-sm text-[#737F94] hover:text-[#F2F4F8] flex items-center gap-1.5 transition-colors cursor-pointer"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Retake</span>
-                  </button>
-                )}
-              </div>
+                          {!submissionResult.passed && (
+                            <button
+                              type="button"
+                              onClick={handleRetake}
+                              className="text-xs sm:text-sm text-[#737F94] hover:text-[#F2F4F8] flex items-center gap-1.5 transition-colors cursor-pointer"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                              <span>Retake</span>
+                            </button>
+                          )}
+                        </div>
 
+            <button
+              type="button"
+              onClick={handleClose}
+              className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] shadow-lg shadow-blue-600/25 flex items-center gap-2 transition-all cursor-pointer"
+            >
+              <span>Continue learning</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </>
+          ) : (
+          /* Active Taking Mode Footer */
+          <>
+            {currentQuestionIndex > 0 ? (
               <button
                 type="button"
-                onClick={handleClose}
-                className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] shadow-lg shadow-blue-600/25 flex items-center gap-2 transition-all cursor-pointer"
+                onClick={handlePrev}
+                className="text-xs sm:text-sm text-[#737F94] hover:text-[#F2F4F8] transition-colors cursor-pointer"
               >
-                <span>Continue learning</span>
+                ← Previous
+              </button>
+            ) : (
+              <div />
+            )}
+
+            {isLastQuestion ? (
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={isSubmitting || !answers[currentQ.id]}
+                className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-blue-600/25 flex items-center gap-2 transition-all cursor-pointer"
+              >
+                <span>{isSubmitting ? 'Grading...' : 'Submit milestone'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
-            </>
-          ) : (
-            /* Active Taking Mode Footer */
-            <>
-              {currentQuestionIndex > 0 ? (
-                <button
-                  type="button"
-                  onClick={handlePrev}
-                  className="text-xs sm:text-sm text-[#737F94] hover:text-[#F2F4F8] transition-colors cursor-pointer"
-                >
-                  ← Previous
-                </button>
-              ) : (
-                <div />
-              )}
-
-              {isLastQuestion ? (
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={isSubmitting || !answers[currentQ.id]}
-                  className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-blue-600/25 flex items-center gap-2 transition-all cursor-pointer"
-                >
-                  <span>{isSubmitting ? 'Grading...' : 'Submit milestone'}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  disabled={!answers[currentQ.id]}
-                  className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-blue-600/25 flex items-center gap-2 transition-all cursor-pointer"
-                >
-                  <span>Next question</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              )}
-            </>
+            ) : (
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={!answers[currentQ.id]}
+                className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-blue-600/25 flex items-center gap-2 transition-all cursor-pointer"
+              >
+                <span>Next question</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
+          </>
           )}
         </div>
       </div>

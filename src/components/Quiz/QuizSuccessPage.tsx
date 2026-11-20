@@ -155,9 +155,8 @@ export const QuizSuccessPage: React.FC<QuizSuccessPageProps> = ({
           </div>
 
           <ChevronDown
-            className={`w-4 h-4 text-[#737F94] transition-transform duration-200 ${
-              isDeepDiveOpen ? 'rotate-180' : ''
-            }`}
+            className={`w-4 h-4 text-[#737F94] transition-transform duration-200 ${isDeepDiveOpen ? 'rotate-180' : ''
+              }`}
           />
         </div>
 

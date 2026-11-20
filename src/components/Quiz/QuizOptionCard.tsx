@@ -75,11 +75,10 @@ export const QuizOptionCard: React.FC<QuizOptionCardProps> = ({
   return (
     <div
       onClick={onSelect}
-      className={`px-4 py-3.5 rounded-xl border cursor-pointer flex items-center justify-between text-sm transition-all ${
-        isSelected
+      className={`px-4 py-3.5 rounded-xl border cursor-pointer flex items-center justify-between text-sm transition-all ${isSelected
           ? 'bg-[#131F38] border-[#3B82F6] text-[#F2F4F8] ring-1 ring-[#3B82F6]/30 shadow-sm'
           : 'bg-[#0B0F19] border-[#171E2D] text-[#99A3B5] hover:border-[#28354A] hover:bg-[#0E1422] hover:text-[#F2F4F8]'
-      }`}
+        }`}
     >
       <div className="flex items-center gap-3.5 flex-1">
         {isSelected ? (
