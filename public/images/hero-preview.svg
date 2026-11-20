@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 378" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap');
+      .mono { font-family: 'JetBrains Mono', monospace; }
+      .sans { font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif; }
+    </style>
+    <linearGradient id="windowBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e2330" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#1e2330" stop-opacity="0.4" />
+    </linearGradient>
+    <filter id="cardShadow" x="-2%" y="-2%" width="104%" height="106%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Window Container -->
+  <rect x="1" y="1" width="1022" height="376" rx="12" fill="#0C101B" stroke="url(#windowBorder)" stroke-width="1.5" />
+
+  <!-- Top Title Bar -->
+  <path d="M 1 40 L 1023 40" stroke="#1E2330" stroke-width="1" />
+
+  <!-- Window Controls (Subtle Dots) -->
+  <circle cx="24" cy="20" r="4" fill="#334155" />
+  <circle cx="38" cy="20" r="4" fill="#334155" />
+  <circle cx="52" cy="20" r="4" fill="#334155" />
+
+  <!-- Breadcrumb Title -->
+  <text x="74" y="24" class="mono" font-size="12" fill="#94A3B8" letter-spacing="-0.2">playground / first-principles</text>
+
+  <!-- Right Metadata -->
+  <text x="895" y="24" class="mono" font-size="11" fill="#737F94">GO 1.22</text>
+  <text x="955" y="24" class="mono" font-size="11" fill="#737F94">Live sandbox</text>
+
+  <!-- Vertical Divider (Split Pane) -->
+  <line x1="625" y1="40" x2="625" y2="377" stroke="#1E2330" stroke-width="1" />
+
+  <!-- ==================== LEFT PANE: CODE EDITOR ==================== -->
+  <!-- Tab Header -->
+  <text x="24" y="70" class="mono" font-size="12" font-weight="500" fill="#F2F4F8">main.go</text>
+  <circle cx="80" cy="66" r="2.5" fill="#3B82F6" />
+
+  <!-- Code Line Numbers & Syntax -->
+  <g class="mono" font-size="12" letter-spacing="-0.1">
+    <!-- Line 01 -->
+    <text x="24" y="102" fill="#475569">01</text>
+    <text x="58" y="102" fill="#60A5FA" font-weight="500">package</text>
+    <text x="115" y="102" fill="#F2F4F8"> main</text>
+
+    <!-- Line 02 -->
+    <text x="24" y="123" fill="#334155">02</text>
+
+    <!-- Line 03 -->
+    <text x="24" y="144" fill="#475569">03</text>
+    <text x="58" y="144" fill="#60A5FA" font-weight="500">import</text>
+    <text x="110" y="144" fill="#34D399"> "fmt"</text>
+
+    <!-- Line 04 -->
+    <text x="24" y="165" fill="#334155">04</text>
+
+    <!-- Line 05 -->
+    <text x="24" y="186" fill="#475569">05</text>
+    <text x="58" y="186" fill="#60A5FA" font-weight="500">func</text>
+    <text x="92" y="186" fill="#F2F4F8"> sum(values </text>
+    <text x="175" y="186" fill="#60A5FA">[]int</text>
+    <text x="208" y="186" fill="#F2F4F8">) </text>
+    <text x="221" y="186" fill="#60A5FA">int</text>
+    <text x="248" y="186" fill="#F2F4F8"> {</text>
+
+    <!-- Line 06 -->
+    <text x="24" y="207" fill="#475569">06</text>
+    <text x="82" y="207" fill="#F2F4F8">total := </text>
+    <text x="146" y="207" fill="#F2F4F8">0</text>
+
+    <!-- Line 07 -->
+    <text x="24" y="228" fill="#475569">07</text>
+    <text x="82" y="228" fill="#60A5FA" font-weight="500">for</text>
+    <text x="110" y="228" fill="#F2F4F8"> _, value := </text>
+    <text x="198" y="228" fill="#60A5FA" font-weight="500">range</text>
+    <text x="238" y="228" fill="#F2F4F8"> values {</text>
+
+    <!-- Line 08 -->
+    <text x="24" y="249" fill="#475569">08</text>
+    <text x="106" y="249" fill="#F2F4F8">total += value</text>
+
+    <!-- Line 09 -->
+    <text x="24" y="270" fill="#475569">09</text>
+    <text x="82" y="270" fill="#F2F4F8">}</text>
+
+    <!-- Line 10 -->
+    <text x="24" y="291" fill="#475569">10</text>
+    <text x="82" y="291" fill="#60A5FA" font-weight="500">return</text>
+    <text x="130" y="291" fill="#F2F4F8"> total</text>
+
+    <!-- Line 11 -->
+    <text x="24" y="312" fill="#475569">11</text>
+    <text x="58" y="312" fill="#F2F4F8">}</text>
+
+    <!-- Line 12 -->
+    <text x="24" y="333" fill="#334155">12</text>
+
+    <!-- Line 13 -->
+    <text x="24" y="354" fill="#475569">13</text>
+    <text x="58" y="354" fill="#60A5FA" font-weight="500">func</text>
+    <text x="92" y="354" fill="#F2F4F8"> main() { fmt.Println(sum([]int{2, 4, 6})) }</text>
+  </g>
+
+  <!-- ==================== RIGHT PANE: TEST RUNNER ==================== -->
+  <!-- Header: TEST RESULTS -->
+  <text x="648" y="72" class="mono" font-size="10" font-weight="600" letter-spacing="1.2" fill="#737F94">TEST RESULTS</text>
+
+  <!-- Big Pass Callout: ✓ All tests passed -->
+  <g>
+    <path d="M 648 102 L 655 109 L 668 94" fill="none" stroke="#3B82F6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="678" y="106" class="sans" font-size="17" font-weight="700" fill="#F2F4F8">All tests passed</text>
+  </g>
+
+  <!-- Test 1: ✓ sum returns the total -->
+  <g>
+    <path d="M 649 135 L 653.5 140 L 661 130" fill="none" stroke="#3B82F6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="670" y="138" class="sans" font-size="12" font-weight="400" fill="#99A3B5">sum returns the total</text>
+  </g>
+
+  <!-- Test 2: ✓ empty slice returns zero -->
+  <g>
+    <path d="M 649 164 L 653.5 169 L 661 159" fill="none" stroke="#3B82F6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="670" y="167" class="sans" font-size="12" font-weight="400" fill="#99A3B5">empty slice returns zero</text>
+  </g>
+
+  <!-- Test 3: ✓ handles negative values -->
+  <g>
+    <path d="M 649 193 L 653.5 198 L 661 188" fill="none" stroke="#3B82F6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="670" y="196" class="sans" font-size="12" font-weight="400" fill="#99A3B5">handles negative values</text>
+  </g>
+
+  <!-- stdout Box -->
+  <g>
+    <rect x="648" y="220" width="350" height="74" rx="8" fill="#121620" />
+    <text x="664" y="240" class="mono" font-size="11" font-weight="500" fill="#737F94">stdout</text>
+    <text x="664" y="274" class="mono" font-size="20" font-weight="700" fill="#F2F4F8">12</text>
+  </g>
+
+  <!-- Bottom Metric Bar -->
+  <text x="648" y="328" class="mono" font-size="11" fill="#737F94">3 passed  ·  0 failed  ·  0.004s</text>
+</svg>
