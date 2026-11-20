@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Sparkles, Lock, Send, Bot, User, Play, ArrowRight, Loader2, Lightbulb } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { splitMentorParagraphs } from '../../utils/mentorFormatting';
 
 export const AiMentorPanel: React.FC = () => {
   const {
@@ -154,15 +155,27 @@ export const AiMentorPanel: React.FC = () => {
             </div>
 
             <div
-              className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed ${msg.sender === 'user'
+              className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed ${
+                msg.sender === 'user'
                   ? 'bg-indigo-600/90 text-white rounded-tr-none'
                   : 'bg-slate-800/90 text-slate-200 border border-slate-700/80 rounded-tl-none font-sans'
-                }`}
+              }`}
             >
-              <div className="whitespace-pre-wrap">{msg.text}</div>
+              {msg.sender === 'user' ? (
+                <div className="whitespace-pre-wrap">{msg.text}</div>
+              ) : (
+                <div className="space-y-2.5">
+                  {splitMentorParagraphs(msg.text).map((para, idx) => (
+                    <p key={idx} className="whitespace-pre-wrap leading-relaxed">
+                      {para}
+                    </p>
+                  ))}
+                </div>
+              )}
               <div
-                className={`text-[9px] mt-1.5 ${msg.sender === 'user' ? 'text-indigo-200/80 text-right' : 'text-slate-400'
-                  }`}
+                className={`text-[9px] mt-1.5 ${
+                  msg.sender === 'user' ? 'text-indigo-200/80 text-right' : 'text-slate-400'
+                }`}
               >
                 {msg.timestamp}
               </div>

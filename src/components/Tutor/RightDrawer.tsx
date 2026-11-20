@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowUp } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { splitMentorParagraphs } from '../../utils/mentorFormatting';
 
 export const RightDrawer: React.FC = () => {
   const {
@@ -180,17 +181,33 @@ export const RightDrawer: React.FC = () => {
                   )
                 ) : (
                   /* Live user chat thread */
-                  chatMessages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`p-2.5 rounded-[10px] text-xs leading-relaxed ${msg.sender === 'user'
-                          ? 'bg-[#121620] text-[#F2F4F8]'
-                          : 'bg-[#121620]/60 text-[#99A3B5]'
+                  chatMessages.map((msg) => {
+                    const isUser = msg.sender === 'user';
+                    const paragraphs = splitMentorParagraphs(msg.text);
+
+                    return (
+                      <div
+                        key={msg.id}
+                        className={`p-3 rounded-[10px] text-xs leading-relaxed ${
+                          isUser
+                            ? 'bg-[#121620] text-[#F2F4F8]'
+                            : 'bg-[#121620]/60 text-[#99A3B5]'
                         }`}
-                    >
-                      {msg.text}
-                    </div>
-                  ))
+                      >
+                        {isUser ? (
+                          <div className="whitespace-pre-wrap">{msg.text}</div>
+                        ) : (
+                          <div className="space-y-3">
+                            {paragraphs.map((para, idx) => (
+                              <p key={idx} className="whitespace-pre-wrap leading-relaxed">
+                                {para}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
                 )}
 
                 {isAskingAi && (
