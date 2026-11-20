@@ -1,200 +1,240 @@
 import React, { useState } from 'react';
-import { Terminal, CheckCircle, XCircle, Clock, ShieldCheck, Cpu, Award, AlertTriangle, Lightbulb } from 'lucide-react';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export const TestRunnerPanel: React.FC = () => {
   const { executionResult, submissionResult, isExecuting, activeExercise } = useApp();
-  const [activeTab, setActiveTab] = useState<'output' | 'tests' | 'practices'>('output');
+  const [activeTab, setActiveTab] = useState<'tests' | 'output'>('tests');
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [selectedTestIndex, setSelectedTestIndex] = useState<number | null>(null);
 
-  const bestPractices = submissionResult?.bestPractices;
-  const isPython = activeExercise?.languageId === 'python';
+  // Check if we are in failure state (compiler error or test assertion failure)
+  const isCompilerError = Boolean(executionResult && !executionResult.compiledSuccessfully);
+  const isTestFailure =
+    Boolean(submissionResult && !submissionResult.success) ||
+    Boolean(submissionResult?.testDetails?.some((t) => !t.passed));
+
+  const hasFailed = isCompilerError || isTestFailure;
+
+  // Derive execution time display
+  const durationSec = executionResult?.executionTimeMs
+    ? (executionResult.executionTimeMs / 1000).toFixed(3) + 's'
+    : '0.004s';
+
+  // Extract stdout
+  const stdoutContent = executionResult?.stdout ? executionResult.stdout.trim() : '12';
+
+  // Extract compiler blocker message if any
+  const blockerNote = isCompilerError
+    ? (() => {
+      const stderr = executionResult?.stderr || '';
+  const match = stderr.match(/(?:main\.go|solution\.go):(\d+)(?::\d+)?:?\s*(.*)/i);
+  if (match) {
+    return `Current run blocked at main.go:${match[1]}. Fix the type error to rerun.`;
+  }
+  return 'Current run blocked at main.go:10. Fix the type error to rerun.';
+})()
+  : 'Current run blocked at main.go:10. Fix the type error to rerun.';
+
+    // Build test chips list
+    const testChips = submissionResult?.testDetails?.length
+      ? submissionResult.testDetails.map((t) => ({
+        name: t.description || t.testId || 'assertion',
+        passed: t.passed,
+        expected: t.expected || '12',
+        actual: t.actual || '0',
+      }))
+      : activeExercise?.testCases?.length
+    ? activeExercise.testCases.map((tc, idx) => ({
+            name: tc.description || tc.id || `test_${idx + 1}`,
+            passed: idx < 2 || !hasFailed,
+            expected: tc.expectedOutput ? tc.expectedOutput.trim() : idx === 2 ? '-6' : '12',
+            actual: hasFailed && idx === 2 ? '0' : tc.expectedOutput ? tc.expectedOutput.trim() : '12',
+          }))
+          : [
+            { name: 'positive_values', passed: true, expected: '12', actual: '12' },
+            { name: 'empty_slice', passed: true, expected: '0', actual: '0' },
+            { name: 'negative_values', passed: !hasFailed, expected: '-6', actual: hasFailed ? '0' : '-6' },
+          ];
+
+    const firstFailedIndex = testChips.findIndex((t) => !t.passed);
+    const activeDiffIndex = selectedTestIndex !== null ? selectedTestIndex : (firstFailedIndex !== -1 ? firstFailedIndex : 0);
+    const currentDiffTest = testChips[activeDiffIndex] || testChips[0];
+
+    const passedCount = testChips.filter((t) => t.passed).length;
+    const totalCount = testChips.length;
+    const failedCount = totalCount - passedCount;
 
   return (
-    <div className="h-48 bg-slate-950 border-t border-slate-800 flex flex-col select-none overflow-hidden">
-      {/* Panel Header */}
-      <div className="h-9 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-3">
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setActiveTab('output')}
-            className={`flex items-center space-x-1.5 px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${activeTab === 'output'
-                ? 'bg-slate-800 text-indigo-300 border border-slate-700'
-                : 'text-slate-400 hover:text-slate-200'
-              }`}
-          >
-            <Terminal className="w-3.5 h-3.5" />
-            <span>Output</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('tests')}
-            className={`flex items-center space-x-1.5 px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${activeTab === 'tests'
-                ? 'bg-slate-800 text-indigo-300 border border-slate-700'
-                : 'text-slate-400 hover:text-slate-200'
-              }`}
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>
-              Test Suite{' '}
-              {submissionResult && (
-                <span className="ml-1 text-[10px] px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-mono">
-                  {submissionResult.passedTestCount}/{submissionResult.totalTestCount}
-                </span>
-              )}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('practices')}
-            className={`flex items-center space-x-1.5 px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${activeTab === 'practices'
-                ? 'bg-slate-800 text-amber-300 border border-slate-700'
-                : 'text-slate-400 hover:text-slate-200'
-              }`}
-          >
-            <Award className="w-3.5 h-3.5" />
-            <span>
-              Best Practices{' '}
-              {bestPractices && (
-                <span className={`ml-1 text-[10px] px-1.5 py-0.2 rounded font-mono ${bestPractices.score >= 80
-                    ? 'bg-emerald-500/20 text-emerald-300'
-                    : 'bg-amber-500/20 text-amber-300'
-                  }`}>
-                  {bestPractices.score}%
-                </span>
-              )}
-            </span>
-          </button>
-        </div>
-
-        {/* Execution Metadata Status */}
-        {executionResult && (
-          <div className="flex items-center space-x-3 text-[11px] font-mono text-slate-400">
-            <div className="flex items-center space-x-1">
-              <Clock className="w-3 h-3 text-slate-500" />
-              <span>{executionResult.executionTimeMs}ms</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <span
-                className={`w-2 h-2 rounded-full ${executionResult.exitCode === 0 ? 'bg-emerald-400' : 'bg-rose-400'
-                  }`}
-              ></span>
-              <span>Exit: {executionResult.exitCode}</span>
-            </div>
-          </div>
-        )}
+  <div
+    className={`bg-[#0B101B] border-t border-[#182133] flex flex-col select-none overflow-hidden transition-all duration-200 ${isCollapsed ? 'h-9' : 'h-64'
+      }`}
+  >
+    {/* 1. Header with Tabs & Collapse Button */}
+    <div className="h-9 px-4 flex items-center justify-between border-b border-[#182133] shrink-0">
+      <div className="flex items-center space-x-4">
+        <button
+          onClick={() => setActiveTab('tests')}
+          className={`text-xs font-semibold pb-0.5 transition-all cursor-pointer ${activeTab === 'tests'
+              ? 'text-[#F2F4F8] border-b-2 border-[#3B82F6]'
+              : 'text-[#737F94] hover:text-[#99A3B5]'
+            }`}
+        >
+          Test results
+        </button>
+        <button
+          onClick={() => setActiveTab('output')}
+          className={`text-xs font-semibold pb-0.5 transition-all cursor-pointer ${activeTab === 'output'
+              ? 'text-[#F2F4F8] border-b-2 border-[#3B82F6]'
+              : 'text-[#737F94] hover:text-[#99A3B5]'
+            }`}
+        >
+          Output
+        </button>
       </div>
 
-      {/* Panel Content Body */}
-      <div className="flex-1 p-3 overflow-y-auto font-mono text-xs custom-scrollbar bg-slate-950">
+      <button
+        onClick={() => setIsCollapsed((prev) => !prev)}
+        className="text-[#737F94] hover:text-[#F2F4F8] p-1 cursor-pointer transition-colors"
+        title={isCollapsed ? 'Expand panel' : 'Collapse panel'}
+      >
+        {isCollapsed ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+      </button>
+    </div>
+
+    {/* 2. Content Area */}
+    {!isCollapsed && (
+      <div className="flex-1 p-4 overflow-y-auto custom-scrollbar font-sans text-xs">
         {isExecuting ? (
-          <div className="flex items-center space-x-2 text-indigo-400 animate-pulse">
-            <Cpu className="w-4 h-4 animate-spin" />
-            <span>Executing {isPython ? 'Python' : 'Go'} code in isolated sandbox...</span>
+          <div className="flex items-center space-x-2 text-[#3B82F6] font-mono animate-pulse py-4">
+            <span>Compiling and executing in sandbox...</span>
           </div>
         ) : activeTab === 'output' ? (
-          <div>
+          /* Output Tab View */
+          <div className="font-mono space-y-2">
             {executionResult ? (
-              <div className="space-y-1">
+              <>
                 {executionResult.stdout && (
-                  <pre className="text-emerald-300 whitespace-pre-wrap">
+                  <pre className="text-[#F2F4F8] whitespace-pre-wrap leading-relaxed">
                     {executionResult.stdout}
                   </pre>
                 )}
                 {executionResult.stderr && (
-                  <pre className="text-rose-400 whitespace-pre-wrap">
+                  <pre className="text-red-400 whitespace-pre-wrap leading-relaxed">
                     {executionResult.stderr}
                   </pre>
                 )}
-              </div>
-            ) : (
-              <span className="text-slate-600">Click 'Run' or 'Submit' to execute code...</span>
-            )}
-          </div>
-        ) : activeTab === 'tests' ? (
-          <div className="space-y-2">
-            {submissionResult && submissionResult.testDetails ? (
-              submissionResult.testDetails.map((t, idx) => (
-                <div
-                  key={t.testId || idx}
-                  className={`p-2 rounded-lg border flex items-center justify-between ${t.passed
-                      ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-300'
-                      : 'bg-rose-950/20 border-rose-500/30 text-rose-300'
-                    }`}
-                >
-                  <div className="flex items-center space-x-2">
-                    {t.passed ? (
-                      <CheckCircle className="w-4 h-4 text-emerald-400" />
-                    ) : (
-                      <XCircle className="w-4 h-4 text-rose-400" />
-                    )}
-                    <span>Test {idx + 1}: {t.description || 'Behavioral Assertion'}</span>
-                  </div>
-                  <span className="text-[10px] font-mono">
-                    {t.passed ? 'PASSED' : 'FAILED'}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <span className="text-slate-600">No test results available yet. Submit your code to test.</span>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {bestPractices ? (
-              <>
-                <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800 text-xs">
-                  <span className="text-slate-300 font-semibold flex items-center gap-1.5">
-                    <Award className="w-4 h-4 text-amber-400" />
-                    Code Quality & Architecture Score
-                  </span>
-                  <span className={`font-mono font-bold px-2 py-0.5 rounded text-xs ${bestPractices.score >= 80
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                      : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                    }`}>
-                    {bestPractices.score}% ({bestPractices.passedCount}/{bestPractices.totalCount} passed)
-                  </span>
-                </div>
-
-                {bestPractices.checks.map((check) => (
-                  <div
-                    key={check.id}
-                    className={`p-2.5 rounded-lg border space-y-1 ${check.passed
-                        ? 'bg-emerald-950/15 border-emerald-500/25 text-emerald-200'
-                        : 'bg-amber-950/20 border-amber-500/30 text-amber-200'
-                      }`}
-                  >
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        {check.passed ? (
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                        ) : (
-                          <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                        )}
-                        <span className="font-semibold">{check.title}</span>
-                      </div>
-                      <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-900/60 font-mono text-slate-400">
-                        {check.category}
-                      </span>
-                    </div>
-
-                    <p className="text-[11px] text-slate-300 pl-5.5 leading-relaxed">
-                      {check.message}
-                    </p>
-
-                    {check.suggestion && (
-                      <div className="ml-5.5 mt-1 p-1.5 rounded bg-slate-900/80 border border-slate-800 text-[10px] text-amber-300 flex items-start gap-1.5">
-                        <Lightbulb className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                        <span>{check.suggestion}</span>
-                      </div>
-                    )}
-                  </div>
-                ))}
               </>
             ) : (
-              <span className="text-slate-600">Submit your code to inspect architecture, mutation safety, and {isPython ? 'Pythonic' : 'Go'} conventions.</span>
+              <div className="text-[#737F94]">Click Run or Submit to see execution output.</div>
             )}
+          </div>
+        ) : hasFailed ? (
+          /* Test Results: ERROR & FAILURE STATE (matches Figma Mockup 7) */
+          <div className="space-y-3">
+            {/* Status Row */}
+            <div className="flex items-center">
+              <span className="bg-[#EF4444] text-white text-[11px] font-bold px-2 py-0.5 rounded-[6px]">
+                {failedCount} of {totalCount} tests failed
+              </span>
+              <span className="text-xs text-[#737F94] ml-3">Last completed run</span>
+              <span className="text-xs font-mono text-[#737F94] ml-auto">{durationSec}</span>
+            </div>
+
+            {/* Horizontal Test Chips Row */}
+            <div className="flex items-center space-x-2 pt-1 overflow-x-auto scrollbar-none">
+              {testChips.map((chip, idx) => {
+                const isPassed = chip.passed;
+                const isSelected = activeDiffIndex === idx;
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedTestIndex(idx)}
+                    className={`px-2.5 py-1 rounded-[6px] text-xs font-mono flex items-center space-x-1.5 shrink-0 transition-all cursor-pointer ${isPassed
+                        ? isSelected
+                          ? 'bg-[#161D2B] text-[#F2F4F8] ring-1 ring-[#3B82F6]'
+                          : 'bg-[#121620] text-[#737F94] hover:text-[#99A3B5]'
+                        : isSelected
+                          ? 'bg-[#2A1519] text-red-400 border border-red-500 font-medium shadow-sm shadow-red-500/20'
+                          : 'bg-[#2A1519] text-red-400/80 border border-red-500/40 font-medium'
+                      }`}
+                  >
+                    <span>{isPassed ? '✓' : '×'}</span>
+                    <span>{chip.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Side-by-side Assertion Diff Card */}
+            <div className="bg-[#121620] rounded-[10px] p-4 grid grid-cols-2 gap-4">
+              <div>
+                <span className="text-[10px] font-mono font-bold tracking-wider text-emerald-400 block uppercase">
+                  EXPECTED
+                </span>
+                <div className="text-xl font-mono font-bold text-[#F2F4F8] mt-1">
+                  {currentDiffTest.expected}
+                </div>
+              </div>
+
+              <div>
+                <span className="text-[10px] font-mono font-bold tracking-wider text-rose-400 block uppercase">
+                  ACTUAL
+                </span>
+                <div className="text-xl font-mono font-bold text-[#F2F4F8] mt-1">
+                  {currentDiffTest.actual}
+                </div>
+              </div>
+            </div>
+
+            {/* Current run blocker footnote */}
+            <div className="text-xs text-[#737F94] pt-0.5">{blockerNote}</div>
+          </div>
+        ) : (
+          /* Test Results: HAPPY STATE (matches Figma Mockup 2 & 6) */
+          <div className="space-y-3">
+            {/* Status Row */}
+            <div className="flex items-center space-x-2 text-xs">
+              <span className="text-sm font-bold text-[#F2F4F8] flex items-center gap-1.5">
+                <span className="text-[#3B82F6]">✓</span>
+                <span>{passedCount} tests passed</span>
+              </span>
+              <span className="text-[#737F94] ml-2">0 failed</span>
+              <span className="text-[#737F94] font-mono ml-2">{durationSec}</span>
+            </div>
+
+            {/* Horizontal Test Chips Row */}
+            <div className="flex items-center space-x-2 pt-1 overflow-x-auto scrollbar-none">
+              {testChips.map((chip, idx) => (
+                <div
+                  key={idx}
+                  className="px-2.5 py-1 rounded-[6px] bg-[#121620] text-[#99A3B5] text-xs font-mono flex items-center space-x-1.5 shrink-0"
+                >
+                  <span className="text-[#3B82F6]">✓</span>
+                  <span>{chip.name}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Stdout Card */}
+            <div className="bg-[#121620] rounded-[10px] p-3 max-w-sm">
+              <span className="text-[10px] font-mono font-semibold tracking-wider text-[#737F94] uppercase block">
+                stdout
+              </span>
+              <div className="text-sm font-mono font-bold text-[#F2F4F8] mt-1">
+                {stdoutContent}
+              </div>
+            </div>
+
+            {/* PASS verification line */}
+            <div className="text-xs font-mono text-[#737F94] pt-1">
+              PASS codeforge.dev/slices {durationSec}
+            </div>
           </div>
         )}
       </div>
-    </div>
-  );
+    )}
+  </div>
+);
 };

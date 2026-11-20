@@ -166,17 +166,17 @@ export const PYTHON_BEGINNER_TOPICS: (Topic & { exercises: Exercise[] })[] = [
         difficultyLabel: 'Level 2: Reproduction',
         type: 'syntax',
         concept: 'triple-quotes',
-        instructions: 'Create a multi-line string variable `banner` with three lines: `"Line 1"`, `"Line 2"`, and `"Line 3"` using triple quotes `"""`. Print `banner`.',
+        instructions: 'Create a multi-line string variable `banner` with three lines: `Line 1`, `Line 2`, and `Line 3` using triple quotes `"""` without escape characters. Print `banner`.',
         starterCode: '# Define multi-line string banner using triple quotes\n\n# Print banner below\n',
         expectedBehavior: 'Prints Line 1, Line 2, and Line 3 on separate lines.',
         testCases: [{ id: 't1', input: '', expectedOutput: 'Line 1\nLine 2\nLine 3\n' }],
         hints: [
-          { level: 1, text: 'Use triple double quotes `"""` to span multiple lines.' },
-          { level: 2, text: 'Write `banner = """Line 1\\nLine 2\\nLine 3"""` or multiline block.' },
+          { level: 1, text: 'Use triple double quotes `"""` to span text across multiple lines naturally without escape characters.' },
+          { level: 2, text: 'Break lines naturally with Enter inside the triple quotes:\nbanner = """Line 1\nLine 2\nLine 3"""' },
           { level: 3, text: 'Print `banner` with `print(banner)`.' },
         ],
         explanation: {
-          simple: 'Triple quotes (`"""` or `\'\'\'`) preserve literal newlines, tabs, and indentation.',
+          simple: 'Triple quotes (`"""` or `\'\'\'`) preserve literal newlines, tabs, and indentation without needing `\\n`.',
           whyItWorks: 'Allows readable multi-line templates, SQL queries, and docstrings.',
           syntaxBreakdown: [
             { token: '"""', meaning: 'Multi-line string delimiter.' },

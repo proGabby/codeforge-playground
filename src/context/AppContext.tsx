@@ -18,8 +18,6 @@ import { useCodeExecution } from '../hooks/useCodeExecution';
 import { recordExerciseCompletionStreak } from '../utils/streakUtils';
 
 interface AppContextType {
-  theme: 'dark' | 'light';
-  setTheme: (theme: 'dark' | 'light') => void;
   learningMode: LearningMode;
   setLearningMode: (mode: LearningMode) => void;
   selectedLanguage: 'go' | 'python';
@@ -81,7 +79,16 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+    useEffect(() => {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('codeforge_theme');
+      }
+      if (typeof document !== 'undefined') {
+        document.documentElement.classList.remove('light');
+        document.documentElement.classList.add('dark');
+      }
+  }, []);
+
   const [learningMode, setLearningMode] = useState<LearningMode>('guided');
 
   // 1. User session & Turso persistence
@@ -286,8 +293,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <AppContext.Provider
       value={{
-        theme,
-        setTheme,
         learningMode,
         setLearningMode,
         selectedLanguage,
