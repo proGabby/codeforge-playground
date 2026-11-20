@@ -3,6 +3,14 @@ import confetti from 'canvas-confetti';
 import { ArrowRight, RotateCcw } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import type { QuizSubmissionResult } from '../../types';
+import { QuizHeader } from './QuizHeader';
+import { QuizProgressBar } from './QuizProgressBar';
+import { QuizQuestionCard } from './QuizQuestionCard';
+import { QuizFeedbackCard } from './QuizFeedbackCard';
+import { QuizSuccessPage } from './QuizSuccessPage';
+import { QuizAllAnswersView } from './QuizAllAnswersView';
+
+export type QuizViewMode = 'taking' | 'success' | 'review' | 'all_answers';
 
 export const QuizModal: React.FC = () => {
   const {
@@ -17,7 +25,7 @@ export const QuizModal: React.FC = () => {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionResult, setSubmissionResult] = useState<QuizSubmissionResult | null>(null);
-  const [showAllAnswers, setShowAllAnswers] = useState(false);
+  const [viewMode, setViewMode] = useState<QuizViewMode>('taking');
 
   // Close on Escape key
   useEffect(() => {
@@ -70,6 +78,9 @@ export const QuizModal: React.FC = () => {
             spread: 75,
             origin: { y: 0.5 },
           });
+          setViewMode('success');
+        } else {
+          setViewMode('review');
         }
       }
     } finally {
@@ -81,7 +92,7 @@ export const QuizModal: React.FC = () => {
     setAnswers({});
     setSubmissionResult(null);
     setCurrentQuestionIndex(0);
-    setShowAllAnswers(false);
+    setViewMode('taking');
   };
 
   const handleClose = () => {
@@ -89,10 +100,9 @@ export const QuizModal: React.FC = () => {
     setAnswers({});
     setSubmissionResult(null);
     setCurrentQuestionIndex(0);
-    setShowAllAnswers(false);
+    setViewMode('taking');
   };
 
-  // Concept tag formatting
   const formatConceptTag = (tag?: string): string => {
     if (!tag) return 'related concept';
     return tag
@@ -101,7 +111,6 @@ export const QuizModal: React.FC = () => {
       .replace(/-/g, ' ');
   };
 
-  // Revisit concept link determination
   const missedResult = submissionResult?.questionResults.find((qr) => !qr.isCorrect);
   const missedQ = missedResult ? questions.find((q) => q.id === missedResult.questionId) : null;
   const revisitConceptTag = missedQ?.conceptTag || currentQ?.conceptTag;
@@ -119,6 +128,28 @@ export const QuizModal: React.FC = () => {
     (qr) => qr.questionId === currentQ?.id
   );
 
+  // If in Success Page view mode (Matching Figma Success Mockup)
+  if (viewMode === 'success' && submissionResult) {
+    return (
+      <div
+        className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in"
+        onClick={handleClose}
+      >
+        <QuizSuccessPage
+          activeQuiz={activeQuiz}
+          submissionResult={submissionResult}
+          questions={questions}
+          answers={answers}
+          onClose={handleClose}
+          onRetake={handleRetake}
+          onGoToReview={() => setViewMode('review')}
+          onAskMentor={handleRevisit}
+        />
+      </div>
+    );
+  }
+
+  // Active Taking or Question Review View (Matching Figma Question Mockup)
   return (
     <div
       className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in"
@@ -129,20 +160,7 @@ export const QuizModal: React.FC = () => {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Eyebrow Header */}
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-mono tracking-widest text-[#737F94] uppercase font-semibold">
-            SECTION MILESTONE / {activeQuiz.languageId.toUpperCase()}
-          </span>
-
-          <button
-            onClick={handleClose}
-            className="flex items-center gap-1.5 text-xs font-mono text-[#737F94] hover:text-[#F2F4F8] transition-colors py-0.5 px-1 rounded cursor-pointer"
-            title="Close (esc)"
-          >
-            <span className="text-[11px] font-mono tracking-tight text-[#737F94]">esc</span>
-            <span className="text-sm font-sans leading-none text-[#737F94]">×</span>
-          </button>
-        </div>
+        <QuizHeader languageId={activeQuiz.languageId} onClose={handleClose} />
 
         {/* Title */}
         <h2 className="text-2xl sm:text-[26px] font-bold text-[#F2F4F8] mt-3 tracking-tight">
@@ -152,7 +170,8 @@ export const QuizModal: React.FC = () => {
         {/* Subtitle Row */}
         <div className="flex items-center justify-between mt-2 mb-3 text-xs">
           <span className="text-[#737F94] font-medium">
-            Question {currentQuestionIndex + 1} of {totalQuestions} · {submissionResult ? 'Review' : 'Active recall'}
+            Question {currentQuestionIndex + 1} of {totalQuestions} ·{' '}
+            {submissionResult ? 'Review' : 'Active recall'}
           </span>
           <span className="font-mono font-semibold text-[#3B82F6]">
             +{activeQuiz.xpReward} XP
@@ -160,235 +179,55 @@ export const QuizModal: React.FC = () => {
         </div>
 
         {/* Segmented Progress Bar */}
-        <div className="flex items-center gap-2 mb-6">
-          {questions.map((q, idx) => {
-            let segmentColor = 'bg-[#1E2536]';
-            if (submissionResult) {
-              const qResult = submissionResult.questionResults.find((qr) => qr.questionId === q.id);
-              segmentColor = qResult?.isCorrect ? 'bg-[#3B82F6]' : 'bg-[#1E2536]';
-            } else {
-              if (answers[q.id] || idx <= currentQuestionIndex) {
-                segmentColor = 'bg-[#3B82F6]';
-              }
-            }
+        <QuizProgressBar
+          questions={questions}
+          currentQuestionIndex={currentQuestionIndex}
+          answers={answers}
+          submissionResult={submissionResult}
+          onSelectQuestion={(idx) => {
+            setCurrentQuestionIndex(idx);
+            if (viewMode === 'all_answers') setViewMode('review');
+          }}
+        />
 
-            return (
-              <button
-                key={q.id}
-                type="button"
-                onClick={() => {
-                  setCurrentQuestionIndex(idx);
-                  setShowAllAnswers(false);
-                }}
-                className={`h-1 flex-1 rounded-full transition-all ${segmentColor} hover:opacity-90 cursor-pointer`}
-                title={`Question ${idx + 1}`}
-              />
-            );
-          })}
-        </div>
-
-        {/* Main Body */}
-        {showAllAnswers && submissionResult ? (
-          /* ALL QUESTIONS REVIEW LIST VIEW */
-          <div className="max-h-[50vh] overflow-y-auto space-y-6 pr-1 custom-scrollbar mb-6">
-            {questions.map((q, qIdx) => {
-              const qResult = submissionResult.questionResults.find((qr) => qr.questionId === q.id);
-              return (
-                <div key={q.id} className="border-b border-[#1E2536] pb-5 space-y-3">
-                  <div className="flex items-center justify-between text-xs text-[#737F94]">
-                    <span className="font-mono font-medium">Question {qIdx + 1} of {totalQuestions}</span>
-                    <span className={`font-mono font-semibold ${qResult?.isCorrect ? 'text-[#60A5FA]' : 'text-rose-400'}`}>
-                      {qResult?.isCorrect ? '✓ Correct' : '× Incorrect'}
-                    </span>
-                  </div>
-
-                  <h3 className="text-sm font-semibold text-[#F2F4F8]">
-                    {q.question}
-                  </h3>
-
-                  {q.codeSnippet && (
-                    <div className="bg-[#090D15] border border-[#171E2D] rounded-xl p-3 font-mono text-xs text-[#E2E8F0] overflow-x-auto whitespace-pre">
-                      {q.codeSnippet}
-                    </div>
-                  )}
-
-                  <div className="space-y-1.5">
-                    {q.options.map((opt, optIdx) => {
-                      const letter = String.fromCharCode(65 + optIdx);
-                      const isCorrect = opt.id === q.correctOptionId;
-                      const isUserChoice = answers[q.id] === opt.id;
-
-                      let optStyle = 'bg-[#0B0F19] border-[#171E2D] text-[#99A3B5]';
-                      if (isCorrect) {
-                        optStyle = 'bg-[#131F38] border-[#2563EB]/80 text-[#F2F4F8]';
-                      } else if (isUserChoice && !isCorrect) {
-                        optStyle = 'bg-[#251218] border-rose-500/70 text-rose-200';
-                      }
-
-                      return (
-                        <div
-                          key={opt.id}
-                          className={`px-3 py-2 rounded-lg border text-xs flex items-center justify-between ${optStyle}`}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-[#737F94]">{letter}</span>
-                            <span>{opt.text}</span>
-                          </div>
-                          {isCorrect && (
-                            <span className="text-[11px] font-medium text-[#60A5FA]">✓ Correct answer</span>
-                          )}
-                          {isUserChoice && !isCorrect && (
-                            <span className="text-[11px] font-medium text-rose-400">× Your answer</span>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="bg-[#090D15] rounded-lg p-3 text-xs text-[#99A3B5] leading-relaxed border border-[#171E2D]">
-                    {qResult?.explanation || q.explanation}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+        {/* Main Content Area */}
+        {viewMode === 'all_answers' && submissionResult ? (
+          <QuizAllAnswersView
+            questions={questions}
+            answers={answers}
+            submissionResult={submissionResult}
+            onSelectQuestion={(idx) => {
+              setCurrentQuestionIndex(idx);
+              setViewMode('review');
+            }}
+          />
         ) : (
-          /* SINGLE QUESTION VIEW (Matching Figma Mockup) */
           <>
-            {/* Question Text */}
-            <h3 className="text-base sm:text-lg font-semibold text-[#F2F4F8] mb-4 tracking-tight leading-snug">
-              {currentQ.question}
-            </h3>
+            <QuizQuestionCard
+              currentQ={currentQ}
+              questionIndex={currentQuestionIndex}
+              totalQuestions={totalQuestions}
+              xpReward={activeQuiz.xpReward}
+              isReviewMode={!!submissionResult}
+              answers={answers}
+              onSelectOption={handleSelectOption}
+            />
 
-            {/* Code Snippet Box */}
-            {currentQ.codeSnippet && (
-              <div className="bg-[#090D15] border border-[#171E2D] rounded-xl p-4 sm:p-5 mb-5 font-mono text-xs sm:text-[13px] text-[#E2E8F0] leading-relaxed overflow-x-auto shadow-inner">
-                <pre className="font-mono">
-                  <code>{currentQ.codeSnippet}</code>
-                </pre>
-              </div>
-            )}
-
-            {/* Options List */}
-            <div className="space-y-2.5 mb-5">
-              {currentQ.options.map((opt, optIdx) => {
-                const letter = String.fromCharCode(65 + optIdx);
-                const isSelected = answers[currentQ.id] === opt.id;
-
-                if (submissionResult) {
-                  // Review Mode State
-                  const isCorrectOption = opt.id === currentQ.correctOptionId;
-                  const isUserChoice = answers[currentQ.id] === opt.id;
-
-                  let cardStyles = 'bg-[#0B0F19] border-[#171E2D] text-[#99A3B5]';
-                  let radioCircle = (
-                    <div className="w-4 h-4 rounded-full border border-[#2D374A] flex-shrink-0" />
-                  );
-                  let rightBadge = null;
-
-                  if (isCorrectOption) {
-                    cardStyles = 'bg-[#131F38] border-[#2563EB]/80 text-[#F2F4F8] shadow-sm shadow-blue-500/10';
-                    radioCircle = (
-                      <div className="w-4 h-4 rounded-full border-2 border-[#3B82F6] flex items-center justify-center p-0.5 flex-shrink-0">
-                        <div className="w-2 h-2 rounded-full bg-[#3B82F6]" />
-                      </div>
-                    );
-                    rightBadge = (
-                      <span className="text-xs font-medium text-[#60A5FA] flex items-center gap-1.5 flex-shrink-0">
-                        <span>✓</span> Correct answer
-                      </span>
-                    );
-                  } else if (isUserChoice && !isCorrectOption) {
-                    cardStyles = 'bg-[#251218] border-rose-500/70 text-rose-200';
-                    radioCircle = (
-                      <div className="w-4 h-4 rounded-full border-2 border-rose-500 flex items-center justify-center p-0.5 flex-shrink-0">
-                        <div className="w-2 h-2 rounded-full bg-rose-500" />
-                      </div>
-                    );
-                    rightBadge = (
-                      <span className="text-xs font-medium text-rose-400 flex items-center gap-1.5 flex-shrink-0">
-                        <span>×</span> Your answer
-                      </span>
-                    );
-                  }
-
-                  return (
-                    <div
-                      key={opt.id}
-                      className={`px-4 py-3.5 rounded-xl border flex items-center justify-between text-sm transition-all ${cardStyles}`}
-                    >
-                      <div className="flex items-center gap-3.5 flex-1 pr-2">
-                        {radioCircle}
-                        <span className="text-xs font-mono text-[#737F94] w-4">{letter}</span>
-                        <span className={`leading-relaxed ${isCorrectOption ? 'text-[#F2F4F8] font-medium' : ''}`}>
-                          {opt.text}
-                        </span>
-                      </div>
-                      {rightBadge}
-                    </div>
-                  );
-                }
-
-                // Active Taking Mode State
-                return (
-                  <div
-                    key={opt.id}
-                    onClick={() => handleSelectOption(opt.id)}
-                    className={`px-4 py-3.5 rounded-xl border cursor-pointer flex items-center justify-between text-sm transition-all ${
-                      isSelected
-                        ? 'bg-[#131F38] border-[#3B82F6] text-[#F2F4F8] ring-1 ring-[#3B82F6]/30 shadow-sm'
-                        : 'bg-[#0B0F19] border-[#171E2D] text-[#99A3B5] hover:border-[#28354A] hover:bg-[#0E1422] hover:text-[#F2F4F8]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3.5 flex-1">
-                      {isSelected ? (
-                        <div className="w-4 h-4 rounded-full border-2 border-[#3B82F6] flex items-center justify-center p-0.5 flex-shrink-0">
-                          <div className="w-2 h-2 rounded-full bg-[#3B82F6]" />
-                        </div>
-                      ) : (
-                        <div className="w-4 h-4 rounded-full border border-[#2D374A] flex-shrink-0" />
-                      )}
-                      <span className="text-xs font-mono text-[#737F94] w-4">{letter}</span>
-                      <span className={`leading-relaxed ${isSelected ? 'text-[#F2F4F8] font-medium' : ''}`}>
-                        {opt.text}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Feedback / Mastery Card (Review Mode) */}
+            {/* Feedback / Mastery Card in Review Mode */}
             {submissionResult && (
-              <div className="bg-[#090D15] border border-[#171E2D] rounded-xl p-4 sm:p-5 mb-5">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-[#F2F4F8]">
-                    {submissionResult.correctCount} of {submissionResult.totalQuestions} correct
-                  </span>
-                  <span className="text-xs font-mono text-[#737F94] font-medium">
-                    {submissionResult.scorePercent}% mastery
-                  </span>
-                </div>
-
-                <p className="text-xs text-[#99A3B5] leading-relaxed mt-2.5">
-                  {currentQResult?.explanation || currentQ.explanation}
-                </p>
-
-                {revisitConceptText && (
-                  <button
-                    type="button"
-                    onClick={() => handleRevisit(revisitConceptText)}
-                    className="text-xs font-medium text-[#60A5FA] hover:text-[#93C5FD] hover:underline cursor-pointer mt-3 inline-block text-left"
-                  >
-                    Revisit: {revisitConceptText}
-                  </button>
-                )}
-              </div>
+              <QuizFeedbackCard
+                correctCount={submissionResult.correctCount}
+                totalQuestions={submissionResult.totalQuestions}
+                scorePercent={submissionResult.scorePercent}
+                explanation={currentQResult?.explanation || currentQ.explanation}
+                revisitConceptText={revisitConceptText}
+                onRevisit={handleRevisit}
+              />
             )}
           </>
         )}
 
-        {/* Modal Footer */}
+        {/* Modal Footer Controls */}
         <div className="flex items-center justify-between pt-1">
           {submissionResult ? (
             /* Review Mode Footer */
@@ -396,11 +235,23 @@ export const QuizModal: React.FC = () => {
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => setShowAllAnswers(!showAllAnswers)}
+                  onClick={() =>
+                    setViewMode(viewMode === 'all_answers' ? 'review' : 'all_answers')
+                  }
                   className="text-xs sm:text-sm text-[#737F94] hover:text-[#F2F4F8] transition-colors cursor-pointer"
                 >
-                  {showAllAnswers ? 'Single question view' : 'Review all answers'}
+                  {viewMode === 'all_answers' ? 'Single question view' : 'Review all answers'}
                 </button>
+
+                {submissionResult.passed && (
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('success')}
+                    className="text-xs sm:text-sm text-[#737F94] hover:text-[#F2F4F8] transition-colors cursor-pointer"
+                  >
+                    View milestone summary
+                  </button>
+                )}
 
                 {!submissionResult.passed && (
                   <button
