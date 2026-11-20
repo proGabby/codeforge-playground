@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, ArrowRight, ChevronDown, Flame } from 'lucide-react';
+import { Play, ArrowRight, ChevronDown, Flame, Sun, Moon, User } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { StreakPopover } from './Streak/StreakPopover';
 import { getLocalDateString, getCalendarDayDiff } from '../utils/streakUtils';
@@ -19,6 +19,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateHome }) => {
     runCode,
     submitCode,
     isExecuting,
+    theme,
+    setTheme,
   } = useApp();
 
   const [showStreakPopover, setShowStreakPopover] = useState(false);
@@ -54,7 +56,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateHome }) => {
     : 'Slices & iteration';
 
   return (
-    <header className="h-12 bg-[#0B0E14] text-[#F2F4F8] flex items-center justify-between px-4 select-none z-30 shrink-0">
+    <header className="h-12 bg-[#0B0E14] text-[#F2F4F8] flex items-center justify-between px-4 select-none z-30 shrink-0 border-b border-[#1E2536]/40">
       {/* Left: Brand Logo & Breadcrumb Navigation */}
       <div className="flex items-center space-x-3">
         {/* CodeForge Logo */}
@@ -91,8 +93,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateHome }) => {
         </nav>
       </div>
 
-      {/* Right: Language Toggle, Streak Pill, Run & Submit Controls */}
-      <div className="flex items-center space-x-2.5">
+      {/* Right: Language Toggle, Theme Toggle, Account Pill, Streak Pill, Run & Submit Controls */}
+      <div className="flex items-center space-x-2">
         {/* Segmented Language Switcher */}
         <div className="flex items-center bg-[#121620] p-0.5 rounded-[8px]">
           <button
@@ -116,6 +118,31 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateHome }) => {
             Python
           </button>
         </div>
+
+        {/* Theme Toggle (Light / Dark mode) */}
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="p-1.5 rounded-[8px] bg-[#121620] hover:bg-[#182030] text-[#99A3B5] hover:text-[#F2F4F8] transition-colors cursor-pointer"
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+          {theme === 'dark' ? (
+            <Sun className="w-3.5 h-3.5 text-amber-400" />
+          ) : (
+            <Moon className="w-3.5 h-3.5 text-blue-500" />
+          )}
+        </button>
+
+        {/* Account / Switch Account Pill */}
+        <button
+          onClick={() => setShowEmailModal(true)}
+          className="flex items-center space-x-1.5 px-2.5 py-1 rounded-[8px] bg-[#121620] hover:bg-[#182030] text-[#F2F4F8] text-xs font-medium transition-colors cursor-pointer"
+          title={userEmail ? `Signed in as ${userEmail} (Click to switch account)` : 'Sign in / Switch account'}
+        >
+          <User className="w-3.5 h-3.5 text-[#3B82F6]" />
+          <span className="font-mono text-[11px] truncate max-w-[110px]">
+            {userEmail ? userEmail.split('@')[0] : 'Account'}
+          </span>
+        </button>
 
         {/* Streak Dropdown Pill */}
         <div className="relative">

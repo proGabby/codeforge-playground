@@ -99,6 +99,23 @@ export const StreakPopover: React.FC<StreakPopoverProps> = ({
               <span>Sync streak to cloud</span>
             </button>
           )}
+
+          {userEmail && onOpenEmailSync && (
+            <div className="mt-3 pt-2 border-t border-[#1E2536] flex items-center justify-between text-[11px]">
+              <span className="text-[#737F94] truncate max-w-[140px] font-mono">
+                {userEmail}
+              </span>
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenEmailSync();
+                }}
+                className="text-[#3B82F6] hover:underline font-medium cursor-pointer"
+              >
+                Switch account
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </>

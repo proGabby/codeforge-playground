@@ -19,6 +19,7 @@ export const CodeEditor: React.FC = () => {
     activeTopic,
     selectedLanguage,
     setSelectedLineNumber,
+    theme,
   } = useApp();
 
   const isPy = activeExercise?.languageId === 'python' || selectedLanguage === 'python' || activeFileName.endsWith('.py');
@@ -163,13 +164,45 @@ def test_negative_values():
       },
     });
 
-    monaco.editor.setTheme('codeforge-dark');
+    // Define CodeForge light theme
+    monaco.editor.defineTheme('codeforge-light', {
+      base: 'vs',
+      inherit: true,
+      rules: [
+        { token: 'comment', foreground: '64748B', fontStyle: 'italic' },
+        { token: 'keyword', foreground: '2563EB', fontStyle: 'bold' },
+        { token: 'string', foreground: '059669' },
+        { token: 'number', foreground: 'D97706' },
+        { token: 'type', foreground: '2563EB' },
+        { token: 'function', foreground: '1D4ED8' },
+        { token: 'variable', foreground: '0F172A' },
+      ],
+      colors: {
+        'editor.background': '#FFFFFF',
+        'editor.foreground': '#0F172A',
+        'editorLineNumber.foreground': '#94A3B8',
+        'editorLineNumber.activeForeground': '#0F172A',
+        'editor.lineHighlightBackground': '#F1F5F9',
+        'editorCursor.foreground': '#2563EB',
+        'editorIndentGuide.background': '#E2E8F0',
+        'editorIndentGuide.activeBackground': '#CBD5E1',
+      },
+    });
+
+    monaco.editor.setTheme(theme === 'light' ? 'codeforge-light' : 'codeforge-dark');
 
     editor.onDidChangeCursorPosition((e) => {
       setCursorPos({ lineNumber: e.position.lineNumber, column: e.position.column });
       setSelectedLineNumber(e.position.lineNumber);
     });
   };
+
+  // Switch Monaco theme on theme state change
+  useEffect(() => {
+    if (monacoRef.current) {
+      monacoRef.current.editor.setTheme(theme === 'light' ? 'codeforge-light' : 'codeforge-dark');
+    }
+  }, [theme]);
 
   // Update inline error line markers & ViewZone banner
   useEffect(() => {
@@ -356,7 +389,7 @@ def test_negative_values():
                 height="100%"
                 language={isPy ? 'python' : 'go'}
                 defaultLanguage={isPy ? 'python' : 'go'}
-                theme="codeforge-dark"
+                theme={theme === 'light' ? 'codeforge-light' : 'codeforge-dark'}
                 value={code}
                 onChange={(val) => setCode(val || '')}
                 onMount={handleEditorDidMount}
