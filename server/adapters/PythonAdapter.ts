@@ -176,7 +176,7 @@ export class PythonAdapter implements LanguageAdapter {
         ? initialExecution
         : await this.runCode(codeOrFiles, tc.input || '');
 
-      const normalize = (s: string) => s.replace(/\r\n/g, '\n').trimEnd();
+      const normalize = (s: string) => s.replace(/\r\n/g, '\n').trim();
       const actualNorm = normalize(tcResult.stdout);
       const expectedNorm = normalize(tc.expectedOutput);
 
