@@ -32,8 +32,8 @@ export class GeminiMentorEngine {
     const langName = isPython ? 'Python' : 'Go (Golang)';
     const codeFence = isPython ? 'python' : 'go';
 
-    const systemPrompt = `You are CodeForge AI Mentor, an expert Socratic ${langName} programming instructor and software engineer.
-Your mission is to help developers learn ${langName} deeply through first principles, clear mental models, and precise explanations.
+    const systemPrompt = `You are CodeForge AI Mentor, an expert Socratic ${ langName } programming instructor and software engineer.
+      Your mission is to help developers learn ${ langName } deeply through first principles, clear mental models, and precise explanations.
 
 CORE TEACHING PRINCIPLES:
 1. ADAPTIVE DEPTH & THOROUGH EXPLANATIONS:
@@ -47,24 +47,24 @@ CORE TEACHING PRINCIPLES:
    - Be encouraging, technical, clear, and actionable.
    - Always format code blocks with proper syntax tags (\`\`\`${codeFence} ... \`\`\`).`;
 
-    let contextPrompt = `EXERCISE: ${params.exerciseTitle} (${params.concept})
-INSTRUCTIONS: ${params.instructions}
-`;
+    let contextPrompt = `EXERCISE: ${ params.exerciseTitle } (${ params.concept })
+    INSTRUCTIONS: ${ params.instructions }
+    `;
 
     if (params.userCode) {
       contextPrompt += `\nSTUDENT'S CURRENT CODE:
-\`\`\`${codeFence}
+    \`\`\`${codeFence}
 ${params.userCode}
 \`\`\`
 `;
-    }
+  }
 
     if (params.stdout || params.stderr) {
-      contextPrompt += `\nLAST EXECUTION ATTEMPT:
+  contextPrompt += `\nLAST EXECUTION ATTEMPT:
 STDOUT: ${params.stdout || '(None)'}
 STDERR: ${params.stderr || '(None)'}
 `;
-    }
+}
 
     // Build multi-turn conversation contents array
     const contents: any[] = [];
@@ -73,85 +73,85 @@ STDERR: ${params.stderr || '(None)'}
       // Seed first turn with instructions and context
       contents.push({
         role: 'user',
-        parts: [{ text: `${systemPrompt}\n\n${contextPrompt}\nI am working on this exercise and will ask you questions.` }],
+        parts: [{ text: `${ systemPrompt } \n\n${ contextPrompt } \nI am working on this exercise and will ask you questions.` }],
       });
       contents.push({
         role: 'model',
         parts: [{ text: `Understood! I'm ready to mentor you through **${params.exerciseTitle}**. Ask me anything, and feel free to request as much detail or depth as you need!` }],
       });
 
-      // Add prior chat history
-      for (const msg of params.chatHistory) {
-        contents.push({
-          role: msg.sender === 'user' ? 'user' : 'model',
-          parts: [{ text: msg.text }],
-        });
-      }
+// Add prior chat history
+for (const msg of params.chatHistory) {
+  contents.push({
+    role: msg.sender === 'user' ? 'user' : 'model',
+    parts: [{ text: msg.text }],
+  });
+}
 
-      // Current prompt with user question
-      contents.push({
-        role: 'user',
-        parts: [{ text: `[Current code status: ${params.userCode ? `\`\`\`${codeFence}\n${params.userCode}\n\`\`\`` : 'same'}]\n\nStudent question: "${params.question}"` }],
-      });
+// Current prompt with user question
+contents.push({
+  role: 'user',
+  parts: [{ text: `[Current code status: ${params.userCode ? `\`\`\`${codeFence}\n${params.userCode}\n\`\`\`` : 'same'}]\n\nStudent question: "${params.question}"` }],
+});
     } else {
-      contents.push({
-        role: 'user',
-        parts: [{ text: `${systemPrompt}\n\n${contextPrompt}\n\nSTUDENT QUESTION: "${params.question}"` }],
-      });
-    }
+  contents.push({
+    role: 'user',
+    parts: [{ text: `${systemPrompt}\n\n${contextPrompt}\n\nSTUDENT QUESTION: "${params.question}"` }],
+  });
+}
 
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
-    const res = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents }),
-    });
+const res = await fetch(apiUrl, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ contents }),
+});
 
-    if (!res.ok) {
-      // Fallback to gemini-flash-latest if needed
-      const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
-      const resFallback = await fetch(fallbackUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents }),
-      });
-      if (resFallback.ok) {
-        const data = await resFallback.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
-      }
-      return null;
-    }
-
-    const data = await res.json();
+if (!res.ok) {
+  // Fallback to gemini-flash-latest if needed
+  const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
+  const resFallback = await fetch(fallbackUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contents }),
+  });
+  if (resFallback.ok) {
+    const data = await resFallback.json();
     return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+  }
+  return null;
+}
+
+const data = await res.json();
+return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
   }
 
   private static generateFallbackResponse(params: MentorRequestParams): string {
-    const q = params.question.toLowerCase();
-    const stderr = (params.stderr || '').toLowerCase();
-    const isPython = params.languageId === 'python';
-    const isDetail = /detail|explain\s+more|elaborate|deep|under\s+the\s+hood|how\s+does|why\s+does|internals/i.test(q);
+  const q = params.question.toLowerCase();
+  const stderr = (params.stderr || '').toLowerCase();
+  const isPython = params.languageId === 'python';
+  const isDetail = /detail|explain\s+more|elaborate|deep|under\s+the\s+hood|how\s+does|why\s+does|internals/i.test(q);
 
-    if (isDetail) {
-      if (isPython) {
-        return `### In-Depth Breakdown: ${params.concept}\n\n` +
-          `Here is how Python handles **${params.concept}** under the hood:\n\n` +
-          `1. **Execution Mechanics**: Python compiles your source code into bytecode instructions (run by the CPython VM). When working with ${params.concept}, operations are executed dynamically with reference counting garbage collection.\n` +
-          `2. **Memory & Types**: Every object in Python has a type, value, and reference count. When creating variables or structures, Python allocates memory on the heap and binds variable names in the local namespace dictionary.\n` +
-          `3. **Key Idioms**: Aim for readable, Pythonic patterns. Avoid manual index tracking when iteration or built-in functions can express the intent directly.\n\n` +
-          `Would you like to examine a specific line in your code or trace how a particular variable behaves at runtime?`;
-      } else {
-        return `### In-Depth Breakdown: ${params.concept}\n\n` +
-          `Here is a deeper look at how Go manages **${params.concept}**:\n\n` +
-          `1. **Memory & Allocation**: Go uses a fast stack allocator for values whose lifetime is bounded, and escapes variables to the heap only when necessary (escape analysis). Value types copy by default unless passed by pointer.\n` +
-          `2. **Runtime Mechanics**: Go's runtime is statically typed and garbage-collected with zero-cost abstractions wherever possible. Slices, for example, are 3-word headers (pointer, length, capacity) over a backing array.\n` +
-          `3. **Idiomatic Patterns**: Go favors explicit error handling, minimal magic, and clean composition over inheritance.\n\n` +
-          `Which part of the implementation would you like to unpack further?`;
-      }
+  if (isDetail) {
+    if (isPython) {
+      return `### In-Depth Breakdown: ${params.concept}\n\n` +
+        `Here is how Python handles **${params.concept}** under the hood:\n\n` +
+        `1. **Execution Mechanics**: Python compiles your source code into bytecode instructions (run by the CPython VM). When working with ${params.concept}, operations are executed dynamically with reference counting garbage collection.\n` +
+        `2. **Memory & Types**: Every object in Python has a type, value, and reference count. When creating variables or structures, Python allocates memory on the heap and binds variable names in the local namespace dictionary.\n` +
+        `3. **Key Idioms**: Aim for readable, Pythonic patterns. Avoid manual index tracking when iteration or built-in functions can express the intent directly.\n\n` +
+        `Would you like to examine a specific line in your code or trace how a particular variable behaves at runtime?`;
+    } else {
+      return `### In-Depth Breakdown: ${params.concept}\n\n` +
+        `Here is a deeper look at how Go manages **${params.concept}**:\n\n` +
+        `1. **Memory & Allocation**: Go uses a fast stack allocator for values whose lifetime is bounded, and escapes variables to the heap only when necessary (escape analysis). Value types copy by default unless passed by pointer.\n` +
+        `2. **Runtime Mechanics**: Go's runtime is statically typed and garbage-collected with zero-cost abstractions wherever possible. Slices, for example, are 3-word headers (pointer, length, capacity) over a backing array.\n` +
+        `3. **Idiomatic Patterns**: Go favors explicit error handling, minimal magic, and clean composition over inheritance.\n\n` +
+        `Which part of the implementation would you like to unpack further?`;
     }
+  }
 
-    if (q.includes('error') || stderr.length > 0) {
+  if (q.includes('error') || stderr.length > 0) {
       if (isPython) {
         if (stderr.includes('indentationerror')) {
           return `Python requires consistent indentation!\n\n💡 **Tip**: Make sure your indented blocks under \`def\`, \`if\`, \`for\`, or \`class\` are indented consistently using 4 spaces.`;
@@ -188,6 +188,6 @@ STDERR: ${params.stderr || '(None)'}
       return `The concept here is **${params.concept}**.\n\nIn ${isPython ? 'Python' : 'Go'}, this dictates how data or control flow is managed. Try modifying your code and clicking **Run** to see how the output changes! Ask me if you'd like a deep dive into the runtime mechanics.`;
     }
 
-    return `Great question! Looking at your code attempt for **${params.exerciseTitle}**, you're working with **${params.concept}**. What part of the syntax or logic would you like to explore in more detail?`;
-  }
+  return `Great question! Looking at your code attempt for **${params.exerciseTitle}**, you're working with **${params.concept}**. What part of the syntax or logic would you like to explore in more detail?`;
+}
 }
