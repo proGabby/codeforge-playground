@@ -13,33 +13,33 @@ export function cleanMentorText(raw: string): string {
 
   let text = raw;
 
-  // 1. Remove code block fences
+  // Remove code block fences
   text = text.replace(/```[a-zA-Z]*\n?([\s\S]*?)```/g, '$1');
 
-  // 2. Break headers (### Heading) into their own standalone paragraph
+  // Break headers (### Heading) into their own standalone paragraph
   text = text.replace(/(?:^|\n)\s*#{1,6}\s*([^\n]+)/g, '\n\n$1\n\n');
   text = text.replace(/#{1,6}\s*/g, '');
 
-  // 3. Break bullet points (* or - followed by text) into new paragraphs
+  // Break bullet points (* or - followed by text) into new paragraphs
   text = text.replace(/(?:^|\n)\s*[\*\-•]\s+/g, '\n\n');
 
-  // 4. Break numbered points (1. 2. 3.) into their own paragraphs
+  // Break numbered points (1. 2. 3.) into their own paragraphs
   text = text.replace(/(?:^|\n)\s*(\d+\.\s+)/g, '\n\n$1');
 
-  // 5. Strip bold & italic markdown (**bold**, *italic*, __bold__, _italic_)
+  // Strip bold & italic markdown (**bold**, *italic*, __bold__, _italic_)
   text = text.replace(/\*\*([^*]+)\*\*/g, '$1');
   text = text.replace(/__([^_]+)__/g, '$1');
   text = text.replace(/\*([^*]+)\*/g, '$1');
   text = text.replace(/_([^_]+)_/g, '$1');
 
-  // 6. Strip inline code backticks (`code` -> code)
+  // Strip inline code backticks (`code` -> code)
   text = text.replace(/`([^`]+)`/g, '$1');
   text = text.replace(/`+/g, '');
 
-  // 7. Strip any remaining stray formatting asterisks
+  // Strip any remaining stray formatting asterisks
   text = text.replace(/\*+/g, '');
 
-  // 8. Clean up whitespace: normalize multiple empty lines to double newline
+  // Clean up whitespace: normalize multiple empty lines to double newline
   text = text.replace(/\r\n/g, '\n');
   text = text.replace(/\n{3,}/g, '\n\n');
 

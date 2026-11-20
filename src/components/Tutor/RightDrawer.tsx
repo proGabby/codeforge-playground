@@ -61,8 +61,8 @@ export const RightDrawer: React.FC = () => {
         <button
           onClick={() => setActiveTab('concept')}
           className={`text-xs font-semibold pb-1 transition-all cursor-pointer ${activeTab === 'concept'
-              ? 'text-[#F2F4F8] border-b-2 border-[#3B82F6]'
-              : 'text-[#737F94] hover:text-[#99A3B5]'
+            ? 'text-[#F2F4F8] border-b-2 border-[#3B82F6]'
+            : 'text-[#737F94] hover:text-[#99A3B5]'
             }`}
         >
           Concept
@@ -70,8 +70,8 @@ export const RightDrawer: React.FC = () => {
         <button
           onClick={() => setActiveTab('discussion')}
           className={`text-xs font-semibold pb-1 transition-all cursor-pointer ${activeTab === 'discussion'
-              ? 'text-[#F2F4F8] border-b-2 border-[#3B82F6]'
-              : 'text-[#737F94] hover:text-[#99A3B5]'
+            ? 'text-[#F2F4F8] border-b-2 border-[#3B82F6]'
+            : 'text-[#737F94] hover:text-[#99A3B5]'
             }`}
         >
           Discussion
@@ -139,9 +139,9 @@ export const RightDrawer: React.FC = () => {
                   <h3 className="text-xs font-bold text-[#3B82F6]">Socratic mentor</h3>
                   <p className="text-[11px] text-[#737F94] mt-0.5">A nudge in the right direction.</p>
                 </div>
-                  <span className="text-[10px] font-mono font-bold text-[#3B82F6] px-1.5 py-0.5 rounded-[4px] border border-[#3B82F6]/30 bg-[#3B82F6]/10">
-                    AI
-                  </span>
+                <span className="text-[10px] font-mono font-bold text-[#3B82F6] px-1.5 py-0.5 rounded-[4px] border border-[#3B82F6]/30 bg-[#3B82F6]/10">
+                  AI
+                </span>
               </div>
 
               {/* Conversation Messages Thread */}
@@ -182,70 +182,71 @@ export const RightDrawer: React.FC = () => {
                 ) : (
                   /* Live user chat thread */
                   chatMessages.map((msg) => {
-                    const isUser = msg.sender === 'user';
-                    const paragraphs = splitMentorParagraphs(msg.text);
+                          const isUser = msg.sender === 'user';
+                          const paragraphs = splitMentorParagraphs(msg.text);
 
-                    return (
-                      <div
-                        key={msg.id}
-                        className={`p-3 rounded-[10px] text-xs leading-relaxed ${
-                          isUser
-                            ? 'bg-[#121620] text-[#F2F4F8]'
-                            : 'bg-[#121620]/60 text-[#99A3B5]'
-                        }`}
-                      >
-                        {isUser ? (
-                          <div className="whitespace-pre-wrap">{msg.text}</div>
-                        ) : (
-                          <div className="space-y-3">
-                            {paragraphs.map((para, idx) => (
-                              <p key={idx} className="whitespace-pre-wrap leading-relaxed">
-                                {para}
-                              </p>
-                            ))}
-                          </div>
+                          return (
+                            <div
+                              key={msg.id}
+                              className={`p-3 rounded-[10px] text-xs leading-relaxed ${isUser
+                                  ? 'bg-[#121620] text-[#F2F4F8]'
+                                  : 'bg-[#121620]/60 text-[#99A3B5]'
+                                }`}
+                    >
+                  {
+                    isUser?(
+                          <div className = "whitespace-pre-wrap" > { msg.text }</div>
+              ) : (
+              <div className="space-y-3">
+                {paragraphs.map((para, idx) => (
+                  <p key={idx} className="whitespace-pre-wrap leading-relaxed">
+                    {para}
+                  </p>
+                ))}
+              </div>
                         )}
-                      </div>
-                    );
+            </div>
+            );
                   })
                 )}
 
-                {isAskingAi && (
-                  <div className="bg-[#121620]/60 rounded-[10px] p-2.5 text-xs text-[#737F94] animate-pulse">
-                    Thinking through a helpful question...
-                  </div>
-                )}
-                <div ref={chatBottomRef} />
+            {isAskingAi && (
+              <div className="bg-[#121620]/60 rounded-[10px] p-2.5 text-xs text-[#737F94] animate-pulse">
+                Thinking through a helpful question...
               </div>
+            )}
+            <div ref={chatBottomRef} />
+          </div>
 
-              {/* Chat Input Form */}
-              <form onSubmit={handleSendQuestion} className="pt-1">
-                <div className="bg-[#121620] rounded-[10px] px-3 py-2 flex items-center justify-between gap-2">
-                  <input
-                    type="text"
-                    value={questionInput}
-                    onChange={(e) => setQuestionInput(e.target.value)}
-                    placeholder="Ask a question..."
-                    disabled={isAskingAi}
-                    className="w-full bg-transparent text-xs text-[#F2F4F8] placeholder-[#737F94] outline-none"
-                  />
-                  <button
-                    type="submit"
-                    disabled={!questionInput.trim() || isAskingAi}
-                    className="w-5 h-5 rounded-[6px] bg-[#1E2536] hover:bg-[#3B82F6] text-[#F2F4F8] disabled:opacity-40 flex items-center justify-center shrink-0 transition-colors cursor-pointer"
-                    title="Send question to Socratic Mentor"
-                  >
-                    <ArrowUp className="w-3 h-3" />
-                  </button>
-                </div>
-                <div className="text-[11px] text-[#737F94] text-center mt-1.5">
-                  Guidance, not the solution.
-                </div>
-              </form>
-            </section>
-          </>
-        )}
-      </div>
-    </aside>
+        {/* Chat Input Form */}
+        <form onSubmit={handleSendQuestion} className="pt-1">
+          <div className="bg-[#121620] rounded-[10px] px-3 py-2 flex items-center justify-between gap-2">
+            <input
+              type="text"
+              value={questionInput}
+              onChange={(e) => setQuestionInput(e.target.value)}
+              placeholder="Ask a question..."
+              disabled={isAskingAi}
+              className="w-full bg-transparent text-xs text-[#F2F4F8] placeholder-[#737F94] outline-none"
+            />
+            <button
+              type="submit"
+              disabled={!questionInput.trim() || isAskingAi}
+              className="w-5 h-5 rounded-[6px] bg-[#1E2536] hover:bg-[#3B82F6] text-[#F2F4F8] disabled:opacity-40 flex items-center justify-center shrink-0 transition-colors cursor-pointer"
+              title="Send question to Socratic Mentor"
+            >
+              <ArrowUp className="w-3 h-3" />
+            </button>
+          </div>
+          <div className="text-[11px] text-[#737F94] text-center mt-1.5">
+            Guidance, not the solution.
+          </div>
+        </form>
+      </section>
+    </>
+  )
+}
+      </div >
+    </aside >
   );
 };

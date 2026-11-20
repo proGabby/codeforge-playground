@@ -38,33 +38,33 @@ export class GeminiMentorEngine {
 
     let text = raw;
 
-    // 1. Remove code block fences
+    // Remove code block fences
     text = text.replace(/```[a-zA-Z]*\n?([\s\S]*?)```/g, '$1');
 
-    // 2. Break headers (### Heading) into their own standalone paragraph
+    // Break headers (### Heading) into their own standalone paragraph
     text = text.replace(/(?:^|\n)\s*#{1,6}\s*([^\n]+)/g, '\n\n$1\n\n');
     text = text.replace(/#{1,6}\s*/g, '');
 
-    // 3. Break bullet points (* or - followed by text) into new paragraphs
+    // Break bullet points (* or - followed by text) into new paragraphs
     text = text.replace(/(?:^|\n)\s*[\*\-•]\s+/g, '\n\n');
 
-    // 4. Break numbered points (1. 2. 3.) into their own paragraphs
+    // Break numbered points (1. 2. 3.) into their own paragraphs
     text = text.replace(/(?:^|\n)\s*(\d+\.\s+)/g, '\n\n$1');
 
-    // 5. Strip bold & italic markdown (**bold**, *italic*, __bold__, _italic_)
+    // Strip bold & italic markdown (**bold**, *italic*, __bold__, _italic_)
     text = text.replace(/\*\*([^*]+)\*\*/g, '$1');
     text = text.replace(/__([^_]+)__/g, '$1');
     text = text.replace(/\*([^*]+)\*/g, '$1');
     text = text.replace(/_([^_]+)_/g, '$1');
 
-    // 6. Strip inline code backticks (`code` -> code)
+    // Strip inline code backticks (`code` -> code)
     text = text.replace(/`([^`]+)`/g, '$1');
     text = text.replace(/`+/g, '');
 
-    // 7. Strip any remaining stray formatting asterisks
+    // Strip any remaining stray formatting asterisks
     text = text.replace(/\*+/g, '');
 
-    // 8. Clean up whitespace: normalize multiple empty lines to double newline
+    // Clean up whitespace: normalize multiple empty lines to double newline
     text = text.replace(/\r\n/g, '\n');
     text = text.replace(/\n{3,}/g, '\n\n');
 
@@ -77,35 +77,35 @@ export class GeminiMentorEngine {
     const codeFence = isPython ? 'python' : 'go';
 
     const systemPrompt = `You are CodeForge AI Mentor, an expert Socratic ${langName} programming instructor and software engineer.
-Your mission is to help developers learn ${langName} deeply through first principles, clear mental models, and precise explanations.
+      Your mission is to help developers learn ${langName} deeply through first principles, clear mental models, and precise explanations.
 
-CRITICAL FORMATTING & STYLE INSTRUCTIONS:
-1. NO RAW MARKDOWN TAGS:
-   - Do NOT use markdown headers (never use #, ##, ###).
-   - Do NOT use asterisks for bold or italics (never use **word** or *word*).
-   - Do NOT use asterisks or hyphens for bullet points (do not write "* item" or "- item").
-   - Do NOT use backticks around code names or code blocks (write function names and types plainly, e.g. fmt.Println or errors.New).
+      CRITICAL FORMATTING & STYLE INSTRUCTIONS:
+    1. NO RAW MARKDOWN TAGS:
+    - Do NOT use markdown headers(never use #, ##, ###).
+   - Do NOT use asterisks for bold or italics(never use ** word ** or * word *).
+   - Do NOT use asterisks or hyphens for bullet points(do not write "* item" or "- item").
+    - Do NOT use backticks around code names or code blocks(write function names and types plainly, e.g.fmt.Println or errors.New).
    - Write in clean, natural plain English with zero markdown symbols.
 
 2. CLEAR PARAGRAPHING:
-   - Break your explanation into clear, well-spaced paragraphs (2 to 3 sentences per paragraph).
-   - Separate every distinct thought or section with a blank line (double newline).
-   - When listing steps, errors, or key points, write each point as its own distinct numbered paragraph (e.g. "1. First point here." followed by a blank line, then "2. Second point here.").
-   - Never output dense walls of text. Ensure the explanation is airy, easy to scan, and effortless to follow.
+    - Break your explanation into clear, well - spaced paragraphs(2 to 3 sentences per paragraph).
+   - Separate every distinct thought or section with a blank line(double newline).
+   - When listing steps, errors, or key points, write each point as its own distinct numbered paragraph(e.g. "1. First point here." followed by a blank line, then "2. Second point here.").
+   - Never output dense walls of text.Ensure the explanation is airy, easy to scan, and effortless to follow.
 
 CORE TEACHING PRINCIPLES:
-1. ADAPTIVE DEPTH & THOROUGH EXPLANATIONS:
-   - When the student asks for "more details", "explain further", "how does this work under the hood?", or asks about concepts and mechanics, provide a comprehensive, step-by-step breakdown.
-   - Walk through the mechanics step-by-step: explain the underlying runtime behavior, memory models, execution order, and why the language is designed that way.
+    1. ADAPTIVE DEPTH & THOROUGH EXPLANATIONS:
+   - When the student asks for "more details", "explain further", "how does this work under the hood?", or asks about concepts and mechanics, provide a comprehensive, step - by - step breakdown.
+   - Walk through the mechanics step - by - step: explain the underlying runtime behavior, memory models, execution order, and why the language is designed that way.
 2. SOCRATIC GUIDANCE ON EXERCISES:
-   - When a student is debugging an error or test failure, explain what happened and why in plain English, and ask thoughtful guiding questions to help them fix their code.
+    - When a student is debugging an error or test failure, explain what happened and why in plain English, and ask thoughtful guiding questions to help them fix their code.
    - Do NOT dump the full completed solution code for the exercise unless the student explicitly demands "give me the solution" or "show me the code".
-3. TONE:
-   - Be encouraging, technical, clear, patient, and conversational.`;
+    3. TONE:
+    - Be encouraging, technical, clear, patient, and conversational.`;
 
     let contextPrompt = `EXERCISE: ${params.exerciseTitle} (${params.concept})
-INSTRUCTIONS: ${params.instructions}
-`;
+    INSTRUCTIONS: ${params.instructions}
+    `;
 
     if (params.userCode) {
       contextPrompt += `\nSTUDENT'S CURRENT CODE:
@@ -117,9 +117,9 @@ ${params.userCode}
 
     if (params.stdout || params.stderr) {
       contextPrompt += `\nLAST EXECUTION ATTEMPT:
-STDOUT: ${params.stdout || '(None)'}
-STDERR: ${params.stderr || '(None)'}
-`;
+  STDOUT: ${params.stdout || '(None)'}
+  STDERR: ${params.stderr || '(None)'}
+  `;
     }
 
     // Build multi-turn conversation contents array
@@ -129,7 +129,7 @@ STDERR: ${params.stderr || '(None)'}
       // Seed first turn with instructions and context
       contents.push({
         role: 'user',
-        parts: [{ text: `${systemPrompt}\n\n${contextPrompt}\nI am working on this exercise and will ask you questions.` }],
+        parts: [{ text: `${systemPrompt} \n\n${contextPrompt} \nI am working on this exercise and will ask you questions.` }],
       });
       contents.push({
         role: 'model',
