@@ -11,13 +11,17 @@ import { QuizModal } from './components/Quiz/QuizModal';
 import { LandingPage } from './components/Landing/LandingPage';
 
 const AppContent: React.FC = () => {
-  const { setShowEmailModal, setSelectedLanguage } = useApp();
+  const { setShowEmailModal, setSelectedLanguage, userEmail } = useApp();
   const [currentView, setCurrentView] = useState<'landing' | 'playground'>(() => {
     if (typeof window !== 'undefined') {
       return window.location.pathname === '/playground' ? 'playground' : 'landing';
     }
     return 'landing';
   });
+
+  const [pendingNavigation, setPendingNavigation] = useState<{
+    targetLang?: 'go' | 'python';
+  } | null>(null);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -42,15 +46,46 @@ const AppContent: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
   };
 
-  const handleOpenEmailModal = () => {
+  // From the landing page, exploring playground or starting free asks for user's email if not already provided
+  const handleLandingEnterPlayground = (lang?: 'go' | 'python') => {
+    if (lang) {
+      setSelectedLanguage(lang);
+    }
+    if (!userEmail) {
+      setPendingNavigation({ targetLang: lang });
+      setShowEmailModal(true);
+    } else {
+      navigateToPlayground(lang);
+    }
+  };
+
+  const handleOpenEmailModal = (lang?: 'go' | 'python') => {
+    if (lang) {
+      setSelectedLanguage(lang);
+    }
+    setPendingNavigation({ targetLang: lang });
     setShowEmailModal(true);
+  };
+
+  const handleEmailModalComplete = () => {
+    if (pendingNavigation) {
+      navigateToPlayground(pendingNavigation.targetLang);
+      setPendingNavigation(null);
+    }
+  };
+
+  const handleEmailModalSkip = () => {
+    if (pendingNavigation) {
+      navigateToPlayground(pendingNavigation.targetLang);
+      setPendingNavigation(null);
+    }
   };
 
   return (
     <>
       {currentView === 'landing' ? (
         <LandingPage
-          onEnterPlayground={navigateToPlayground}
+          onEnterPlayground={handleLandingEnterPlayground}
           onOpenEmailModal={handleOpenEmailModal}
         />
       ) : (
@@ -58,17 +93,20 @@ const AppContent: React.FC = () => {
           <Navbar onNavigateHome={navigateToLanding} />
           <div className="flex-1 flex overflow-hidden relative">
             <CurriculumTree />
-              <main className="flex-1 flex flex-col overflow-hidden relative bg-[#0E131F] border-x border-[#182133]">
-                <CodeEditor />
-                <TestRunnerPanel />
-              </main>
-              <RightDrawer />
+            <main className="flex-1 flex flex-col overflow-hidden relative bg-[#0E131F] border-x border-[#182133]">
+              <CodeEditor />
+              <TestRunnerPanel />
+            </main>
+            <RightDrawer />
           </div>
           <CompletionModal />
           <QuizModal />
         </div>
       )}
-      <EmailModal />
+      <EmailModal
+        onSuccess={handleEmailModalComplete}
+        onSkip={handleEmailModalSkip}
+      />
     </>
   );
 };
