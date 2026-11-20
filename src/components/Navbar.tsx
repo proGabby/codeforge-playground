@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, ArrowRight, ChevronDown, Flame, Sun, Moon, User } from 'lucide-react';
+import { Play, ArrowRight, ChevronDown, Flame, User } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { StreakPopover } from './Streak/StreakPopover';
 import { getLocalDateString, getCalendarDayDiff } from '../utils/streakUtils';
@@ -19,8 +19,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateHome }) => {
     runCode,
     submitCode,
     isExecuting,
-    theme,
-    setTheme,
   } = useApp();
 
   const [showStreakPopover, setShowStreakPopover] = useState(false);
@@ -99,38 +97,23 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateHome }) => {
         <div className="flex items-center bg-[#121620] p-0.5 rounded-[8px]">
           <button
             onClick={() => setSelectedLanguage('go')}
-            className={`px-2.5 py-1 text-xs font-semibold rounded-[6px] transition-all cursor-pointer ${
-              !isPy
+            className={`px-2.5 py-1 text-xs font-semibold rounded-[6px] transition-all cursor-pointer ${!isPy
                 ? 'bg-[#1E2536] text-[#F2F4F8] shadow-sm'
                 : 'text-[#737F94] hover:text-[#99A3B5]'
-            }`}
+              }`}
           >
             Go
           </button>
           <button
             onClick={() => setSelectedLanguage('python')}
-            className={`px-2.5 py-1 text-xs font-semibold rounded-[6px] transition-all cursor-pointer ${
-              isPy
+            className={`px-2.5 py-1 text-xs font-semibold rounded-[6px] transition-all cursor-pointer ${isPy
                 ? 'bg-[#1E2536] text-[#F2F4F8] shadow-sm'
                 : 'text-[#737F94] hover:text-[#99A3B5]'
-            }`}
+              }`}
           >
             Python
           </button>
         </div>
-
-        {/* Theme Toggle (Light / Dark mode) */}
-        <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="p-1.5 rounded-[8px] bg-[#121620] hover:bg-[#182030] text-[#99A3B5] hover:text-[#F2F4F8] transition-colors cursor-pointer"
-          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-        >
-          {theme === 'dark' ? (
-            <Sun className="w-3.5 h-3.5 text-amber-400" />
-          ) : (
-            <Moon className="w-3.5 h-3.5 text-blue-500" />
-          )}
-        </button>
 
         {/* Account / Switch Account Pill */}
         <button

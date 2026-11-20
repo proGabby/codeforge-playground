@@ -19,7 +19,6 @@ export const CodeEditor: React.FC = () => {
     activeTopic,
     selectedLanguage,
     setSelectedLineNumber,
-    theme,
   } = useApp();
 
   const isPy = activeExercise?.languageId === 'python' || selectedLanguage === 'python' || activeFileName.endsWith('.py');
@@ -164,45 +163,13 @@ def test_negative_values():
       },
     });
 
-    // Define CodeForge light theme
-    monaco.editor.defineTheme('codeforge-light', {
-      base: 'vs',
-      inherit: true,
-      rules: [
-        { token: 'comment', foreground: '64748B', fontStyle: 'italic' },
-        { token: 'keyword', foreground: '2563EB', fontStyle: 'bold' },
-        { token: 'string', foreground: '059669' },
-        { token: 'number', foreground: 'D97706' },
-        { token: 'type', foreground: '2563EB' },
-        { token: 'function', foreground: '1D4ED8' },
-        { token: 'variable', foreground: '0F172A' },
-      ],
-      colors: {
-        'editor.background': '#FFFFFF',
-        'editor.foreground': '#0F172A',
-        'editorLineNumber.foreground': '#94A3B8',
-        'editorLineNumber.activeForeground': '#0F172A',
-        'editor.lineHighlightBackground': '#F1F5F9',
-        'editorCursor.foreground': '#2563EB',
-        'editorIndentGuide.background': '#E2E8F0',
-        'editorIndentGuide.activeBackground': '#CBD5E1',
-      },
-    });
-
-    monaco.editor.setTheme(theme === 'light' ? 'codeforge-light' : 'codeforge-dark');
+    monaco.editor.setTheme('codeforge-dark');
 
     editor.onDidChangeCursorPosition((e) => {
       setCursorPos({ lineNumber: e.position.lineNumber, column: e.position.column });
       setSelectedLineNumber(e.position.lineNumber);
     });
   };
-
-  // Switch Monaco theme on theme state change
-  useEffect(() => {
-    if (monacoRef.current) {
-      monacoRef.current.editor.setTheme(theme === 'light' ? 'codeforge-light' : 'codeforge-dark');
-    }
-  }, [theme]);
 
   // Update inline error line markers & ViewZone banner
   useEffect(() => {
@@ -279,168 +246,168 @@ def test_negative_values():
   const exerciseTitle = activeExercise?.title || 'Sum a slice';
 
   return (
-      <div className="flex-1 flex flex-col h-full bg-[#0E131F] overflow-hidden relative">
-        {/* 1. Top File Tabs Bar */}
-          <div className="h-10 bg-[#0B101B] border-b border-[#182133] flex items-center justify-between px-3 select-none shrink-0">
-            <div className="flex items-center space-x-1 overflow-x-auto scrollbar-none py-1">
-              {fileList.map((fileName) => {
-                const isActive = fileName === activeFileName;
-                const isMain = fileName === 'main.go' || fileName === 'main.py';
+    <div className="flex-1 flex flex-col h-full bg-[#0E131F] overflow-hidden relative">
+      {/* 1. Top File Tabs Bar */}
+      <div className="h-10 bg-[#0B101B] border-b border-[#182133] flex items-center justify-between px-3 select-none shrink-0">
+        <div className="flex items-center space-x-1 overflow-x-auto scrollbar-none py-1">
+          {fileList.map((fileName) => {
+            const isActive = fileName === activeFileName;
+            const isMain = fileName === 'main.go' || fileName === 'main.py';
 
-                return (
-                  <button
-                    key={fileName}
-                    onClick={() => setActiveFileName(fileName)}
-                    className={`group flex items-center space-x-2 px-3 py-1.5 rounded-[6px] text-xs font-mono transition-all cursor-pointer ${isActive
-                          ? 'bg-[#0E131F] text-[#F2F4F8] font-medium'
-                          : 'text-[#737F94] hover:text-[#99A3B5] hover:bg-[#121927]'
-                      }`}
-                  >
-                    <span>{fileName}</span>
-                    {isActive ? (
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6]" />
-                    ) : !isMain ? (
-                      <span
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteFile(fileName);
-                        }}
-                        className="opacity-0 group-hover:opacity-100 text-[#737F94] hover:text-red-400 transition-opacity"
-                      >
-                        ×
-                      </span>
-                    ) : null}
-                  </button>
-                );
-              })}
-
+            return (
               <button
-                onClick={() => {
-                  setFileError('');
-                  setShowNewFileModal(true);
-                }}
-                className="p-1 rounded text-[#737F94] hover:text-[#F2F4F8] hover:bg-[#121927] transition-colors cursor-pointer"
-                title="Create new file"
+                key={fileName}
+                onClick={() => setActiveFileName(fileName)}
+                className={`group flex items-center space-x-2 px-3 py-1.5 rounded-[6px] text-xs font-mono transition-all cursor-pointer ${isActive
+                  ? 'bg-[#0E131F] text-[#F2F4F8] font-medium'
+                  : 'text-[#737F94] hover:text-[#99A3B5] hover:bg-[#121927]'
+                  }`}
               >
-                <Plus className="w-3.5 h-3.5" />
+                <span>{fileName}</span>
+                {isActive ? (
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6]" />
+                ) : !isMain ? (
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteFile(fileName);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 text-[#737F94] hover:text-red-400 transition-opacity"
+                  >
+                    ×
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+
+          <button
+            onClick={() => {
+              setFileError('');
+              setShowNewFileModal(true);
+            }}
+            className="p-1 rounded text-[#737F94] hover:text-[#F2F4F8] hover:bg-[#121927] transition-colors cursor-pointer"
+            title="Create new file"
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* 2. Exercise Subheader */}
+      <div className="h-9 px-4 bg-[#0E131F] flex items-center justify-between border-b border-[#182133] select-none shrink-0">
+        <div className="flex items-center space-x-2">
+          <span className="text-xs font-mono font-bold text-[#3B82F6]">{exerciseLabel}</span>
+          <span className="text-xs font-bold text-[#F2F4F8]">{exerciseTitle}</span>
+        </div>
+        <div className="text-[11px] font-mono text-[#737F94]">
+          {isPy ? 'Python 3.12 · UTF-8' : 'Go 1.22 · UTF-8'}
+        </div>
+      </div>
+
+      {/* 3. New File Creation Modal */}
+      {showNewFileModal && (
+        <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-xs bg-[#121620] rounded-[10px] p-4 shadow-2xl">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-semibold text-[#F2F4F8]">
+                New {isPy ? 'Python' : 'Go'} File
+              </h3>
+              <button
+                onClick={() => setShowNewFileModal(false)}
+                className="text-[#737F94] hover:text-[#F2F4F8]"
+              >
+                <X className="w-4 h-4" />
               </button>
             </div>
-          </div>
-
-          {/* 2. Exercise Subheader */}
-            <div className="h-9 px-4 bg-[#0E131F] flex items-center justify-between border-b border-[#182133] select-none shrink-0">
-              <div className="flex items-center space-x-2">
-                <span className="text-xs font-mono font-bold text-[#3B82F6]">{exerciseLabel}</span>
-                <span className="text-xs font-bold text-[#F2F4F8]">{exerciseTitle}</span>
-              </div>
-              <div className="text-[11px] font-mono text-[#737F94]">
-                {isPy ? 'Python 3.12 · UTF-8' : 'Go 1.22 · UTF-8'}
-              </div>
-            </div>
-
-            {/* 3. New File Creation Modal */}
-            {showNewFileModal && (
-              <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-                <div className="w-full max-w-xs bg-[#121620] rounded-[10px] p-4 shadow-2xl">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-xs font-semibold text-[#F2F4F8]">
-                      New {isPy ? 'Python' : 'Go'} File
-                    </h3>
-                    <button
-                      onClick={() => setShowNewFileModal(false)}
-                      className="text-[#737F94] hover:text-[#F2F4F8]"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <form onSubmit={handleCreateFile} className="space-y-3">
-                    <input
-                      type="text"
-                      value={newFileName}
-                      onChange={(e) => setNewFileName(e.target.value)}
-                      placeholder={isPy ? 'helper.py' : 'helper.go'}
-                      autoFocus
-                      className="w-full bg-[#0B0E14] border-0 rounded-[8px] px-3 py-2 text-xs font-mono text-[#F2F4F8] placeholder-[#737F94] focus:outline-none focus:ring-1 focus:ring-[#3B82F6]"
-                    />
-                    {fileError && <p className="text-red-400 text-[11px]">{fileError}</p>}
-                    <div className="flex justify-end gap-2 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => setShowNewFileModal(false)}
-                        className="px-3 py-1.5 text-xs text-[#737F94] hover:text-[#F2F4F8]"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="px-3.5 py-1.5 bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-[8px] text-xs font-semibold"
-                      >
-                        Create
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            )}
-
-            {/* 4. Monaco Editor Canvas */}
-            <div className="flex-1 relative min-h-0">
-              <Editor
-                height="100%"
-                language={isPy ? 'python' : 'go'}
-                defaultLanguage={isPy ? 'python' : 'go'}
-                theme={theme === 'light' ? 'codeforge-light' : 'codeforge-dark'}
-                value={code}
-                onChange={(val) => setCode(val || '')}
-                onMount={handleEditorDidMount}
-                options={{
-                  fontSize: 13,
-                  fontFamily: "'JetBrains Mono', 'Geist', monospace",
-                  minimap: { enabled: false },
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                  tabSize: 4,
-                  insertSpaces: isPy,
-                  lineNumbersMinChars: 3,
-                  bracketPairColorization: { enabled: true },
-                  cursorBlinking: 'smooth',
-                  padding: { top: 12, bottom: 12 },
-                  lineDecorationsWidth: 6,
-                }}
+            <form onSubmit={handleCreateFile} className="space-y-3">
+              <input
+                type="text"
+                value={newFileName}
+                onChange={(e) => setNewFileName(e.target.value)}
+                placeholder={isPy ? 'helper.py' : 'helper.go'}
+                autoFocus
+                className="w-full bg-[#0B0E14] border-0 rounded-[8px] px-3 py-2 text-xs font-mono text-[#F2F4F8] placeholder-[#737F94] focus:outline-none focus:ring-1 focus:ring-[#3B82F6]"
               />
-            </div>
-
-            {/* 5. Editor Status Bar */}
-              <div className="h-6 bg-[#0B101B] border-t border-[#182133] px-4 flex items-center justify-between text-[11px] select-none shrink-0">
-                <div className="flex items-center space-x-2">
-                  {compilerDiagnostic ? (
-                    <span className="text-red-400 font-medium flex items-center gap-1">
-                      <span>×</span>
-                      <span>1 compiler error</span>
-                    </span>
-                  ) : (
-                    <span className="text-[#737F94] flex items-center gap-1.5">
-                      <Check className="w-3 h-3 text-[#737F94]" />
-                      <span>All changes saved</span>
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center space-x-4 text-[#737F94] font-mono">
-                  <span>
-                    Ln {cursorPos.lineNumber}, Col {cursorPos.column}
-                  </span>
-                  <span>Spaces: 4</span>
-                </div>
+              {fileError && <p className="text-red-400 text-[11px]">{fileError}</p>}
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowNewFileModal(false)}
+                  className="px-3 py-1.5 text-xs text-[#737F94] hover:text-[#F2F4F8]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-3.5 py-1.5 bg-[#3B82F6] hover:bg-[#2563EB] text-white rounded-[8px] text-xs font-semibold"
+                >
+                  Create
+                </button>
               </div>
-            </div>
-            );
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Monaco Editor Canvas */}
+      <div className="flex-1 relative min-h-0">
+        <Editor
+          height="100%"
+          language={isPy ? 'python' : 'go'}
+          defaultLanguage={isPy ? 'python' : 'go'}
+          theme="codeforge-dark"
+          value={code}
+          onChange={(val) => setCode(val || '')}
+          onMount={handleEditorDidMount}
+          options={{
+            fontSize: 13,
+            fontFamily: "'JetBrains Mono', 'Geist', monospace",
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+            tabSize: 4,
+            insertSpaces: isPy,
+            lineNumbersMinChars: 3,
+            bracketPairColorization: { enabled: true },
+            cursorBlinking: 'smooth',
+            padding: { top: 12, bottom: 12 },
+            lineDecorationsWidth: 6,
+          }}
+        />
+      </div>
+
+      {/* 5. Editor Status Bar */}
+      <div className="h-6 bg-[#0B101B] border-t border-[#182133] px-4 flex items-center justify-between text-[11px] select-none shrink-0">
+        <div className="flex items-center space-x-2">
+          {compilerDiagnostic ? (
+            <span className="text-red-400 font-medium flex items-center gap-1">
+              <span>×</span>
+              <span>1 compiler error</span>
+            </span>
+          ) : (
+            <span className="text-[#737F94] flex items-center gap-1.5">
+              <Check className="w-3 h-3 text-[#737F94]" />
+              <span>All changes saved</span>
+            </span>
+          )}
+        </div>
+        <div className="flex items-center space-x-4 text-[#737F94] font-mono">
+          <span>
+            Ln {cursorPos.lineNumber}, Col {cursorPos.column}
+          </span>
+          <span>Spaces: 4</span>
+        </div>
+      </div>
+    </div>
+  );
 };
 
-            function escapeHtml(text: string): string {
+function escapeHtml(text: string): string {
   return text
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
