@@ -1,8 +1,9 @@
 import React from 'react';
 import { Code2 } from 'lucide-react';
+import type { SupportedLanguage } from '../../types';
 
 interface LandingFooterProps {
-  onEnterPlayground: (lang?: 'go' | 'python') => void;
+  onEnterPlayground: (lang?: SupportedLanguage) => void;
 }
 
 export const LandingFooter: React.FC<LandingFooterProps> = ({ onEnterPlayground }) => {
@@ -43,6 +44,22 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({ onEnterPlayground 
                   className="hover:text-[#F2F4F8] transition-colors cursor-pointer"
                 >
                   Python curriculum
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onEnterPlayground('javascript')}
+                  className="hover:text-[#F2F4F8] transition-colors cursor-pointer"
+                >
+                  JavaScript curriculum
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onEnterPlayground('typescript')}
+                  className="hover:text-[#F2F4F8] transition-colors cursor-pointer"
+                >
+                  TypeScript curriculum
                 </button>
               </li>
               <li>

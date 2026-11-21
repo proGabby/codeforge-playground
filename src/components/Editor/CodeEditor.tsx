@@ -21,9 +21,11 @@ export const CodeEditor: React.FC = () => {
     setSelectedLineNumber,
   } = useApp();
 
+  const isTs = activeExercise?.languageId === 'typescript' || selectedLanguage === 'typescript' || activeFileName.endsWith('.ts');
   const isPy = activeExercise?.languageId === 'python' || selectedLanguage === 'python' || activeFileName.endsWith('.py');
-  const defaultEntry = isPy ? 'main.py' : 'main.go';
-  const testFileName = isPy ? 'test_solution.py' : 'solution_test.go';
+  const isJs = activeExercise?.languageId === 'javascript' || selectedLanguage === 'javascript' || activeFileName.endsWith('.js');
+  const defaultEntry = isTs ? 'main.ts' : isJs ? 'main.js' : isPy ? 'main.py' : 'main.go';
+  const testFileName = isTs ? 'solution.test.ts' : isJs ? 'solution.test.js' : isPy ? 'test_solution.py' : 'solution_test.go';
 
   const editorRef = useRef<any>(null);
   const monacoRef = useRef<any>(null);
@@ -105,6 +107,15 @@ def test_negative_values():
     // 2. From executionResult if compilation failed
     if (executionResult && !executionResult.compiledSuccessfully && executionResult.stderr) {
       const stderr = executionResult.stderr;
+      // Match TypeScript / JavaScript line: e.g. main.ts(10,5): error TS2322 or main.js:10
+      const tsMatch = stderr.match(/(?:main\.(?:ts|js))[\(:](?:line\s*)?(\d+)(?:[,:]\d+\)?)?:?\s*(.*)/i);
+      if (tsMatch) {
+        return {
+          line: parseInt(tsMatch[1], 10),
+          message: tsMatch[2]?.trim() || 'compiler diagnostic',
+        };
+      }
+
       // Match Go line: e.g. main.go:10:23: cannot use total as string
       const goMatch = stderr.match(/(?:main\.go|solution\.go):(\d+)(?::\d+)?:?\s*(.*)/i);
       if (goMatch) {
@@ -234,7 +245,7 @@ def test_negative_values():
       return;
     }
 
-    addFile(name, isPy ? '# Python module\n' : 'package main\n\n');
+    addFile(name, isJs ? '// JavaScript module\n' : isPy ? '# Python module\n' : 'package main\n\n');
     setNewFileName('');
     setShowNewFileModal(false);
   };
@@ -252,7 +263,7 @@ def test_negative_values():
         <div className="flex items-center space-x-1 overflow-x-auto scrollbar-none py-1">
           {fileList.map((fileName) => {
             const isActive = fileName === activeFileName;
-            const isMain = fileName === 'main.go' || fileName === 'main.py';
+            const isMain = fileName === 'main.go' || fileName === 'main.py' || fileName === 'main.js';
 
             return (
               <button
@@ -301,7 +312,13 @@ def test_negative_values():
           <span className="text-xs font-bold text-[#F2F4F8]">{exerciseTitle}</span>
         </div>
         <div className="text-[11px] font-mono text-[#737F94]">
-          {isPy ? 'Python 3.12 · UTF-8' : 'Go 1.22 · UTF-8'}
+          {isTs
+            ? 'TypeScript 5.x · Node 22'
+            : isJs
+              ? 'Node.js 22 · UTF-8'
+              : isPy
+                ? 'Python 3.12 · UTF-8'
+                : 'Go 1.22 · UTF-8'}
         </div>
       </div>
 
@@ -311,7 +328,7 @@ def test_negative_values():
           <div className="w-full max-w-xs bg-[#121620] rounded-[10px] p-4 shadow-2xl">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-semibold text-[#F2F4F8]">
-                New {isPy ? 'Python' : 'Go'} File
+                New {isTs ? 'TypeScript' : isJs ? 'JavaScript' : isPy ? 'Python' : 'Go'} File
               </h3>
               <button
                 onClick={() => setShowNewFileModal(false)}
@@ -325,7 +342,7 @@ def test_negative_values():
                 type="text"
                 value={newFileName}
                 onChange={(e) => setNewFileName(e.target.value)}
-                placeholder={isPy ? 'helper.py' : 'helper.go'}
+                placeholder={isTs ? 'helper.ts' : isJs ? 'helper.js' : isPy ? 'helper.py' : 'helper.go'}
                 autoFocus
                 className="w-full bg-[#0B0E14] border-0 rounded-[8px] px-3 py-2 text-xs font-mono text-[#F2F4F8] placeholder-[#737F94] focus:outline-none focus:ring-1 focus:ring-[#3B82F6]"
               />
@@ -354,8 +371,8 @@ def test_negative_values():
       <div className="flex-1 relative min-h-0">
         <Editor
           height="100%"
-          language={isPy ? 'python' : 'go'}
-          defaultLanguage={isPy ? 'python' : 'go'}
+          language={isTs ? 'typescript' : isJs ? 'javascript' : isPy ? 'python' : 'go'}
+          defaultLanguage={isTs ? 'typescript' : isJs ? 'javascript' : isPy ? 'python' : 'go'}
           theme="codeforge-dark"
           value={code}
           onChange={(val) => setCode(val || '')}

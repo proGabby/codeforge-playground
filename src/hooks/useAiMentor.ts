@@ -44,21 +44,38 @@ export function useAiMentor(
       setChatMessages((prev) => [...prev, userMsg]);
       setIsAskingAi(true);
 
-      const isPython = activeExercise?.languageId === 'python';
+      const langId = activeExercise?.languageId || 'go';
+      const defaultTitle =
+      langId === 'typescript'
+        ? 'TypeScript Exercise'
+        : langId === 'javascript'
+          ? 'JavaScript Exercise'
+          : langId === 'python'
+            ? 'Python Exercise'
+            : 'Go Exercise';
+      const defaultConcept =
+      langId === 'typescript'
+        ? 'TypeScript Types & Syntax'
+        : langId === 'javascript'
+          ? 'JavaScript Syntax'
+          : langId === 'python'
+            ? 'Python Syntax'
+            : 'Go Syntax';
+
       try {
         const res = await fetch('/api/ai-mentor', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            exerciseTitle: activeExercise?.title || (isPython ? 'Python Exercise' : 'Go Exercise'),
+            exerciseTitle: activeExercise?.title || defaultTitle,
             instructions: activeExercise?.instructions || '',
-            concept: activeExercise?.concept || (isPython ? 'Python Syntax' : 'Go Syntax'),
+            concept: activeExercise?.concept || defaultConcept,
             userCode: code,
             stdout: executionResult?.stdout || '',
             stderr: executionResult?.stderr || '',
             question,
             chatHistory: chatMessages,
-            languageId: activeExercise?.languageId || 'go',
+            languageId: langId,
           }),
         });
         const data = await res.json();

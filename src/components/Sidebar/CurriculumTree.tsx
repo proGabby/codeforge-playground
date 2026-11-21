@@ -18,7 +18,15 @@ export const CurriculumTree: React.FC = () => {
   } = useApp();
 
   const isPy = selectedLanguage === 'python';
-  const pathLabel = isPy ? 'PYTHON / LEARNING PATH' : 'GO / LEARNING PATH';
+  const isJs = selectedLanguage === 'javascript';
+  const isTs = selectedLanguage === 'typescript';
+  const pathLabel = isTs
+    ? 'TYPESCRIPT / LEARNING PATH'
+    : isJs
+      ? 'JAVASCRIPT / LEARNING PATH'
+      : isPy
+        ? 'PYTHON / LEARNING PATH'
+        : 'GO / LEARNING PATH';
 
   // Track expanded topics (default to having the active topic expanded)
   const [expandedTopicIds, setExpandedTopicIds] = useState<Set<string>>(() => {
@@ -193,8 +201,8 @@ export const CurriculumTree: React.FC = () => {
                                     setActiveExerciseId(ex.id);
                                   }}
                                   className={`w-full text-left px-2.5 py-1.5 rounded-[6px] text-xs transition-all flex items-center justify-between cursor-pointer group ${isExActive
-                                      ? 'bg-[#1E2536] text-[#F2F4F8] font-semibold shadow-xs'
-                                      : 'text-[#99A3B5] hover:text-[#F2F4F8] hover:bg-[#121620]'
+                                    ? 'bg-[#1E2536] text-[#F2F4F8] font-semibold shadow-xs'
+                                    : 'text-[#99A3B5] hover:text-[#F2F4F8] hover:bg-[#121620]'
                                     }`}
                                 >
                                   <div className="flex items-center gap-2 truncate">
@@ -219,71 +227,71 @@ export const CurriculumTree: React.FC = () => {
                                     </span>
                                   )}
                                 </button>
-                            );
-                          })}
+                              );
+                            })}
 
-                                {/* Section Milestone Quiz Card */ }
-                                <div className="pt-2 pb-1">
-                                  {(() => {
-                                    const quizId = `quiz-${topic.id}`;
-                                    const isQuizPassed = (userProgress.completedQuizIds || []).includes(quizId);
-                                    const quizScore = userProgress.quizScores?.[quizId];
+                            {/* Section Milestone Quiz Card */}
+                            <div className="pt-2 pb-1">
+                              {(() => {
+                                const quizId = `quiz-${topic.id}`;
+                                const isQuizPassed = (userProgress.completedQuizIds || []).includes(quizId);
+                                const quizScore = userProgress.quizScores?.[quizId];
 
-                            return (
-                            <div
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                startTopicQuiz(topic.id);
-                              }}
-                              className="bg-[#121620] hover:bg-[#182030] p-3 rounded-[10px] cursor-pointer transition-colors"
-                              title={`Take Section Milestone Quiz for ${cleanTitle}`}
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold text-[#F2F4F8]">
-                                  Section Milestone Quiz
-                                </span>
-                                <ArrowUpRight className="w-3.5 h-3.5 text-[#737F94]" />
-                              </div>
-                              <div className="text-[11px] text-[#737F94] mt-1 flex items-center justify-between">
-                                {isQuizPassed ? (
-                                  <span className="text-emerald-400 font-medium">
-                                    ✓ Passed ({quizScore || 100}%)
-                                  </span>
-                                ) : (
-                                  <span>Active recall · +50 XP</span>
-                                )}
-                                <span className="text-[10px] font-mono text-[#3B82F6]">
-                                  Take Quiz →
-                                </span>
-                              </div>
+                                return (
+                                  <div
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      startTopicQuiz(topic.id);
+                                    }}
+                                    className="bg-[#121620] hover:bg-[#182030] p-3 rounded-[10px] cursor-pointer transition-colors"
+                                    title={`Take Section Milestone Quiz for ${cleanTitle}`}
+                                  >
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-xs font-semibold text-[#F2F4F8]">
+                                        Section Milestone Quiz
+                                      </span>
+                                      <ArrowUpRight className="w-3.5 h-3.5 text-[#737F94]" />
+                                    </div>
+                                    <div className="text-[11px] text-[#737F94] mt-1 flex items-center justify-between">
+                                      {isQuizPassed ? (
+                                        <span className="text-emerald-400 font-medium">
+                                          ✓ Passed ({quizScore || 100}%)
+                                        </span>
+                                      ) : (
+                                        <span>Active recall · +50 XP</span>
+                                      )}
+                                      <span className="text-[10px] font-mono text-[#3B82F6]">
+                                        Take Quiz →
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })()}
                             </div>
-                            );
-                            })()}
                           </div>
-                        </div>
-                  )
-                }
+                        )
+                      }
                     </div>
-              );
+                  );
                 })}
               </div>
-    </div>
+            </div>
           );
         })}
       </div >
 
-{/* Sidebar Footer: Reset lesson */ }
-<div className="p-3 border-t border-[#121620] bg-[#0B0E14]">
-  <div className="text-[11px] text-[#737F94]">Need a fresh start?</div>
-  <button
-    onClick={handleResetLesson}
-    className="text-xs text-[#99A3B5] hover:text-[#F2F4F8] flex items-center gap-1 mt-0.5 cursor-pointer transition-colors"
-    title="Restore starter code for this lesson"
-  >
-    <span>Reset lesson</span>
-    <ArrowUpRight className="w-3 h-3 text-[#737F94]" />
-  </button>
-</div>
+      {/* Sidebar Footer: Reset lesson */}
+      <div className="p-3 border-t border-[#121620] bg-[#0B0E14]">
+        <div className="text-[11px] text-[#737F94]">Need a fresh start?</div>
+        <button
+          onClick={handleResetLesson}
+          className="text-xs text-[#99A3B5] hover:text-[#F2F4F8] flex items-center gap-1 mt-0.5 cursor-pointer transition-colors"
+          title="Restore starter code for this lesson"
+        >
+          <span>Reset lesson</span>
+          <ArrowUpRight className="w-3 h-3 text-[#737F94]" />
+        </button>
+      </div>
     </aside >
   );
 };

@@ -126,7 +126,15 @@ export const ExplanationPanel: React.FC = () => {
           <div className="space-y-3">
             <div className="flex items-center space-x-2 text-indigo-400 font-bold text-xs">
               <Cpu className="w-4 h-4" />
-              <span>Go Runtime & Memory Architecture</span>
+              <span>
+                {activeExercise?.languageId === 'typescript'
+                  ? 'TypeScript Compiler & Type System'
+                  : activeExercise?.languageId === 'javascript'
+                    ? 'V8 Engine & JavaScript Runtime'
+                    : activeExercise?.languageId === 'python'
+                      ? 'Python Virtual Machine & Memory'
+                      : 'Go Runtime & Memory Architecture'}
+              </span>
             </div>
             <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 leading-relaxed text-slate-300 font-mono text-[11px] whitespace-pre-wrap">
               {exp.underTheHood}

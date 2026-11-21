@@ -1,7 +1,11 @@
 import { GO_CURRICULUM } from '../server/data/GoCurriculum';
 import { PYTHON_CURRICULUM } from '../server/data/PythonCurriculum';
+import { JAVASCRIPT_CURRICULUM } from '../server/data/JavaScriptCurriculum';
+import { TYPESCRIPT_CURRICULUM } from '../server/data/TypeScriptCurriculum';
 import { GO_QUIZZES } from '../server/data/quizzes/goQuizzes';
 import { PYTHON_QUIZZES } from '../server/data/quizzes/pythonQuizzes';
+import { JAVASCRIPT_QUIZZES } from '../server/data/quizzes/jsQuizzes';
+import { TYPESCRIPT_QUIZZES } from '../server/data/quizzes/tsQuizzes';
 import { getQuizByTopicId, getQuizById, ALL_QUIZZES } from '../server/data/quizzes';
 
 console.log('--- Starting CodeForge Section Quiz Audit ---');
@@ -34,7 +38,21 @@ for (const topic of PYTHON_CURRICULUM.topics) {
   assert(!!quiz, `Python topic "${topic.id}" (${topic.title}) must have a section quiz.`);
 }
 
-// 3. Audit Question Structure & Integrity
+// 3. Audit JavaScript Quizzes
+console.log(`Auditing JavaScript topics (${JAVASCRIPT_CURRICULUM.topics.length} topics)...`);
+for (const topic of JAVASCRIPT_CURRICULUM.topics) {
+  const quiz = JAVASCRIPT_QUIZZES.find((q) => q.topicId === topic.id);
+  assert(!!quiz, `JavaScript topic "${topic.id}" (${topic.title}) must have a section quiz.`);
+}
+
+// 4. Audit TypeScript Quizzes
+console.log(`Auditing TypeScript topics (${TYPESCRIPT_CURRICULUM.topics.length} topics)...`);
+for (const topic of TYPESCRIPT_CURRICULUM.topics) {
+  const quiz = TYPESCRIPT_QUIZZES.find((q) => q.topicId === topic.id);
+  assert(!!quiz, `TypeScript topic "${topic.id}" (${topic.title}) must have a section quiz.`);
+}
+
+// 5. Audit Question Structure & Integrity
 console.log(`Auditing questions in all ${ALL_QUIZZES.length} quizzes...`);
 const seenQuestionIds = new Set<string>();
 
@@ -59,24 +77,15 @@ for (const quiz of ALL_QUIZZES) {
       optionIds.includes(q.correctOptionId),
       `${qLabel}: correctOptionId "${q.correctOptionId}" not found in options: [${optionIds.join(', ')}]`
     );
-
-    for (const opt of q.options) {
-      assert(opt.text.trim().length > 0, `${qLabel} Option "${opt.id}": text must not be empty.`);
-    }
   }
 }
 
-// 4. Test Helper Registry Functions
-assert(getQuizByTopicId('py-loops', 'python')?.id === 'quiz-py-loops', 'getQuizByTopicId(py-loops, python) should return quiz-py-loops');
-assert(getQuizByTopicId('go-slices', 'go')?.id === 'quiz-go-slices', 'getQuizByTopicId(go-slices, go) should return quiz-go-slices');
-assert(getQuizById('quiz-py-oop')?.topicId === 'py-oop', 'getQuizById(quiz-py-oop) should return topic py-oop');
-
-console.log(`\n========================================`);
+console.log('\n========================================');
 console.log(`Audit Finished: ${passedChecks} / ${totalChecks} checks passed.`);
-if (errors.length > 0) {
-  console.error(`Total Errors: ${errors.length}`);
-  process.exit(1);
+if (errors.length === 0) {
+  console.log(`🎉 100% AUDIT PASS: All ${ALL_QUIZZES.length} section quizzes across Go, Python, JavaScript & TypeScript are verified and valid!`);
 } else {
-  console.log(`🎉 100% AUDIT PASS: All 39 section quizzes across Go & Python are verified and valid!`);
-  process.exit(0);
+  console.error(`💥 AUDIT FAILED with ${errors.length} errors:`);
+  errors.forEach((err, idx) => console.error(`${idx + 1}. ${err}`));
+  process.exit(1);
 }

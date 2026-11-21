@@ -1,9 +1,10 @@
 import React from 'react';
 import { Flame, Code2, User } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import type { SupportedLanguage } from '../../types';
 
 interface LandingNavProps {
-  onEnterPlayground: (lang?: 'go' | 'python') => void;
+  onEnterPlayground: (lang?: SupportedLanguage) => void;
   onOpenEmailModal: () => void;
 }
 
@@ -20,7 +21,7 @@ export const LandingNav: React.FC<LandingNavProps> = ({
     }
   };
 
-  const handleLanguageSelect = (lang: 'go' | 'python') => {
+  const handleLanguageSelect = (lang: SupportedLanguage) => {
     setSelectedLanguage(lang);
     onEnterPlayground(lang);
   };
@@ -62,6 +63,18 @@ export const LandingNav: React.FC<LandingNavProps> = ({
             Python
           </button>
           <button
+            onClick={() => handleLanguageSelect('javascript')}
+            className="hover:text-[#F2F4F8] transition-colors cursor-pointer"
+          >
+            JavaScript
+          </button>
+          <button
+            onClick={() => handleLanguageSelect('typescript')}
+            className="hover:text-[#F2F4F8] transition-colors cursor-pointer"
+          >
+            TypeScript
+          </button>
+          <button
             onClick={() => handleNavClick('features')}
             className="hover:text-[#F2F4F8] transition-colors cursor-pointer"
           >
@@ -69,47 +82,47 @@ export const LandingNav: React.FC<LandingNavProps> = ({
           </button>
         </div>
 
-          {/* Right: Account / Streak & CTA */}
-          <div className="flex items-center space-x-2.5 sm:space-x-3.5">
-            {/* 12-day streak indicator */}
-            <div className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-[10px] bg-[#121620] text-xs font-medium text-[#99A3B5]">
-              <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-              <span className="text-[#F2F4F8] font-mono text-[11px] font-semibold">
-                12-day streak
-              </span>
+        {/* Right: Account / Streak & CTA */}
+        <div className="flex items-center space-x-2.5 sm:space-x-3.5">
+          {/* 12-day streak indicator */}
+          <div className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-[10px] bg-[#121620] text-xs font-medium text-[#99A3B5]">
+            <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+            <span className="text-[#F2F4F8] font-mono text-[11px] font-semibold">
+              12-day streak
+            </span>
+          </div>
+
+          {/* Account Pill or Start Free Button */}
+          {userEmail ? (
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => onOpenEmailModal()}
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[10px] bg-[#121620] hover:bg-[#182030] text-[#F2F4F8] text-xs font-medium transition-colors cursor-pointer"
+                title={`Signed in as ${userEmail} (Click to switch account)`}
+              >
+                <User className="w-3.5 h-3.5 text-[#3B82F6]" />
+                <span className="font-mono text-xs truncate max-w-[100px]">
+                  {userEmail.split('@')[0]}
+                </span>
+              </button>
+
+              <button
+                onClick={() => onEnterPlayground()}
+                className="px-3.5 py-1.5 rounded-[10px] bg-[#3B82F6] hover:bg-[#2563EB] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer transform active:scale-98"
+              >
+                Playground →
+              </button>
             </div>
-
-            {/* Account Pill or Start Free Button */}
-            {userEmail ? (
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => onOpenEmailModal()}
-                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-[10px] bg-[#121620] hover:bg-[#182030] text-[#F2F4F8] text-xs font-medium transition-colors cursor-pointer"
-                  title={`Signed in as ${userEmail} (Click to switch account)`}
-                >
-                  <User className="w-3.5 h-3.5 text-[#3B82F6]" />
-                  <span className="font-mono text-xs truncate max-w-[100px]">
-                    {userEmail.split('@')[0]}
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => onEnterPlayground()}
-                  className="px-3.5 py-1.5 rounded-[10px] bg-[#3B82F6] hover:bg-[#2563EB] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer transform active:scale-98"
-                >
-                  Playground →
-                </button>
-              </div>
-        ) : (
-        <button
-          onClick={() => onOpenEmailModal()}
-          className="px-4 py-1.5 rounded-[10px] bg-[#3B82F6] hover:bg-[#2563EB] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer transform active:scale-98"
-        >
-          Start Free
-        </button>
+          ) : (
+            <button
+              onClick={() => onOpenEmailModal()}
+              className="px-4 py-1.5 rounded-[10px] bg-[#3B82F6] hover:bg-[#2563EB] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer transform active:scale-98"
+            >
+              Start Free
+            </button>
           )}
+        </div>
       </div>
-    </div>
     </nav >
   );
 };

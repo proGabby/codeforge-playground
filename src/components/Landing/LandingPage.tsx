@@ -5,9 +5,10 @@ import { FeedbackLoopSection } from './FeedbackLoopSection';
 import { CurriculumRoadmapSection } from './CurriculumRoadmapSection';
 import { CalloutBanner } from './CalloutBanner';
 import { LandingFooter } from './LandingFooter';
+import type { SupportedLanguage } from '../../types';
 
 interface LandingPageProps {
-  onEnterPlayground: (lang?: 'go' | 'python') => void;
+  onEnterPlayground: (lang?: SupportedLanguage) => void;
   onOpenEmailModal: () => void;
 }
 

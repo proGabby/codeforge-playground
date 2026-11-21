@@ -135,7 +135,7 @@ export const AiMentorPanel: React.FC = () => {
             </div>
             <p className="text-sm font-medium text-slate-200">AI Mentor Ready!</p>
             <p className="text-xs text-slate-400 max-w-xs mx-auto mt-1">
-              Ask any question about your execution result, {activeExercise?.languageId === 'python' ? 'Python' : 'Go'} syntax, or algorithm logic below.
+              Ask any question about your execution result, {activeExercise?.languageId === 'typescript' ? 'TypeScript' : activeExercise?.languageId === 'javascript' ? 'JavaScript' : activeExercise?.languageId === 'python' ? 'Python' : 'Go'} syntax, or algorithm logic below.
             </p>
           </div>
         )}

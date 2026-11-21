@@ -6,6 +6,8 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { GoAdapter } from './adapters/GoAdapter';
 import { PythonAdapter } from './adapters/PythonAdapter';
+import { JavaScriptAdapter } from './adapters/JavaScriptAdapter';
+import { TypeScriptAdapter } from './adapters/TypeScriptAdapter';
 import { LanguageRegistry } from './adapters/LanguageAdapter';
 import { TursoStore } from './store/TursoStore';
 import { apiRouter } from './routes';
@@ -25,8 +27,12 @@ TursoStore.init().catch((err) => {
 // Register language adapters
 const goAdapter = new GoAdapter();
 const pythonAdapter = new PythonAdapter();
+const jsAdapter = new JavaScriptAdapter();
+const tsAdapter = new TypeScriptAdapter();
 LanguageRegistry.register(goAdapter);
 LanguageRegistry.register(pythonAdapter);
+LanguageRegistry.register(jsAdapter);
+LanguageRegistry.register(tsAdapter);
 
 // Mount API routes
 app.use('/api', apiRouter);

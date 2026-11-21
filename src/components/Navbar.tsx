@@ -48,7 +48,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateHome }) => {
   const streakDays = userProgress.streakDays || 12; // Default to 12 as requested in specs if fresh
 
   const isPy = selectedLanguage === 'python';
-  const langLabel = isPy ? 'Python' : 'Go';
+  const isJs = selectedLanguage === 'javascript';
+  const isTs = selectedLanguage === 'typescript';
+  const langLabel = isTs ? 'TypeScript' : isJs ? 'JavaScript' : isPy ? 'Python' : 'Go';
   const topicTitle = activeTopic?.title
     ? activeTopic.title.replace(/^\d+\.\s*/, '')
     : 'Slices & iteration';
@@ -79,7 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateHome }) => {
           </span>
           <span className="text-[#737F94]/50">/</span>
           <span
-            onClick={() => setSelectedLanguage(isPy ? 'python' : 'go')}
+            onClick={() => setSelectedLanguage(selectedLanguage)}
             className="text-[#737F94] hover:text-[#99A3B5] cursor-pointer transition-colors"
           >
             {langLabel}
@@ -97,21 +99,39 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateHome }) => {
         <div className="flex items-center bg-[#121620] p-0.5 rounded-[8px]">
           <button
             onClick={() => setSelectedLanguage('go')}
-            className={`px-2.5 py-1 text-xs font-semibold rounded-[6px] transition-all cursor-pointer ${!isPy
-                ? 'bg-[#1E2536] text-[#F2F4F8] shadow-sm'
-                : 'text-[#737F94] hover:text-[#99A3B5]'
+            className={`px-2 py-1 text-xs font-semibold rounded-[6px] transition-all cursor-pointer ${selectedLanguage === 'go'
+              ? 'bg-[#1E2536] text-[#F2F4F8] shadow-sm'
+              : 'text-[#737F94] hover:text-[#99A3B5]'
               }`}
           >
             Go
           </button>
           <button
             onClick={() => setSelectedLanguage('python')}
-            className={`px-2.5 py-1 text-xs font-semibold rounded-[6px] transition-all cursor-pointer ${isPy
-                ? 'bg-[#1E2536] text-[#F2F4F8] shadow-sm'
-                : 'text-[#737F94] hover:text-[#99A3B5]'
+            className={`px-2 py-1 text-xs font-semibold rounded-[6px] transition-all cursor-pointer ${selectedLanguage === 'python'
+              ? 'bg-[#1E2536] text-[#F2F4F8] shadow-sm'
+              : 'text-[#737F94] hover:text-[#99A3B5]'
               }`}
           >
             Python
+          </button>
+          <button
+            onClick={() => setSelectedLanguage('javascript')}
+            className={`px-2 py-1 text-xs font-semibold rounded-[6px] transition-all cursor-pointer ${selectedLanguage === 'javascript'
+              ? 'bg-[#1E2536] text-[#F2F4F8] shadow-sm'
+              : 'text-[#737F94] hover:text-[#99A3B5]'
+              }`}
+          >
+            JS
+          </button>
+          <button
+            onClick={() => setSelectedLanguage('typescript')}
+            className={`px-2 py-1 text-xs font-semibold rounded-[6px] transition-all cursor-pointer ${selectedLanguage === 'typescript'
+              ? 'bg-[#1E2536] text-[#F2F4F8] shadow-sm'
+              : 'text-[#737F94] hover:text-[#99A3B5]'
+              }`}
+          >
+            TS
           </button>
         </div>
 
@@ -173,7 +193,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateHome }) => {
           <span className="text-[10px] text-blue-200 font-mono hidden sm:inline">(⇧⌘↵)</span>
           <ArrowRight className="w-3 h-3 text-white" />
         </button>
-      </div>
-    </header>
+      </div >
+    </header >
   );
 };
