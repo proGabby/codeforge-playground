@@ -7,6 +7,7 @@ import type {
   QuizSubmissionResult,
   SectionQuiz,
   SubmissionResult,
+  SupportedLanguage,
   Topic,
   UserProgress,
 } from '../types';
@@ -20,8 +21,8 @@ import { recordExerciseCompletionStreak } from '../utils/streakUtils';
 interface AppContextType {
   learningMode: LearningMode;
   setLearningMode: (mode: LearningMode) => void;
-  selectedLanguage: 'go' | 'python';
-  setSelectedLanguage: (lang: 'go' | 'python') => void;
+  selectedLanguage: SupportedLanguage;
+  setSelectedLanguage: (lang: SupportedLanguage) => void;
   curriculum: Topic[];
   activeTopic: Topic | null;
   activeExercise: Exercise | null;
@@ -79,14 +80,14 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    useEffect(() => {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('codeforge_theme');
-      }
-      if (typeof document !== 'undefined') {
-        document.documentElement.classList.remove('light');
-        document.documentElement.classList.add('dark');
-      }
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('codeforge_theme');
+    }
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.remove('light');
+      document.documentElement.classList.add('dark');
+    }
   }, []);
 
   const [learningMode, setLearningMode] = useState<LearningMode>('guided');
@@ -229,10 +230,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       syncUserWithTurso(existingEmail, setUserProgress).then((data) => {
         if (data?.solutions && activeExerciseId && data.solutions[activeExerciseId]) {
           const rawSol = data.solutions[activeExerciseId];
-          const defaultFileName =
-            activeExercise?.languageId === 'python' || selectedLanguage === 'python'
-              ? 'main.py'
-              : 'main.go';
+          const isTs = activeExercise?.languageId === 'typescript' || selectedLanguage === 'typescript';
+          const isPy = activeExercise?.languageId === 'python' || selectedLanguage === 'python';
+          const isJs = activeExercise?.languageId === 'javascript' || selectedLanguage === 'javascript';
+          const defaultFileName = isTs ? 'main.ts' : isJs ? 'main.js' : isPy ? 'main.py' : 'main.go';
           try {
             if (rawSol.startsWith('{"files":')) {
               const parsed = JSON.parse(rawSol);

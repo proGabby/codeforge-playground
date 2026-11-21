@@ -1,5 +1,7 @@
 export type DifficultyLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
+export type SupportedLanguage = 'go' | 'python' | 'javascript' | 'typescript';
+
 export type LearningMode = 'guided' | 'practice' | 'challenge';
 
 export type ExerciseType =
@@ -169,7 +171,7 @@ export interface QuizQuestion {
 export interface SectionQuiz {
   id: string;
   topicId: string;
-  languageId: 'go' | 'python';
+  languageId: SupportedLanguage;
   title: string;
   description: string;
   passingScorePercent: number; // e.g. 75

@@ -3,6 +3,7 @@ import type {
   ExecutionResult,
   Exercise,
   SubmissionResult,
+  SupportedLanguage,
   Topic,
   UserProgress,
 } from '../types';
@@ -16,7 +17,7 @@ interface UseCodeExecutionProps {
   setUserProgress: React.Dispatch<React.SetStateAction<UserProgress>>;
   setSavedSolutions: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   setHasAttemptedCurrentExercise: (attempted: boolean) => void;
-  selectedLanguage?: 'go' | 'python';
+  selectedLanguage?: SupportedLanguage;
 }
 
 export function useCodeExecution({
@@ -29,8 +30,10 @@ export function useCodeExecution({
   setHasAttemptedCurrentExercise,
   selectedLanguage = 'go',
 }: UseCodeExecutionProps) {
+  const isTs = activeExercise?.languageId === 'typescript' || selectedLanguage === 'typescript';
   const isPython = activeExercise?.languageId === 'python' || selectedLanguage === 'python';
-  const defaultFileName = isPython ? 'main.py' : 'main.go';
+  const isJs = activeExercise?.languageId === 'javascript' || selectedLanguage === 'javascript';
+  const defaultFileName = isTs ? 'main.ts' : isJs ? 'main.js' : isPython ? 'main.py' : 'main.go';
 
   const [files, setFilesState] = useState<Record<string, string>>({ [defaultFileName]: '' });
   const [activeFileName, setActiveFileName] = useState<string>(defaultFileName);
@@ -68,12 +71,22 @@ export function useCodeExecution({
   const addFile = useCallback((rawName: string, initialContent?: string) => {
     let name = rawName.trim();
     if (!name) return;
+    const isTs = activeExercise?.languageId === 'typescript' || selectedLanguage === 'typescript';
     const isPy = activeExercise?.languageId === 'python' || selectedLanguage === 'python';
-    const ext = isPy ? '.py' : '.go';
+    const isJs = activeExercise?.languageId === 'javascript' || selectedLanguage === 'javascript';
+    const ext = isTs ? '.ts' : isJs ? '.js' : isPy ? '.py' : '.go';
     if (!name.endsWith(ext)) {
       name += ext;
     }
-    const defaultTemplate = initialContent ?? (isPy ? '# Python module\n\n' : 'package main\n\n');
+    const defaultTemplate =
+      initialContent ??
+      (isTs
+        ? '// TypeScript module\n\n'
+        : isJs
+          ? '// JavaScript module\n\n'
+          : isPy
+            ? '# Python module\n\n'
+            : 'package main\n\n');
     setFilesState((prev) => {
       if (prev[name] !== undefined) return prev;
       return { ...prev, [name]: defaultTemplate };
@@ -82,7 +95,7 @@ export function useCodeExecution({
   }, [activeExercise, selectedLanguage]);
 
   const deleteFile = useCallback((name: string) => {
-    if (name === 'main.go' || name === 'main.py') return; // Cannot delete entry point
+    if (name === 'main.go' || name === 'main.py' || name === 'main.js' || name === 'main.ts') return; // Cannot delete entry point
     setFilesState((prev) => {
       const next = { ...prev };
       delete next[name];
