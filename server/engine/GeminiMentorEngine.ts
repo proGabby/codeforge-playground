@@ -31,40 +31,54 @@ export class GeminiMentorEngine {
 
   /**
    * Sanitizes AI response text to ensure zero raw markdown tags (#, *, **, `)
-   * and normalizes spacing into clean, well-spaced paragraphs.
+   * and normalizes spacing into clean, well-spaced paragraphs and lists.
    */
   public static cleanMentorText(raw: string): string {
     if (!raw) return '';
 
     let text = raw;
 
-    // Remove code block fences
+    // 1. Remove code block fences
     text = text.replace(/```[a-zA-Z]*\n?([\s\S]*?)```/g, '$1');
 
-    // Break headers (### Heading) into their own standalone paragraph
+    // 2. Break headers (### Heading) into their own standalone paragraph
     text = text.replace(/(?:^|\n)\s*#{1,6}\s*([^\n]+)/g, '\n\n$1\n\n');
     text = text.replace(/#{1,6}\s*/g, '');
 
-    // Break bullet points (* or - followed by text) into new paragraphs
-    text = text.replace(/(?:^|\n)\s*[\*\-•]\s+/g, '\n\n');
-
-    // Break numbered points (1. 2. 3.) into their own paragraphs
-    text = text.replace(/(?:^|\n)\s*(\d+\.\s+)/g, '\n\n$1');
-
-    // Strip bold & italic markdown (**bold**, *italic*, __bold__, _italic_)
+    // 3. Strip bold & italic markdown (**bold**, *italic*, __bold__, _italic_)
     text = text.replace(/\*\*([^*]+)\*\*/g, '$1');
     text = text.replace(/__([^_]+)__/g, '$1');
     text = text.replace(/\*([^*]+)\*/g, '$1');
     text = text.replace(/_([^_]+)_/g, '$1');
 
-    // Strip inline code backticks (`code` -> code)
+    // 4. Strip inline code backticks (`code` -> code)
     text = text.replace(/`([^`]+)`/g, '$1');
     text = text.replace(/`+/g, '');
 
-    // Strip any remaining stray formatting asterisks
+    // 5. Break inline numbered items (e.g. "...about. 1. errors.Is..." or "...chain. 2. errors.As...")
+    // into separate paragraphs
+    text = text.replace(/(?:^|[\.\?!]\s+|\n\s*)(\d+\.\s+)/g, '.\n\n$1');
+    text = text.replace(/\.{2,}\n\n/g, '.\n\n');
+
+    // 6. Break bullet points (* item, - item, • item) into new paragraphs
+    text = text.replace(/(?:^|\n)\s*[\*\-•]\s+/g, '\n\n');
+
+    // 7. Split natural thought transitions:
+    // e.g. "...appropriately. In modern Go..." -> paragraph break
+    text = text.replace(/([\.\?!])\s+(In modern Go|In Go|In Python|Beyond [a-zA-Z0-9_\.]+,|Here are|Let's address|Take a look)/g, '$1\n\n$2');
+
+    // 8. If closing question at the end:
+    // e.g. "...errors.As. Would you like..." -> break into its own paragraph
+    text = text.replace(/([\.\?!])\s+(Would you like|Do you want|Let me know|Feel free to|What part of)/g, '$1\n\n$2');
+
+    // 9. If a numbered item has a function name or title immediately followed by "This function", "Introduced in", "Checks", etc.:
+    // e.g. "1. errors.Is This function" -> "1. errors.Is\nThis function"
+    text = text.replace(/(\d+\.\s+[A-Za-z0-9_.]+(?:\s*\([^)]*\))?)\s+(This function|Introduced in|Checks|Unpacks|Combines|Returns|Used for|Allows|When|If)/g, '$1\n$2');
+
+    // 10. Strip stray asterisks
     text = text.replace(/\*+/g, '');
 
-    // Clean up whitespace: normalize multiple empty lines to double newline
+    // 11. Normalize multiple newlines
     text = text.replace(/\r\n/g, '\n');
     text = text.replace(/\n{3,}/g, '\n\n');
 
@@ -77,35 +91,46 @@ export class GeminiMentorEngine {
     const codeFence = isPython ? 'python' : 'go';
 
     const systemPrompt = `You are CodeForge AI Mentor, an expert Socratic ${langName} programming instructor and software engineer.
-      Your mission is to help developers learn ${langName} deeply through first principles, clear mental models, and precise explanations.
+Your mission is to help developers learn ${langName} deeply through first principles, clear mental models, and precise explanations.
 
-      CRITICAL FORMATTING & STYLE INSTRUCTIONS:
-    1. NO RAW MARKDOWN TAGS:
-    - Do NOT use markdown headers(never use #, ##, ###).
-   - Do NOT use asterisks for bold or italics(never use ** word ** or * word *).
-   - Do NOT use asterisks or hyphens for bullet points(do not write "* item" or "- item").
-    - Do NOT use backticks around code names or code blocks(write function names and types plainly, e.g.fmt.Println or errors.New).
-   - Write in clean, natural plain English with zero markdown symbols.
+CRITICAL FORMATTING & STYLE INSTRUCTIONS:
+1. ZERO MARKDOWN SYNTAX SYMBOLS:
+   - Do NOT use markdown headers (never use #, ##, ###).
+   - Do NOT use asterisks for bold or italics (never use **word** or *word*).
+   - Do NOT use asterisks or hyphens for bullet points (do NOT write "* item" or "- item").
+   - Do NOT use backticks around code names or keywords (write code, types, and function names plainly, e.g. fmt.Println, errors.Is, %w, float64).
+   - Write in clean, natural plain English with zero markdown characters.
 
-2. CLEAR PARAGRAPHING:
-    - Break your explanation into clear, well - spaced paragraphs(2 to 3 sentences per paragraph).
-   - Separate every distinct thought or section with a blank line(double newline).
-   - When listing steps, errors, or key points, write each point as its own distinct numbered paragraph(e.g. "1. First point here." followed by a blank line, then "2. Second point here.").
-   - Never output dense walls of text.Ensure the explanation is airy, easy to scan, and effortless to follow.
+2. CLEAR, SPACED PARAGRAPHING:
+   - Break your response into short, well-spaced paragraphs (2 to 3 sentences per paragraph).
+   - Separate every distinct paragraph or idea with a double newline (\n\n).
+   - Never write a dense wall of text.
+
+3. NUMBERED LIST FORMAT (STRICT):
+   When listing methods, steps, or multiple items, format each item with its title on the first line, followed by its explanation on the next line, and a blank line before the next item. For example:
+
+   1. methodName
+   Explanation of what it does and when to use it.
+
+   2. methodName
+   Explanation of what it does and when to use it.
+
+4. COMPLETE RESPONSES:
+   - Never stop mid-sentence. Always conclude with a helpful follow-up question or suggestion.
 
 CORE TEACHING PRINCIPLES:
-    1. ADAPTIVE DEPTH & THOROUGH EXPLANATIONS:
-   - When the student asks for "more details", "explain further", "how does this work under the hood?", or asks about concepts and mechanics, provide a comprehensive, step - by - step breakdown.
-   - Walk through the mechanics step - by - step: explain the underlying runtime behavior, memory models, execution order, and why the language is designed that way.
+1. ADAPTIVE DEPTH & THOROUGH EXPLANATIONS:
+   - When the student asks for "more details", "explain further", "how does this work under the hood?", or asks about concepts and mechanics, provide a comprehensive, step-by-step breakdown.
+   - Walk through the mechanics step-by-step: explain the underlying runtime behavior, memory models, execution order, and why the language is designed that way.
 2. SOCRATIC GUIDANCE ON EXERCISES:
-    - When a student is debugging an error or test failure, explain what happened and why in plain English, and ask thoughtful guiding questions to help them fix their code.
+   - When a student is debugging an error or test failure, explain what happened and why in plain English, and ask thoughtful guiding questions to help them fix their code.
    - Do NOT dump the full completed solution code for the exercise unless the student explicitly demands "give me the solution" or "show me the code".
-    3. TONE:
-    - Be encouraging, technical, clear, patient, and conversational.`;
+3. TONE:
+   - Be encouraging, technical, clear, patient, and conversational.`;
 
     let contextPrompt = `EXERCISE: ${params.exerciseTitle} (${params.concept})
-    INSTRUCTIONS: ${params.instructions}
-    `;
+INSTRUCTIONS: ${params.instructions}
+`;
 
     if (params.userCode) {
       contextPrompt += `\nSTUDENT'S CURRENT CODE:
@@ -117,9 +142,9 @@ ${params.userCode}
 
     if (params.stdout || params.stderr) {
       contextPrompt += `\nLAST EXECUTION ATTEMPT:
-  STDOUT: ${params.stdout || '(None)'}
-  STDERR: ${params.stderr || '(None)'}
-  `;
+STDOUT: ${params.stdout || '(None)'}
+STDERR: ${params.stderr || '(None)'}
+`;
     }
 
     // Build multi-turn conversation contents array
@@ -129,7 +154,7 @@ ${params.userCode}
       // Seed first turn with instructions and context
       contents.push({
         role: 'user',
-        parts: [{ text: `${systemPrompt} \n\n${contextPrompt} \nI am working on this exercise and will ask you questions.` }],
+        parts: [{ text: `${systemPrompt}\n\n${contextPrompt}\nI am working on this exercise and will ask you questions.` }],
       });
       contents.push({
         role: 'model',
@@ -161,7 +186,13 @@ ${params.userCode}
     const res = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents }),
+      body: JSON.stringify({
+        contents,
+        generationConfig: {
+          maxOutputTokens: 2048,
+          temperature: 0.3,
+        },
+      }),
     });
 
     if (!res.ok) {
@@ -170,7 +201,13 @@ ${params.userCode}
       const resFallback = await fetch(fallbackUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents }),
+        body: JSON.stringify({
+          contents,
+          generationConfig: {
+            maxOutputTokens: 2048,
+            temperature: 0.3,
+          },
+        }),
       });
       if (resFallback.ok) {
         const data = await resFallback.json();
@@ -194,18 +231,18 @@ ${params.userCode}
         return (
           `In-Depth Breakdown: ${params.concept}\n\n` +
           `Here is how Python handles ${params.concept} under the hood:\n\n` +
-          `1. Execution Mechanics: Python compiles your source code into bytecode instructions run by the CPython virtual machine. When working with ${params.concept}, operations are executed dynamically with reference counting garbage collection.\n\n` +
-          `2. Memory & Types: Every object in Python has a type, value, and reference count. When creating variables or structures, Python allocates memory on the heap and binds variable names in the local namespace dictionary.\n\n` +
-          `3. Key Idioms: Aim for readable, Pythonic patterns. Avoid manual index tracking when iteration or built-in functions can express the intent directly.\n\n` +
+          `1. Execution Mechanics\nPython compiles your source code into bytecode instructions run by the CPython virtual machine. Operations are executed dynamically with reference counting garbage collection.\n\n` +
+          `2. Memory & Types\nEvery object in Python has a type, value, and reference count. When creating variables or structures, Python allocates memory on the heap and binds variable names in the local namespace dictionary.\n\n` +
+          `3. Key Idioms\nAim for readable, Pythonic patterns. Avoid manual index tracking when iteration or built-in functions can express the intent directly.\n\n` +
           `Would you like to examine a specific line in your code or trace how a particular variable behaves at runtime?`
         );
       } else {
         return (
           `In-Depth Breakdown: ${params.concept}\n\n` +
           `Here is a deeper look at how Go manages ${params.concept}:\n\n` +
-          `1. Memory & Allocation: Go uses a fast stack allocator for values whose lifetime is bounded, and escapes variables to the heap only when necessary via escape analysis. Value types copy by default unless passed by pointer.\n\n` +
-          `2. Runtime Mechanics: Go's runtime is statically typed and garbage-collected with zero-cost abstractions wherever possible. Slices, for example, are 3-word headers (pointer, length, capacity) over a backing array.\n\n` +
-          `3. Idiomatic Patterns: Go favors explicit error handling, minimal magic, and clean composition over inheritance.\n\n` +
+          `1. Memory & Allocation\nGo uses a fast stack allocator for values whose lifetime is bounded, and escapes variables to the heap only when necessary via escape analysis. Value types copy by default unless passed by pointer.\n\n` +
+          `2. Runtime Mechanics\nGo's runtime is statically typed and garbage-collected with zero-cost abstractions wherever possible. Slices, for example, are 3-word headers (pointer, length, capacity) over a backing array.\n\n` +
+          `3. Idiomatic Patterns\nGo favors explicit error handling, minimal magic, and clean composition over inheritance.\n\n` +
           `Which part of the implementation would you like to unpack further?`
         );
       }

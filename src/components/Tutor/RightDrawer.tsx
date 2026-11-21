@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowUp } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { splitMentorParagraphs } from '../../utils/mentorFormatting';
+import { splitMentorParagraphs, parseMentorParagraph } from '../../utils/mentorFormatting';
 
 export const RightDrawer: React.FC = () => {
   const {
@@ -182,31 +182,48 @@ export const RightDrawer: React.FC = () => {
                 ) : (
                   /* Live user chat thread */
                   chatMessages.map((msg) => {
-                          const isUser = msg.sender === 'user';
-                          const paragraphs = splitMentorParagraphs(msg.text);
+                    const isUser = msg.sender === 'user';
+                    const paragraphs = splitMentorParagraphs(msg.text);
 
-                          return (
-                            <div
-                              key={msg.id}
-                              className={`p-3 rounded-[10px] text-xs leading-relaxed ${isUser
-                                  ? 'bg-[#121620] text-[#F2F4F8]'
-                                  : 'bg-[#121620]/60 text-[#99A3B5]'
-                                }`}
-                    >
-                  {
-                    isUser?(
-                          <div className = "whitespace-pre-wrap" > { msg.text }</div>
-              ) : (
-              <div className="space-y-3">
-                {paragraphs.map((para, idx) => (
-                  <p key={idx} className="whitespace-pre-wrap leading-relaxed">
-                    {para}
-                  </p>
-                ))}
-              </div>
+                    return (
+                      <div
+                        key={msg.id}
+                        className={`p-3 rounded-[10px] text-xs leading-relaxed ${
+                          isUser
+                            ? 'bg-[#121620] text-[#F2F4F8]'
+                            : 'bg-[#121620]/60 text-[#99A3B5]'
+                        }`}
+                      >
+                        {isUser ? (
+                          <div className="whitespace-pre-wrap">{msg.text}</div>
+                        ) : (
+                          <div className="space-y-3">
+                            {paragraphs.map((para, idx) => {
+                              const parsed = parseMentorParagraph(para);
+                              if (parsed.title) {
+                                return (
+                                  <div key={idx} className="space-y-1">
+                                    <div className="font-semibold text-[#F2F4F8] text-[12.5px] leading-snug">
+                                      {parsed.title}
+                                    </div>
+                                    {parsed.body && (
+                                      <div className="text-[#99A3B5] leading-relaxed whitespace-pre-wrap">
+                                        {parsed.body}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              }
+                              return (
+                                <p key={idx} className="text-[#99A3B5] leading-relaxed whitespace-pre-wrap">
+                                  {parsed.body}
+                                </p>
+                              );
+                            })}
+                          </div>
                         )}
-            </div>
-            );
+                      </div>
+                    );
                   })
                 )}
 

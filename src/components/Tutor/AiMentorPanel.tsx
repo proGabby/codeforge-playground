@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Sparkles, Lock, Send, Bot, User, Play, ArrowRight, Loader2, Lightbulb } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { splitMentorParagraphs } from '../../utils/mentorFormatting';
+import { splitMentorParagraphs, parseMentorParagraph } from '../../utils/mentorFormatting';
 
 export const AiMentorPanel: React.FC = () => {
   const {
@@ -160,17 +160,34 @@ export const AiMentorPanel: React.FC = () => {
                   : 'bg-slate-800/90 text-slate-200 border border-slate-700/80 rounded-tl-none font-sans'
               }`}
             >
-            {msg.sender === 'user' ? (
-              <div className="whitespace-pre-wrap">{msg.text}</div>
-            ) : (
-              <div className="space-y-2.5">
-                {splitMentorParagraphs(msg.text).map((para, idx) => (
-                  <p key={idx} className="whitespace-pre-wrap leading-relaxed">
-                    {para}
-                  </p>
-                ))}
-              </div>
-            )}
+              {msg.sender === 'user' ? (
+                <div className="whitespace-pre-wrap">{msg.text}</div>
+              ) : (
+                <div className="space-y-3">
+                  {splitMentorParagraphs(msg.text).map((para, idx) => {
+                    const parsed = parseMentorParagraph(para);
+                    if (parsed.title) {
+                      return (
+                        <div key={idx} className="space-y-1">
+                          <div className="font-semibold text-slate-100 text-[12.5px] leading-snug">
+                            {parsed.title}
+                          </div>
+                          {parsed.body && (
+                            <div className="text-slate-300 leading-relaxed whitespace-pre-wrap">
+                              {parsed.body}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+                    return (
+                      <p key={idx} className="text-slate-300 leading-relaxed whitespace-pre-wrap">
+                        {parsed.body}
+                      </p>
+                    );
+                  })}
+                </div>
+              )}
             <div
               className={`text-[9px] mt-1.5 ${msg.sender === 'user' ? 'text-indigo-200/80 text-right' : 'text-slate-400'
                 }`}
