@@ -37,10 +37,12 @@ export function cleanMentorText(raw: string): string {
 
   // Break inline numbered items (e.g. "...about. 1. errors.Is..." or "...chain. 2. errors.As...")
   // into separate paragraphs
-  text = text.replace(/(?:^|[\.\?!]\s+|\n\s*)(\d+\.\s+)/g, '.\n\n$1');
+  text = text.replace(/([:\.\?!])\s+(\d+\.\s+)/g, '$1\n\n$2');
+  text = text.replace(/(?:^|\n\s*)(\d+\.\s+)/g, '\n\n$1');
   text = text.replace(/\.{2,}\n\n/g, '.\n\n');
 
   // Break bullet points (* item, - item, • item) into new paragraphs
+  text = text.replace(/([:\.\?!])\s+[\*\-•]\s+/g, '$1\n\n');
   text = text.replace(/(?:^|\n)\s*[\*\-•]\s+/g, '\n\n');
 
   // Split natural thought transitions:
