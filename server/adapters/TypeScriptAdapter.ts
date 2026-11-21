@@ -41,85 +41,85 @@ export class TypeScriptAdapter implements LanguageAdapter {
         fs.writeFileSync(path.join(tmpDir, safeName), content || '');
       }
 
-      if (fs.existsSync(path.join(tmpDir, 'main.ts'))) {
-        entryFile = 'main.ts';
-      } else {
-        const tsFile = entries.find(([name]) => name.endsWith('.ts'));
-        if (tsFile) {
-          entryFile = path.basename(tsFile[0]);
-        } else if (entries.length > 0) {
-          fs.writeFileSync(path.join(tmpDir, 'main.ts'), entries[0][1] || '');
+        if (fs.existsSync(path.join(tmpDir, 'main.ts'))) {
           entryFile = 'main.ts';
-        }
-      }
-    }
-
-    const tsxCmd = this.getTsxCommand();
-    const startTime = Date.now();
-    const command = `${tsxCmd} "${entryFile}"`;
-
-    return new Promise((resolve) => {
-      const child = exec(
-        command,
-        {
-          cwd: tmpDir,
-          timeout: 6000,
-          maxBuffer: 1024 * 1024,
-          env: {
-            ...process.env,
-            NODE_NO_WARNINGS: '1',
-          },
-        },
-        (error, stdout, stderr) => {
-          const duration = Date.now() - startTime;
-          try {
-            fs.rmSync(tmpDir, { recursive: true, force: true });
-          } catch { }
-
-          const stdoutStr = stdout ? stdout.toString() : '';
-          const stderrStr = stderr ? stderr.toString() : '';
-
-          if (error) {
-            const isTimeout = Boolean((error as any).killed || (error as any).signal === 'SIGTERM');
-            const failureMessage = isTimeout
-              ? 'Execution timed out (exceeded 6 seconds limit). Ensure your code does not contain an infinite loop.'
-              : (stderrStr.trim() || error.message);
-
-            resolve({
-              stdout: stdoutStr,
-              stderr: failureMessage,
-              exitCode: child.exitCode ?? 1,
-              executionTimeMs: duration,
-              compiledSuccessfully: false,
-            });
-          } else {
-            resolve({
-              stdout: stdoutStr,
-              stderr: stderrStr,
-              exitCode: 0,
-              executionTimeMs: duration,
-              compiledSuccessfully: true,
-            });
+        } else {
+          const tsFile = entries.find(([name]) => name.endsWith('.ts'));
+          if (tsFile) {
+            entryFile = path.basename(tsFile[0]);
+          } else if (entries.length > 0) {
+            fs.writeFileSync(path.join(tmpDir, 'main.ts'), entries[0][1] || '');
+            entryFile = 'main.ts';
           }
         }
-      );
-
-      if (stdinInput && child.stdin) {
-        try {
-          child.stdin.write(stdinInput);
-          child.stdin.end();
-        } catch { }
       }
-    });
-  }
+
+      const tsxCmd = this.getTsxCommand();
+      const startTime = Date.now();
+      const command = `${tsxCmd} "${entryFile}"`;
+
+      return new Promise((resolve) => {
+        const child = exec(
+          command,
+          {
+            cwd: tmpDir,
+            timeout: 6000,
+            maxBuffer: 1024 * 1024,
+            env: {
+              ...process.env,
+              NODE_NO_WARNINGS: '1',
+            },
+          },
+          (error, stdout, stderr) => {
+            const duration = Date.now() - startTime;
+            try {
+              fs.rmSync(tmpDir, { recursive: true, force: true });
+            } catch { }
+
+            const stdoutStr = stdout ? stdout.toString() : '';
+            const stderrStr = stderr ? stderr.toString() : '';
+
+            if (error) {
+              const isTimeout = Boolean((error as any).killed || (error as any).signal === 'SIGTERM');
+              const failureMessage = isTimeout
+                ? 'Execution timed out (exceeded 6 seconds limit). Ensure your code does not contain an infinite loop.'
+                : (stderrStr.trim() || error.message);
+
+              resolve({
+                stdout: stdoutStr,
+                stderr: failureMessage,
+                exitCode: child.exitCode ?? 1,
+                executionTimeMs: duration,
+                compiledSuccessfully: false,
+              });
+            } else {
+              resolve({
+                stdout: stdoutStr,
+                stderr: stderrStr,
+                exitCode: 0,
+                executionTimeMs: duration,
+                compiledSuccessfully: true,
+              });
+            }
+          }
+        );
+
+        if (stdinInput && child.stdin) {
+          try {
+            child.stdin.write(stdinInput);
+            child.stdin.end();
+          } catch { }
+        }
+      });
+    }
 
   public async runTests(
-    codeOrFiles: string | Record<string, string>,
-    exerciseType: string,
-    testCases: TestCase[],
-    exerciseConcept?: string,
-    isProject?: boolean
-  ): Promise<SubmissionResult> {
+      codeOrFiles: string | Record<string, string>,
+      exerciseType: string,
+      testCases: TestCase[],
+      exerciseConcept?: string,
+      isProject?: boolean
+    ): Promise<SubmissionResult> {
     const primaryCode = typeof codeOrFiles === 'string'
       ? codeOrFiles
       : (codeOrFiles['main.ts'] || Object.values(codeOrFiles)[0] || '');
