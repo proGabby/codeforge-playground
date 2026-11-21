@@ -186,83 +186,82 @@ export const RightDrawer: React.FC = () => {
                     const paragraphs = splitMentorParagraphs(msg.text);
 
                     return (
-                      <div
-                        key={msg.id}
-                        className={`p-3 rounded-[10px] text-xs leading-relaxed ${
-                          isUser
-                            ? 'bg-[#121620] text-[#F2F4F8]'
-                            : 'bg-[#121620]/60 text-[#99A3B5]'
-                        }`}
-                      >
-                        {isUser ? (
-                          <div className="whitespace-pre-wrap">{msg.text}</div>
-                        ) : (
-                          <div className="space-y-3">
-                            {paragraphs.map((para, idx) => {
-                              const parsed = parseMentorParagraph(para);
-                              if (parsed.title) {
-                                return (
-                                  <div key={idx} className="space-y-1">
-                                    <div className="font-semibold text-[#F2F4F8] text-[12.5px] leading-snug">
-                                      {parsed.title}
-                                    </div>
-                                    {parsed.body && (
-                                      <div className="text-[#99A3B5] leading-relaxed whitespace-pre-wrap">
-                                        {parsed.body}
+                        <div
+                          key={msg.id}
+                          className={`p-3 rounded-[10px] text-xs leading-relaxed ${isUser
+                              ? 'bg-[#121620] text-[#F2F4F8]'
+                              : 'bg-[#121620]/60 text-[#99A3B5]'
+                            }`}
+                        >
+                          {isUser ? (
+                            <div className="whitespace-pre-wrap">{msg.text}</div>
+                          ) : (
+                            <div className="space-y-3">
+                              {paragraphs.map((para, idx) => {
+                                const parsed = parseMentorParagraph(para);
+                                if (parsed.title) {
+                                  return (
+                                    <div key={idx} className="space-y-1">
+                                      <div className="font-semibold text-[#F2F4F8] text-[12.5px] leading-snug">
+                                        {parsed.title}
                                       </div>
-                                    )}
-                                  </div>
+                                      {parsed.body && (
+                                        <div className="text-[#99A3B5] leading-relaxed whitespace-pre-wrap">
+                                          {parsed.body}
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                }
+                                return (
+                                  <p key={idx} className="text-[#99A3B5] leading-relaxed whitespace-pre-wrap">
+                                    {parsed.body}
+                                  </p>
                                 );
-                              }
-                              return (
-                                <p key={idx} className="text-[#99A3B5] leading-relaxed whitespace-pre-wrap">
-                                  {parsed.body}
-                                </p>
-                              );
-                            })}
-                          </div>
-                        )}
+                              })}
+                            </div>
+                          )}
                       </div>
                     );
                   })
                 )}
 
-            {isAskingAi && (
-              <div className="bg-[#121620]/60 rounded-[10px] p-2.5 text-xs text-[#737F94] animate-pulse">
-                Thinking through a helpful question...
+                {isAskingAi && (
+                  <div className="bg-[#121620]/60 rounded-[10px] p-2.5 text-xs text-[#737F94] animate-pulse">
+                    Thinking through a helpful question...
+                  </div>
+                )}
+                <div ref={chatBottomRef} />
               </div>
-            )}
-            <div ref={chatBottomRef} />
-          </div>
 
-        {/* Chat Input Form */}
-        <form onSubmit={handleSendQuestion} className="pt-1">
-          <div className="bg-[#121620] rounded-[10px] px-3 py-2 flex items-center justify-between gap-2">
-            <input
-              type="text"
-              value={questionInput}
-              onChange={(e) => setQuestionInput(e.target.value)}
-              placeholder="Ask a question..."
-              disabled={isAskingAi}
-              className="w-full bg-transparent text-xs text-[#F2F4F8] placeholder-[#737F94] outline-none"
-            />
-            <button
-              type="submit"
-              disabled={!questionInput.trim() || isAskingAi}
-              className="w-5 h-5 rounded-[6px] bg-[#1E2536] hover:bg-[#3B82F6] text-[#F2F4F8] disabled:opacity-40 flex items-center justify-center shrink-0 transition-colors cursor-pointer"
-              title="Send question to Socratic Mentor"
-            >
-              <ArrowUp className="w-3 h-3" />
-            </button>
-          </div>
-          <div className="text-[11px] text-[#737F94] text-center mt-1.5">
-            Guidance, not the solution.
-          </div>
-        </form>
-      </section>
-    </>
-  )
-}
+              {/* Chat Input Form */}
+              <form onSubmit={handleSendQuestion} className="pt-1">
+                <div className="bg-[#121620] rounded-[10px] px-3 py-2 flex items-center justify-between gap-2">
+                  <input
+                    type="text"
+                    value={questionInput}
+                    onChange={(e) => setQuestionInput(e.target.value)}
+                    placeholder="Ask a question..."
+                    disabled={isAskingAi}
+                    className="w-full bg-transparent text-xs text-[#F2F4F8] placeholder-[#737F94] outline-none"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!questionInput.trim() || isAskingAi}
+                    className="w-5 h-5 rounded-[6px] bg-[#1E2536] hover:bg-[#3B82F6] text-[#F2F4F8] disabled:opacity-40 flex items-center justify-center shrink-0 transition-colors cursor-pointer"
+                    title="Send question to Socratic Mentor"
+                  >
+                    <ArrowUp className="w-3 h-3" />
+                  </button>
+                </div>
+                <div className="text-[11px] text-[#737F94] text-center mt-1.5">
+                  Guidance, not the solution.
+                </div>
+              </form>
+            </section>
+          </>
+        )
+        }
       </div >
     </aside >
   );

@@ -156,9 +156,9 @@ export const AiMentorPanel: React.FC = () => {
 
             <div
               className={`max-w-[85%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed ${msg.sender === 'user'
-                  ? 'bg-indigo-600/90 text-white rounded-tr-none'
-                  : 'bg-slate-800/90 text-slate-200 border border-slate-700/80 rounded-tl-none font-sans'
-              }`}
+                ? 'bg-indigo-600/90 text-white rounded-tr-none'
+                : 'bg-slate-800/90 text-slate-200 border border-slate-700/80 rounded-tl-none font-sans'
+                }`}
             >
               {msg.sender === 'user' ? (
                 <div className="whitespace-pre-wrap">{msg.text}</div>
@@ -188,52 +188,52 @@ export const AiMentorPanel: React.FC = () => {
                   })}
                 </div>
               )}
-            <div
-              className={`text-[9px] mt-1.5 ${msg.sender === 'user' ? 'text-indigo-200/80 text-right' : 'text-slate-400'
-                }`}
-            >
-              {msg.timestamp}
+              <div
+                className={`text-[9px] mt-1.5 ${msg.sender === 'user' ? 'text-indigo-200/80 text-right' : 'text-slate-400'
+                  }`}
+              >
+                {msg.timestamp}
+              </div>
             </div>
-          </div>
           </div>
         ))}
 
-      {isAskingAi && (
-        <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-purple-950 border border-purple-600/50 text-purple-300 flex items-center justify-center shrink-0">
-            <Bot className="w-4 h-4" />
+        {isAskingAi && (
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-lg bg-purple-950 border border-purple-600/50 text-purple-300 flex items-center justify-center shrink-0">
+              <Bot className="w-4 h-4" />
+            </div>
+            <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl rounded-tl-none px-4 py-2.5 text-xs text-slate-300 flex items-center gap-2">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400" />
+              <span>Gemini AI is analyzing your code...</span>
+            </div>
           </div>
-          <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl rounded-tl-none px-4 py-2.5 text-xs text-slate-300 flex items-center gap-2">
-            <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400" />
-            <span>Gemini AI is analyzing your code...</span>
-          </div>
+        )}
+
+        <div ref={chatEndRef} />
+      </div>
+
+      {/* Input Form */}
+      <div className="p-3 bg-slate-950/80 border-t border-slate-800/80">
+        <div className="flex items-center gap-2 bg-slate-900/90 rounded-lg border border-slate-700/80 p-1.5 focus-within:border-purple-500/60 focus-within:ring-1 focus-within:ring-purple-500/30 transition-all">
+          <input
+            type="text"
+            value={inputQuery}
+            onChange={(e) => setInputQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={isAskingAi}
+            placeholder="Ask AI Mentor a question about your attempt..."
+            className="flex-1 bg-transparent px-2.5 py-1 text-xs text-slate-100 placeholder-slate-500 focus:outline-none"
+          />
+          <button
+            onClick={() => handleSend()}
+            disabled={!inputQuery.trim() || isAskingAi}
+            className="p-1.5 rounded-md bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white transition-all shadow-sm"
+          >
+            <Send className="w-3.5 h-3.5" />
+          </button>
         </div>
-      )}
-
-      <div ref={chatEndRef} />
-    </div>
-
-      {/* Input Form */ }
-  <div className="p-3 bg-slate-950/80 border-t border-slate-800/80">
-    <div className="flex items-center gap-2 bg-slate-900/90 rounded-lg border border-slate-700/80 p-1.5 focus-within:border-purple-500/60 focus-within:ring-1 focus-within:ring-purple-500/30 transition-all">
-      <input
-        type="text"
-        value={inputQuery}
-        onChange={(e) => setInputQuery(e.target.value)}
-        onKeyDown={handleKeyDown}
-        disabled={isAskingAi}
-        placeholder="Ask AI Mentor a question about your attempt..."
-        className="flex-1 bg-transparent px-2.5 py-1 text-xs text-slate-100 placeholder-slate-500 focus:outline-none"
-      />
-      <button
-        onClick={() => handleSend()}
-        disabled={!inputQuery.trim() || isAskingAi}
-        className="p-1.5 rounded-md bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white transition-all shadow-sm"
-      >
-        <Send className="w-3.5 h-3.5" />
-      </button>
-    </div>
-  </div>
+      </div>
     </div >
   );
 };

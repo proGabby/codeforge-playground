@@ -38,47 +38,47 @@ export class GeminiMentorEngine {
 
     let text = raw;
 
-    // 1. Remove code block fences
+    // Remove code block fences
     text = text.replace(/```[a-zA-Z]*\n?([\s\S]*?)```/g, '$1');
 
-    // 2. Break headers (### Heading) into their own standalone paragraph
+    // Break headers (### Heading) into their own standalone paragraph
     text = text.replace(/(?:^|\n)\s*#{1,6}\s*([^\n]+)/g, '\n\n$1\n\n');
     text = text.replace(/#{1,6}\s*/g, '');
 
-    // 3. Strip bold & italic markdown (**bold**, *italic*, __bold__, _italic_)
+    // Strip bold & italic markdown (**bold**, *italic*, __bold__, _italic_)
     text = text.replace(/\*\*([^*]+)\*\*/g, '$1');
     text = text.replace(/__([^_]+)__/g, '$1');
     text = text.replace(/\*([^*]+)\*/g, '$1');
     text = text.replace(/_([^_]+)_/g, '$1');
 
-    // 4. Strip inline code backticks (`code` -> code)
+    // Strip inline code backticks (`code` -> code)
     text = text.replace(/`([^`]+)`/g, '$1');
     text = text.replace(/`+/g, '');
 
-    // 5. Break inline numbered items (e.g. "...about. 1. errors.Is..." or "...chain. 2. errors.As...")
+    // Break inline numbered items (e.g. "...about. 1. errors.Is..." or "...chain. 2. errors.As...")
     // into separate paragraphs
     text = text.replace(/(?:^|[\.\?!]\s+|\n\s*)(\d+\.\s+)/g, '.\n\n$1');
     text = text.replace(/\.{2,}\n\n/g, '.\n\n');
 
-    // 6. Break bullet points (* item, - item, • item) into new paragraphs
+    // Break bullet points (* item, - item, • item) into new paragraphs
     text = text.replace(/(?:^|\n)\s*[\*\-•]\s+/g, '\n\n');
 
-    // 7. Split natural thought transitions:
+    // Split natural thought transitions:
     // e.g. "...appropriately. In modern Go..." -> paragraph break
     text = text.replace(/([\.\?!])\s+(In modern Go|In Go|In Python|Beyond [a-zA-Z0-9_\.]+,|Here are|Let's address|Take a look)/g, '$1\n\n$2');
 
-    // 8. If closing question at the end:
+    // If closing question at the end:
     // e.g. "...errors.As. Would you like..." -> break into its own paragraph
     text = text.replace(/([\.\?!])\s+(Would you like|Do you want|Let me know|Feel free to|What part of)/g, '$1\n\n$2');
 
-    // 9. If a numbered item has a function name or title immediately followed by "This function", "Introduced in", "Checks", etc.:
+    // If a numbered item has a function name or title immediately followed by "This function", "Introduced in", "Checks", etc.:
     // e.g. "1. errors.Is This function" -> "1. errors.Is\nThis function"
     text = text.replace(/(\d+\.\s+[A-Za-z0-9_.]+(?:\s*\([^)]*\))?)\s+(This function|Introduced in|Checks|Unpacks|Combines|Returns|Used for|Allows|When|If)/g, '$1\n$2');
 
-    // 10. Strip stray asterisks
+    // Strip stray asterisks
     text = text.replace(/\*+/g, '');
 
-    // 11. Normalize multiple newlines
+    // Normalize multiple newlines
     text = text.replace(/\r\n/g, '\n');
     text = text.replace(/\n{3,}/g, '\n\n');
 
@@ -125,8 +125,8 @@ CORE TEACHING PRINCIPLES:
 2. SOCRATIC GUIDANCE ON EXERCISES:
    - When a student is debugging an error or test failure, explain what happened and why in plain English, and ask thoughtful guiding questions to help them fix their code.
    - Do NOT dump the full completed solution code for the exercise unless the student explicitly demands "give me the solution" or "show me the code".
-3. TONE:
-   - Be encouraging, technical, clear, patient, and conversational.`;
+    3. TONE:
+    - Be encouraging, technical, clear, patient, and conversational.`;
 
     let contextPrompt = `EXERCISE: ${params.exerciseTitle} (${params.concept})
 INSTRUCTIONS: ${params.instructions}
@@ -142,9 +142,9 @@ ${params.userCode}
 
     if (params.stdout || params.stderr) {
       contextPrompt += `\nLAST EXECUTION ATTEMPT:
-STDOUT: ${params.stdout || '(None)'}
-STDERR: ${params.stderr || '(None)'}
-`;
+      STDOUT: ${params.stdout || '(None)'}
+      STDERR: ${params.stderr || '(None)'}
+      `;
     }
 
     // Build multi-turn conversation contents array
@@ -154,7 +154,7 @@ STDERR: ${params.stderr || '(None)'}
       // Seed first turn with instructions and context
       contents.push({
         role: 'user',
-        parts: [{ text: `${systemPrompt}\n\n${contextPrompt}\nI am working on this exercise and will ask you questions.` }],
+        parts: [{ text: `${systemPrompt} \n\n${contextPrompt} \nI am working on this exercise and will ask you questions.` }],
       });
       contents.push({
         role: 'model',
