@@ -41,8 +41,16 @@ export class TypeScriptAdapter implements LanguageAdapter {
         fs.writeFileSync(path.join(tmpDir, safeName), content || '');
       }
 
-      if (!fs.existsSync(path.join(tmpDir, 'main.ts')) && entries.length > 0) {
-        entryFile = path.basename(entries[0][0]);
+      if (fs.existsSync(path.join(tmpDir, 'main.ts'))) {
+        entryFile = 'main.ts';
+      } else {
+        const tsFile = entries.find(([name]) => name.endsWith('.ts'));
+        if (tsFile) {
+          entryFile = path.basename(tsFile[0]);
+        } else if (entries.length > 0) {
+          fs.writeFileSync(path.join(tmpDir, 'main.ts'), entries[0][1] || '');
+          entryFile = 'main.ts';
+        }
       }
     }
 

@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { LanguageRegistry } from '../adapters/LanguageAdapter';
 import { GO_CURRICULUM } from '../data/GoCurriculum';
 import { PYTHON_CURRICULUM } from '../data/PythonCurriculum';
+import { JAVASCRIPT_CURRICULUM } from '../data/JavaScriptCurriculum';
+import { TYPESCRIPT_CURRICULUM } from '../data/TypeScriptCurriculum';
 import { TursoStore } from '../store/TursoStore';
 
 export const codeRouter = Router();
@@ -33,9 +35,13 @@ codeRouter.post('/submit', async (req, res) => {
   }
 
   let exercise = undefined;
-  const curriculums = languageId === 'python'
-    ? [PYTHON_CURRICULUM, GO_CURRICULUM]
-    : [GO_CURRICULUM, PYTHON_CURRICULUM];
+  const curriculums = languageId === 'typescript'
+    ? [TYPESCRIPT_CURRICULUM, JAVASCRIPT_CURRICULUM, PYTHON_CURRICULUM, GO_CURRICULUM]
+    : languageId === 'javascript'
+      ? [JAVASCRIPT_CURRICULUM, TYPESCRIPT_CURRICULUM, PYTHON_CURRICULUM, GO_CURRICULUM]
+      : languageId === 'python'
+        ? [PYTHON_CURRICULUM, GO_CURRICULUM, JAVASCRIPT_CURRICULUM, TYPESCRIPT_CURRICULUM]
+        : [GO_CURRICULUM, PYTHON_CURRICULUM, JAVASCRIPT_CURRICULUM, TYPESCRIPT_CURRICULUM];
 
   for (const curriculum of curriculums) {
     for (const topic of curriculum.topics) {

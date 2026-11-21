@@ -59,11 +59,15 @@ export function useCodeExecution({
       ? defaultActiveFile
       : (newFiles[defaultFileName] !== undefined
         ? defaultFileName
-        : (newFiles['main.py'] !== undefined
-          ? 'main.py'
-          : (newFiles['main.go'] !== undefined
-            ? 'main.go'
-            : (keys[0] || defaultFileName))));
+        : (newFiles['main.ts'] !== undefined
+          ? 'main.ts'
+          : (newFiles['main.js'] !== undefined
+            ? 'main.js'
+            : (newFiles['main.py'] !== undefined
+              ? 'main.py'
+              : (newFiles['main.go'] !== undefined
+                ? 'main.go'
+                : (keys[0] || defaultFileName))))));
     setFilesState(newFiles);
     setActiveFileName(targetKey);
   }, [defaultFileName]);
@@ -149,6 +153,18 @@ export function useCodeExecution({
           email: userEmail,
         }),
       });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        setExecutionResult({
+          stdout: '',
+          stderr: (errorData as any)?.error || 'Server error during submission evaluation',
+          exitCode: 1,
+          executionTimeMs: 0,
+          compiledSuccessfully: false,
+        });
+        return;
+      }
+
       const data: SubmissionResult = await res.json();
       setSubmissionResult(data);
       setExecutionResult(data.execution);
@@ -157,7 +173,7 @@ export function useCodeExecution({
         // Cache solution locally (serialize multi-file if multiple exist)
         const solutionToSave = Object.keys(files).length > 1
           ? JSON.stringify({ files })
-          : (files[defaultFileName] || files['main.py'] || files['main.go'] || code);
+          : (files[defaultFileName] || files['main.ts'] || files['main.js'] || files['main.py'] || files['main.go'] || code);
 
         setSavedSolutions((prev) => ({
           ...prev,

@@ -1,6 +1,8 @@
 import { UserProgress } from '../../src/types';
 import { GO_CURRICULUM } from '../data/GoCurriculum';
 import { PYTHON_CURRICULUM } from '../data/PythonCurriculum';
+import { JAVASCRIPT_CURRICULUM } from '../data/JavaScriptCurriculum';
+import { TYPESCRIPT_CURRICULUM } from '../data/TypeScriptCurriculum';
 
 export class AdaptiveEngine {
   /**
@@ -10,9 +12,13 @@ export class AdaptiveEngine {
     const failedCounts = progress.failedAttemptsCount || {};
     const conceptFailures: Record<string, number> = {};
 
-    const curriculums = languageId === 'python'
-      ? [PYTHON_CURRICULUM, GO_CURRICULUM]
-      : [GO_CURRICULUM, PYTHON_CURRICULUM];
+    const curriculums = languageId === 'typescript'
+      ? [TYPESCRIPT_CURRICULUM, JAVASCRIPT_CURRICULUM, PYTHON_CURRICULUM, GO_CURRICULUM]
+      : languageId === 'javascript'
+        ? [JAVASCRIPT_CURRICULUM, TYPESCRIPT_CURRICULUM, PYTHON_CURRICULUM, GO_CURRICULUM]
+        : languageId === 'python'
+          ? [PYTHON_CURRICULUM, GO_CURRICULUM, JAVASCRIPT_CURRICULUM, TYPESCRIPT_CURRICULUM]
+          : [GO_CURRICULUM, PYTHON_CURRICULUM, JAVASCRIPT_CURRICULUM, TYPESCRIPT_CURRICULUM];
 
     // Map failed exercises to their concept tags
     for (const [exerciseId, failCount] of Object.entries(failedCounts)) {

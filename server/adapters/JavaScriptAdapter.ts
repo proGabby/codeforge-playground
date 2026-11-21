@@ -33,8 +33,16 @@ export class JavaScriptAdapter implements LanguageAdapter {
         fs.writeFileSync(path.join(tmpDir, safeName), content || '');
       }
 
-      if (!fs.existsSync(path.join(tmpDir, 'main.js')) && entries.length > 0) {
-        entryFile = path.basename(entries[0][0]);
+      if (fs.existsSync(path.join(tmpDir, 'main.js'))) {
+        entryFile = 'main.js';
+      } else {
+        const jsFile = entries.find(([name]) => name.endsWith('.js'));
+        if (jsFile) {
+          entryFile = path.basename(jsFile[0]);
+        } else if (entries.length > 0) {
+          fs.writeFileSync(path.join(tmpDir, 'main.js'), entries[0][1] || '');
+          entryFile = 'main.js';
+        }
       }
     }
 

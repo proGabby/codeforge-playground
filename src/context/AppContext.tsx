@@ -258,7 +258,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setActiveTopicId(topic.id);
           setActiveExercise(ex);
 
-          const defaultFileName = ex.languageId === 'python' ? 'main.py' : 'main.go';
+          const isTs = ex.languageId === 'typescript';
+          const isJs = ex.languageId === 'javascript';
+          const isPy = ex.languageId === 'python';
+          const defaultFileName = isTs ? 'main.ts' : isJs ? 'main.js' : isPy ? 'main.py' : 'main.go';
 
           // Restore previously saved answer from Turso/local cache if available
           const previousSolution = savedSolutions[ex.id];
