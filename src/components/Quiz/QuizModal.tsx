@@ -169,10 +169,25 @@ export const QuizModal: React.FC = () => {
 
             {/* Subtitle Row */}
             <div className="flex items-center justify-between mt-2 mb-3 text-xs">
-              <span className="text-[#737F94] font-medium">
-                Question {currentQuestionIndex + 1} of {totalQuestions} ·{' '}
-                {submissionResult ? 'Review' : 'Active recall'}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[#737F94] font-medium">
+                  Question {currentQuestionIndex + 1} of {totalQuestions} ·{' '}
+                  {submissionResult ? 'Review' : 'Active recall'}
+                </span>
+                {currentQ?.difficulty && (
+                  <span
+                    className={`text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full ${
+                      currentQ.difficulty === 'easy'
+                        ? 'text-emerald-400 bg-emerald-950/40 border border-emerald-800/40'
+                        : currentQ.difficulty === 'medium'
+                        ? 'text-amber-400 bg-amber-950/40 border border-amber-800/40'
+                        : 'text-indigo-400 bg-indigo-950/40 border border-indigo-800/40'
+                    }`}
+                  >
+                    {currentQ.difficulty}
+                  </span>
+                )}
+              </div>
               <span className="font-mono font-semibold text-[#3B82F6]">
                 +{activeQuiz.xpReward} XP
               </span>

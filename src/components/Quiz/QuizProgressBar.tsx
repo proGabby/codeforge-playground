@@ -16,13 +16,15 @@ export const QuizProgressBar: React.FC<QuizProgressBarProps> = ({
   submissionResult,
   onSelectQuestion,
 }) => {
+  const isLargeSet = questions.length > 15;
+
   return (
-    <div className="flex items-center gap-2 mb-6">
+    <div className={`flex items-center mb-6 ${isLargeSet ? 'gap-0.5 sm:gap-1' : 'gap-2'}`}>
       {questions.map((q, idx) => {
         let segmentColor = 'bg-[#1E2536]';
         if (submissionResult) {
           const qResult = submissionResult.questionResults.find((qr) => qr.questionId === q.id);
-          segmentColor = qResult?.isCorrect ? 'bg-[#3B82F6]' : 'bg-[#1E2536]';
+          segmentColor = qResult?.isCorrect ? 'bg-emerald-500' : 'bg-red-500/70';
         } else {
           if (answers[q.id] || idx <= currentQuestionIndex) {
             segmentColor = 'bg-[#3B82F6]';
@@ -36,9 +38,10 @@ export const QuizProgressBar: React.FC<QuizProgressBarProps> = ({
             key={q.id}
             type="button"
             onClick={() => onSelectQuestion(idx)}
-            className={`h-1 flex-1 rounded-full transition-all ${segmentColor} hover:opacity-90 cursor-pointer ${isCurrent ? 'ring-1 ring-[#3B82F6]/50' : ''
-              }`}
-            title={`Question ${idx + 1}`}
+            className={`${isLargeSet ? 'h-1.5 min-w-[2px]' : 'h-1'} flex-1 rounded-full transition-all ${segmentColor} hover:opacity-90 cursor-pointer ${
+              isCurrent ? 'ring-1 ring-[#3B82F6] ring-offset-1 ring-offset-[#0E121B]' : ''
+            }`}
+            title={`Question ${idx + 1} (${q.difficulty || 'standard'}): ${answers[q.id] ? 'Answered' : 'Unanswered'}`}
           />
         );
       })}
