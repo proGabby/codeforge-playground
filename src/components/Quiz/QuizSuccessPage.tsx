@@ -166,7 +166,15 @@ export const QuizSuccessPage: React.FC<QuizSuccessPageProps> = ({
           <div className="mt-4 pt-3 border-t border-[#171E2D] space-y-3 animate-in fade-in">
             <p className="text-xs text-[#99A3B5] leading-relaxed">
               Mastering {conceptTitle.toLowerCase()} ensures your mental model matches real-world execution.
-              In {activeQuiz.languageId === 'python' ? 'Python' : 'Go'}, idioms around this pattern avoid memory leaks,
+              In {activeQuiz.languageId === 'python'
+                ? 'Python'
+                : activeQuiz.languageId === 'typescript'
+                ? 'TypeScript'
+                : activeQuiz.languageId === 'javascript'
+                ? 'JavaScript'
+                : activeQuiz.languageId === 'go'
+                ? 'Go'
+                : 'production systems'}, idioms around this pattern avoid memory leaks,
               unnecessary allocations, and unexpected mutation bugs.
             </p>
 

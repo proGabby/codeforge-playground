@@ -130,7 +130,16 @@ export const QuizModal: React.FC = () => {
   const handleRevisit = (concept: string) => {
     handleClose();
     if (askAiMentor) {
-      const langLabel = activeQuiz.languageId === 'python' ? 'Python' : 'Go';
+      const langLabel =
+        activeQuiz.languageId === 'python'
+          ? 'Python'
+          : activeQuiz.languageId === 'typescript'
+          ? 'TypeScript'
+          : activeQuiz.languageId === 'javascript'
+          ? 'JavaScript'
+          : activeQuiz.languageId === 'concept'
+          ? 'modern software engineering'
+          : 'Go';
       askAiMentor(`Can you explain the concept of "${concept}" in ${langLabel} and show an example of how it works?`);
     }
   };
