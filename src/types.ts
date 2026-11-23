@@ -218,6 +218,20 @@ export interface QuizSubmissionResult {
   }[];
 }
 
+export interface RemediationArticle {
+  articleId: string;
+  questionId: string;
+  quizId: string;
+  title: string;
+  conceptTag: string;
+  topicTitle: string;
+  estimatedReadMinutes: number;
+  markdown: string;
+  keyTakeaways: string[];
+  diagnosticSummary?: string;
+  recommendedNextStep?: string;
+}
+
 export interface ChatMessage {
   id: string;
   sender: 'user' | 'ai';
