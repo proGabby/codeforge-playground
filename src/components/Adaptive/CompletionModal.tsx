@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import confetti from 'canvas-confetti';
-import { Check, CheckCircle2, ArrowRight, Flame, Award } from 'lucide-react';
+import { Check, CheckCircle2, ArrowRight, Flame, Award, X } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import type { Exercise } from '../../types';
 
@@ -96,11 +96,14 @@ export const CompletionModal: React.FC = () => {
 
           <button
             onClick={handleClose}
-            className="flex items-center gap-1.5 text-xs font-mono text-[#737F94] hover:text-[#F2F4F8] transition-colors py-0.5 px-1 rounded cursor-pointer"
+            className="flex items-center gap-2 px-2.5 py-1 rounded-[8px] bg-[#121620] hover:bg-[#1E2536] border border-[#1E2536] hover:border-[#2A344B] text-[#99A3B5] hover:text-[#F2F4F8] transition-all cursor-pointer group shadow-sm"
             title="Close (esc)"
+            aria-label="Close modal"
           >
-            <span className="text-[11px] font-mono tracking-tight text-[#737F94]">esc</span>
-            <span className="text-sm font-sans leading-none text-[#737F94]">×</span>
+            <span className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-[#1E2536] group-hover:bg-[#253248] text-[#99A3B5] group-hover:text-[#F2F4F8] border border-[#2A344B]/60 transition-colors">
+              esc
+            </span>
+            <X className="w-3.5 h-3.5 text-[#99A3B5] group-hover:text-[#F2F4F8] transition-colors" />
           </button>
         </div>
 
