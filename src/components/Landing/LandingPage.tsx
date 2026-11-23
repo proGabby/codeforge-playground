@@ -9,11 +9,13 @@ import type { SupportedLanguage } from '../../types';
 
 interface LandingPageProps {
   onEnterPlayground: (lang?: SupportedLanguage) => void;
+  onEnterQuiz?: () => void;
   onOpenEmailModal: () => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
   onEnterPlayground,
+  onEnterQuiz,
   onOpenEmailModal,
 }) => {
   const scrollToCurriculum = () => {
@@ -27,6 +29,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     <div className="min-h-screen w-full bg-[#0B0E14] text-[#F2F4F8] selection:bg-[#3B82F6]/30 selection:text-white font-sans overflow-x-hidden">
       <LandingNav
         onEnterPlayground={onEnterPlayground}
+        onEnterQuiz={onEnterQuiz}
         onOpenEmailModal={onOpenEmailModal}
       />
 

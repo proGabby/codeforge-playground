@@ -6,6 +6,7 @@ import { GO_QUIZZES } from '../server/data/quizzes/goQuizzes';
 import { PYTHON_QUIZZES } from '../server/data/quizzes/pythonQuizzes';
 import { JAVASCRIPT_QUIZZES } from '../server/data/quizzes/jsQuizzes';
 import { TYPESCRIPT_QUIZZES } from '../server/data/quizzes/tsQuizzes';
+import { ENGINEERING_CONCEPT_QUIZZES } from '../server/data/quizzes/engineeringConceptQuizzes';
 import { getQuizByTopicId, getQuizById, ALL_QUIZZES } from '../server/data/quizzes';
 
 console.log('--- Starting CodeForge Section Quiz Audit ---');
@@ -20,7 +21,7 @@ function assert(condition: boolean, msg: string) {
     passedChecks++;
   } else {
     errors.push(msg);
-    console.error(`❌ FAIL: ${msg}`);
+    console.error(`FAIL: ${msg}`);
   }
 }
 
@@ -52,7 +53,61 @@ for (const topic of TYPESCRIPT_CURRICULUM.topics) {
   assert(!!quiz, `TypeScript topic "${topic.id}" (${topic.title}) must have a section quiz.`);
 }
 
-// 5. Audit Question Structure & Integrity
+// 5. Audit Engineering Concept Quizzes
+console.log(`Auditing Practical Engineering Concept Quizzes (${ENGINEERING_CONCEPT_QUIZZES.length} quizzes)...`);
+const expectedDomains = [
+  'system-design',
+  'databases',
+  'devops-cloud',
+  'networking',
+  'concurrency-distributed',
+];
+
+assert(
+  ENGINEERING_CONCEPT_QUIZZES.length >= 15,
+  `Must have at least 15 concept quizzes (found ${ENGINEERING_CONCEPT_QUIZZES.length})`
+);
+
+for (const domain of expectedDomains) {
+  const domainQuizzes = ENGINEERING_CONCEPT_QUIZZES.filter((q) => q.domain === domain);
+  assert(
+    domainQuizzes.length >= 3,
+    `Domain "${domain}" must have at least 3 quizzes (found ${domainQuizzes.length})`
+  );
+  const difficulties = domainQuizzes.map((q) => q.difficulty);
+  assert(
+    difficulties.includes('beginner') &&
+    difficulties.includes('intermediate') &&
+    difficulties.includes('advanced'),
+    `Domain "${domain}" must cover beginner, intermediate, and advanced levels`
+  );
+}
+
+for (const quiz of ENGINEERING_CONCEPT_QUIZZES) {
+  assert(!!quiz.domainLabel, `Concept quiz "${quiz.id}" must have a domainLabel.`);
+  assert(!!quiz.estimatedMinutes && quiz.estimatedMinutes > 0, `Concept quiz "${quiz.id}" must have estimatedMinutes.`);
+  for (const q of quiz.questions) {
+    assert(!!q.conceptTag && q.conceptTag.length > 3, `Concept quiz question "${q.id}" must have a valid conceptTag.`);
+  }
+}
+
+// Check that EVERY Engineering Concept Quiz has at least 50 questions from easy to hard
+console.log(`Auditing that all ${ENGINEERING_CONCEPT_QUIZZES.length} Engineering Concept Quizzes have at least 50 questions from easy to hard...`);
+for (const quiz of ENGINEERING_CONCEPT_QUIZZES) {
+  assert(
+    quiz.questions.length >= 50,
+    `Quiz "${quiz.id}" (${quiz.title}) must have at least 50 questions (found ${quiz.questions.length})`
+  );
+  const diffs = quiz.questions.map((q) => q.difficulty);
+  const easyCount = diffs.filter((d) => d === 'easy').length;
+  const medCount = diffs.filter((d) => d === 'medium').length;
+  const hardCount = diffs.filter((d) => d === 'hard').length;
+  assert(easyCount >= 15, `${quiz.title}: Must have at least 15 easy questions (found ${easyCount})`);
+  assert(medCount >= 15, `${quiz.title}: Must have at least 15 medium questions (found ${medCount})`);
+  assert(hardCount >= 15, `${quiz.title}: Must have at least 15 hard questions (found ${hardCount})`);
+}
+
+// 6. Audit Question Structure & Integrity
 console.log(`Auditing questions in all ${ALL_QUIZZES.length} quizzes...`);
 const seenQuestionIds = new Set<string>();
 
@@ -83,9 +138,9 @@ for (const quiz of ALL_QUIZZES) {
 console.log('\n========================================');
 console.log(`Audit Finished: ${passedChecks} / ${totalChecks} checks passed.`);
 if (errors.length === 0) {
-  console.log(`🎉 100% AUDIT PASS: All ${ALL_QUIZZES.length} section quizzes across Go, Python, JavaScript & TypeScript are verified and valid!`);
+  console.log(`100% AUDIT PASS: All ${ALL_QUIZZES.length} quizzes (${ALL_QUIZZES.length - ENGINEERING_CONCEPT_QUIZZES.length} curriculum section quizzes + ${ENGINEERING_CONCEPT_QUIZZES.length} practical engineering concept quizzes) are verified and valid!`);
 } else {
-  console.error(`💥 AUDIT FAILED with ${errors.length} errors:`);
+  console.error(`AUDIT FAILED with ${errors.length} errors:`);
   errors.forEach((err, idx) => console.error(`${idx + 1}. ${err}`));
   process.exit(1);
 }
