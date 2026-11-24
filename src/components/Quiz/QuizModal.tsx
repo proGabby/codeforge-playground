@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { ArrowRight, RotateCcw } from 'lucide-react';
+import { ArrowRight, RotateCcw, Sparkles } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import type { QuizSubmissionResult, QuizQuestion } from '../../types';
 import { QuizHeader } from './QuizHeader';
@@ -24,6 +24,7 @@ export const QuizModal: React.FC = () => {
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [checkedQuestions, setCheckedQuestions] = useState<Record<string, { isCorrect: boolean }>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionResult, setSubmissionResult] = useState<QuizSubmissionResult | null>(null);
   const [viewMode, setViewMode] = useState<QuizViewMode>('taking');
@@ -54,11 +55,24 @@ export const QuizModal: React.FC = () => {
   const totalQuestions = questions.length;
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
 
+  const isCurrentChecked = !!checkedQuestions[currentQ?.id];
+  const isCurrentCorrect = checkedQuestions[currentQ?.id]?.isCorrect ?? false;
+
   const handleSelectOption = (optionId: string) => {
-    if (submissionResult) return; // Locked once submitted
+    if (submissionResult) return; // Locked once overall quiz submitted
+    if (isCurrentChecked) return; // Locked once this question is checked
     setAnswers((prev) => ({
       ...prev,
       [currentQ.id]: optionId,
+    }));
+  };
+
+  const handleCheckCurrent = () => {
+    if (!currentQ || !answers[currentQ.id]) return;
+    const isCorrect = answers[currentQ.id] === currentQ.correctOptionId;
+    setCheckedQuestions((prev) => ({
+      ...prev,
+      [currentQ.id]: { isCorrect },
     }));
   };
 
@@ -99,6 +113,7 @@ export const QuizModal: React.FC = () => {
 
   const handleRetake = () => {
     setAnswers({});
+    setCheckedQuestions({});
     setSubmissionResult(null);
     setCurrentQuestionIndex(0);
     setViewMode('taking');
@@ -108,6 +123,7 @@ export const QuizModal: React.FC = () => {
   const handleClose = () => {
     setIsQuizModalOpen(false);
     setAnswers({});
+    setCheckedQuestions({});
     setSubmissionResult(null);
     setCurrentQuestionIndex(0);
     setViewMode('taking');
@@ -115,9 +131,9 @@ export const QuizModal: React.FC = () => {
   };
 
   const formatConceptTag = (tag?: string): string => {
-    if (!tag) return 'related concept';
+    if (!tag) return 'software engineering concept';
     return tag
-      .replace(/^(go|py)-/, '')
+      .replace(/^(go|py|ts|js)-/, '')
       .replace(/-vs-/g, ' vs. ')
       .replace(/-/g, ' ');
   };
@@ -243,6 +259,7 @@ export const QuizModal: React.FC = () => {
             currentQuestionIndex={currentQuestionIndex}
             answers={answers}
             submissionResult={submissionResult}
+            checkedQuestions={checkedQuestions}
             onSelectQuestion={(idx) => {
               setCurrentQuestionIndex(idx);
               if (viewMode === 'all_answers') setViewMode('review');
@@ -273,12 +290,70 @@ export const QuizModal: React.FC = () => {
                 questionIndex={currentQuestionIndex}
                 totalQuestions={totalQuestions}
                 xpReward={activeQuiz.xpReward}
-                isReviewMode={!!submissionResult}
+                isReviewMode={!!submissionResult || isCurrentChecked}
                 answers={answers}
                 onSelectOption={handleSelectOption}
               />
 
-              {/* Feedback / Mastery Card in Review Mode */}
+              {/* Immediate Per-Question Check Feedback */}
+              {!submissionResult && isCurrentChecked && (
+                <div className="mb-5 animate-in fade-in duration-200">
+                  {isCurrentCorrect ? (
+                    <div className="bg-[#0A1A12] border border-emerald-500/30 rounded-xl p-3.5 sm:p-4 text-xs">
+                      <div className="flex items-center gap-2 text-emerald-400 font-semibold mb-1">
+                        <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-[11px] font-bold">
+                          ✓
+                        </span>
+                        <span>Spot on!</span>
+                      </div>
+                      <p className="text-[#99A3B5] leading-relaxed pl-7">
+                        {currentQ.explanation}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="bg-[#140F14] border border-rose-500/30 rounded-xl p-4 sm:p-5">
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shrink-0 mt-0.5">
+                          <Sparkles className="w-4 h-4 text-rose-400" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-semibold text-rose-300">
+                              Missed Concept Check
+                            </span>
+                            <span className="text-[11px] font-mono text-[#737F94]">
+                              {formatConceptTag(currentQ.conceptTag)}
+                            </span>
+                          </div>
+                          <p className="text-xs text-[#CBD5E1] leading-relaxed mt-1.5 mb-3.5">
+                            {currentQ.explanation}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRemediationTarget({
+                                  question: currentQ,
+                                  selectedOptionId: answers[currentQ.id] || '',
+                                });
+                              }}
+                              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-[#1E2536] hover:bg-[#2A344B] border border-[#2A344B] hover:border-[#3B82F6]/60 text-xs font-semibold text-[#F2F4F8] hover:text-white transition-all cursor-pointer shadow-md group"
+                            >
+                              <Sparkles className="w-3.5 h-3.5 text-[#3B82F6] group-hover:scale-110 transition-transform" />
+                              <span>Read Targeted Guide (3 min)</span>
+                            </button>
+                            <span className="text-[11px] text-[#737F94]">
+                              or press Next to continue →
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Feedback / Mastery Card in Review Mode (after submission) */}
               {submissionResult && (
                 <QuizFeedbackCard
                   correctCount={submissionResult.correctCount}
@@ -361,11 +436,21 @@ export const QuizModal: React.FC = () => {
                   <div />
                 )}
 
-                {isLastQuestion ? (
+                {!isCurrentChecked ? (
+                  <button
+                    type="button"
+                    onClick={handleCheckCurrent}
+                    disabled={!answers[currentQ.id]}
+                    className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-blue-600/25 flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    <span>Check answer</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                ) : isLastQuestion ? (
                   <button
                     type="button"
                     onClick={handleSubmit}
-                    disabled={isSubmitting || !answers[currentQ.id]}
+                    disabled={isSubmitting}
                     className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-blue-600/25 flex items-center gap-2 transition-all cursor-pointer"
                   >
                     <span>{isSubmitting ? 'Grading...' : 'Submit milestone'}</span>
@@ -375,7 +460,6 @@ export const QuizModal: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleNext}
-                    disabled={!answers[currentQ.id]}
                     className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#2563EB] hover:bg-[#1D4ED8] disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-blue-600/25 flex items-center gap-2 transition-all cursor-pointer"
                   >
                     <span>Next question</span>

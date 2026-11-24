@@ -6,6 +6,7 @@ interface QuizProgressBarProps {
   currentQuestionIndex: number;
   answers: Record<string, string>;
   submissionResult: QuizSubmissionResult | null;
+  checkedQuestions?: Record<string, { isCorrect: boolean }>;
   onSelectQuestion: (index: number) => void;
 }
 
@@ -14,6 +15,7 @@ export const QuizProgressBar: React.FC<QuizProgressBarProps> = ({
   currentQuestionIndex,
   answers,
   submissionResult,
+  checkedQuestions,
   onSelectQuestion,
 }) => {
   const isLargeSet = questions.length > 15;
@@ -25,8 +27,10 @@ export const QuizProgressBar: React.FC<QuizProgressBarProps> = ({
         if (submissionResult) {
           const qResult = submissionResult.questionResults.find((qr) => qr.questionId === q.id);
           segmentColor = qResult?.isCorrect ? 'bg-emerald-500' : 'bg-red-500/70';
+        } else if (checkedQuestions && checkedQuestions[q.id]) {
+          segmentColor = checkedQuestions[q.id].isCorrect ? 'bg-emerald-500' : 'bg-red-500/70';
         } else {
-          if (answers[q.id] || idx <= currentQuestionIndex) {
+          if (answers[q.id] || idx === currentQuestionIndex) {
             segmentColor = 'bg-[#3B82F6]';
           }
         }
@@ -41,7 +45,15 @@ export const QuizProgressBar: React.FC<QuizProgressBarProps> = ({
             className={`${isLargeSet ? 'h-1.5 min-w-[2px]' : 'h-1'} flex-1 rounded-full transition-all ${segmentColor} hover:opacity-90 cursor-pointer ${
               isCurrent ? 'ring-1 ring-[#3B82F6] ring-offset-1 ring-offset-[#0E121B]' : ''
             }`}
-            title={`Question ${idx + 1} (${q.difficulty || 'standard'}): ${answers[q.id] ? 'Answered' : 'Unanswered'}`}
+            title={`Question ${idx + 1} (${q.difficulty || 'standard'}): ${
+              checkedQuestions?.[q.id]
+                ? checkedQuestions[q.id].isCorrect
+                  ? 'Correct'
+                  : 'Incorrect'
+                : answers[q.id]
+                ? 'Answered'
+                : 'Unanswered'
+            }`}
           />
         );
       })}
