@@ -12,6 +12,7 @@ interface QuizSuccessPageProps {
   onRetake: () => void;
   onGoToReview: () => void;
   onAskMentor?: (concept: string) => void;
+  onOpenRemediation?: () => void;
 }
 
 export const QuizSuccessPage: React.FC<QuizSuccessPageProps> = ({
@@ -23,6 +24,7 @@ export const QuizSuccessPage: React.FC<QuizSuccessPageProps> = ({
   onRetake,
   onGoToReview,
   onAskMentor,
+  onOpenRemediation,
 }) => {
   const [isDeepDiveOpen, setIsDeepDiveOpen] = useState(false);
 
@@ -164,9 +166,28 @@ export const QuizSuccessPage: React.FC<QuizSuccessPageProps> = ({
           <div className="mt-4 pt-3 border-t border-[#171E2D] space-y-3 animate-in fade-in">
             <p className="text-xs text-[#99A3B5] leading-relaxed">
               Mastering {conceptTitle.toLowerCase()} ensures your mental model matches real-world execution.
-              In {activeQuiz.languageId === 'python' ? 'Python' : 'Go'}, idioms around this pattern avoid memory leaks,
+              In {activeQuiz.languageId === 'python'
+                ? 'Python'
+                : activeQuiz.languageId === 'typescript'
+                ? 'TypeScript'
+                : activeQuiz.languageId === 'javascript'
+                ? 'JavaScript'
+                : activeQuiz.languageId === 'go'
+                ? 'Go'
+                : 'production systems'}, idioms around this pattern avoid memory leaks,
               unnecessary allocations, and unexpected mutation bugs.
             </p>
+
+            {onOpenRemediation && (
+              <button
+                type="button"
+                onClick={onOpenRemediation}
+                className="text-xs font-medium text-[#F2F4F8] hover:text-white bg-[#121620] hover:bg-[#1E2536] border border-[#1E2536] px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer w-fit"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#3B82F6]" />
+                <span>Read Targeted Remediation Guide (3 min)</span>
+              </button>
+            )}
 
             {onAskMentor && (
               <button

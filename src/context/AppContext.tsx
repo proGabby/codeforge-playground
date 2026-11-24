@@ -69,11 +69,17 @@ interface AppContextType {
   deleteFile: (name: string) => void;
   setFiles: (files: Record<string, string>, defaultActiveFile?: string) => void;
 
-  // Section Quizzes
+  // Active Main View (Playground vs Concept Quizzes)
+  activeMainView: 'playground' | 'concept-quizzes';
+  setActiveMainView: (view: 'playground' | 'concept-quizzes') => void;
+
+  // Section & Concept Quizzes
   activeQuiz: SectionQuiz | null;
   isQuizModalOpen: boolean;
   setIsQuizModalOpen: (open: boolean) => void;
   startTopicQuiz: (topicId: string) => Promise<void>;
+  startQuizById: (quizId: string) => Promise<void>;
+  startQuizDirect: (quiz: SectionQuiz) => void;
   submitQuiz: (quizId: string, answers: Record<string, string>) => Promise<QuizSubmissionResult | null>;
 }
 
@@ -168,9 +174,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     resetExerciseAiState,
   } = useAiMentor(activeExercise, code, executionResult);
 
-  // 6. Section Quizzes
+  // 6. Active View & Quizzes
+  const [activeMainView, setActiveMainView] = useState<'playground' | 'concept-quizzes'>(() => {
+    if (typeof window !== 'undefined') {
+      const p = window.location.pathname;
+      if (p === '/quiz' || p === '/quizzes') {
+        return 'concept-quizzes';
+      }
+    }
+    return 'playground';
+  });
+
   const [activeQuiz, setActiveQuiz] = useState<SectionQuiz | null>(null);
   const [isQuizModalOpen, setIsQuizModalOpen] = useState<boolean>(false);
+
+  const startQuizDirect = (quiz: SectionQuiz) => {
+    setActiveQuiz(quiz);
+    setIsQuizModalOpen(true);
+  };
+
+  const startQuizById = async (quizId: string) => {
+    try {
+      const res = await fetch(`/api/quizzes/${quizId}`);
+      if (res.ok) {
+        const quiz: SectionQuiz = await res.json();
+        setActiveQuiz(quiz);
+        setIsQuizModalOpen(true);
+      } else {
+        const altRes = await fetch(`/api/concept-quizzes/${quizId}`);
+        if (altRes.ok) {
+          const quiz: SectionQuiz = await altRes.json();
+          setActiveQuiz(quiz);
+          setIsQuizModalOpen(true);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load quiz by id:', quizId, err);
+    }
+  };
 
   const startTopicQuiz = async (topicId: string) => {
     try {
@@ -347,11 +388,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addFile,
         deleteFile,
 
-        // Section Quizzes
+        // Active Main View
+        activeMainView,
+        setActiveMainView,
+
+        // Section & Concept Quizzes
         activeQuiz,
         isQuizModalOpen,
         setIsQuizModalOpen,
         startTopicQuiz,
+        startQuizById,
+        startQuizDirect,
         submitQuiz,
       }}
     >

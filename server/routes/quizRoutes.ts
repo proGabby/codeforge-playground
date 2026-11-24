@@ -1,10 +1,67 @@
 import { Router } from 'express';
-import { getQuizByTopicId, getQuizById, getQuizzesForLanguage, ALL_QUIZZES } from '../data/quizzes';
+import {
+  getQuizByTopicId,
+  getQuizById,
+  getQuizzesForLanguage,
+  ALL_QUIZZES,
+  ENGINEERING_CONCEPT_QUIZZES,
+  getEngineeringConceptQuizzes,
+  CONCEPT_DOMAINS_METADATA,
+} from '../data/quizzes';
 import { TursoStore } from '../store/TursoStore';
 import { recordExerciseCompletionStreak } from '../../src/utils/streakUtils';
-import { QuizSubmissionResult } from '../../src/types';
+import { QuizSubmissionResult, EngineeringDomain, ConceptDifficulty } from '../../src/types';
+import { RemediationArticleEngine } from '../engine/RemediationArticleEngine';
 
 export const quizRouter = Router();
+
+// ============================================================================
+// Practical Engineering Concept Quizzes API
+// ============================================================================
+
+// 1. Get concept domain summary metadata
+quizRouter.get('/concept-quizzes/domains', (_req, res) => {
+  res.json(CONCEPT_DOMAINS_METADATA);
+});
+
+// 2. List concept quizzes with optional filtering by domain and difficulty
+quizRouter.get('/concept-quizzes', (req, res) => {
+  const domain = req.query.domain as EngineeringDomain | undefined;
+  const difficulty = req.query.difficulty as ConceptDifficulty | undefined;
+
+  const quizzes = getEngineeringConceptQuizzes(domain, difficulty);
+
+  res.json(
+    quizzes.map((q) => ({
+      id: q.id,
+      topicId: q.topicId,
+      languageId: q.languageId,
+      domain: q.domain,
+      domainLabel: q.domainLabel,
+      difficulty: q.difficulty,
+      title: q.title,
+      description: q.description,
+      questionCount: q.questions.length,
+      passingScorePercent: q.passingScorePercent,
+      xpReward: q.xpReward,
+      estimatedMinutes: q.estimatedMinutes,
+    }))
+  );
+});
+
+// 3. Get concept quiz by quiz ID (full quiz with questions)
+quizRouter.get('/concept-quizzes/:quizId', (req, res) => {
+  const { quizId } = req.params;
+  const quiz = ENGINEERING_CONCEPT_QUIZZES.find((q) => q.id === quizId);
+  if (!quiz) {
+    return res.status(404).json({ error: `Concept quiz not found: ${quizId}` });
+  }
+  res.json(quiz);
+});
+
+// ============================================================================
+// Standard Section Quizzes API
+// ============================================================================
 
 // 1. Get quiz by topic ID
 quizRouter.get('/quizzes/topic/:topicId', (req, res) => {
@@ -125,4 +182,37 @@ quizRouter.post('/quizzes/submit', async (req, res) => {
   };
 
   res.json(result);
+});
+
+// 5. Generate targeted remediation article for a missed quiz question
+quizRouter.post('/quizzes/remediation-article', async (req, res) => {
+  const { quizId, questionId, selectedOptionId, email } = req.body as {
+    quizId: string;
+    questionId: string;
+    selectedOptionId?: string;
+    email?: string;
+  };
+
+  const quiz = getQuizById(quizId);
+  if (!quiz) {
+    return res.status(404).json({ error: `Quiz not found: ${quizId}` });
+  }
+
+  const question = quiz.questions.find((q) => q.id === questionId);
+  if (!question) {
+    return res.status(404).json({ error: `Question ${questionId} not found in quiz ${quizId}` });
+  }
+
+  try {
+    const article = await RemediationArticleEngine.generateArticle({
+      quiz,
+      question,
+      selectedOptionId: selectedOptionId || '',
+      email,
+    });
+    res.json(article);
+  } catch (err: any) {
+    console.error('[QuizRouter] Error generating remediation article:', err);
+    res.status(500).json({ error: err.message || 'Failed to generate remediation article' });
+  }
 });

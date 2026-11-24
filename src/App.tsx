@@ -9,13 +9,24 @@ import { CompletionModal } from './components/Adaptive/CompletionModal';
 import { EmailModal } from './components/User/EmailModal';
 import { QuizModal } from './components/Quiz/QuizModal';
 import { LandingPage } from './components/Landing/LandingPage';
+import { ConceptQuizHub } from './components/ConceptQuiz/ConceptQuizHub';
 import type { SupportedLanguage } from './types';
 
 const AppContent: React.FC = () => {
-  const { setShowEmailModal, setSelectedLanguage, userEmail } = useApp();
+  const {
+    setShowEmailModal,
+    setSelectedLanguage,
+    userEmail,
+    activeMainView,
+    setActiveMainView,
+  } = useApp();
+
   const [currentView, setCurrentView] = useState<'landing' | 'playground'>(() => {
     if (typeof window !== 'undefined') {
-      return window.location.pathname === '/playground' ? 'playground' : 'landing';
+      const p = window.location.pathname;
+      return p === '/playground' || p === '/quiz' || p === '/quizzes'
+        ? 'playground'
+        : 'landing';
     }
     return 'landing';
   });
@@ -26,17 +37,34 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     const handlePopState = () => {
-      setCurrentView(window.location.pathname === '/playground' ? 'playground' : 'landing');
+      const p = window.location.pathname;
+      if (p === '/quiz' || p === '/quizzes') {
+        setActiveMainView('concept-quizzes');
+        setCurrentView('playground');
+      } else if (p === '/playground') {
+        setActiveMainView('playground');
+        setCurrentView('playground');
+      } else {
+        setCurrentView('landing');
+      }
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  }, [setActiveMainView]);
 
   const navigateToPlayground = (lang?: SupportedLanguage) => {
     if (lang) {
       setSelectedLanguage(lang);
     }
+    setActiveMainView('playground');
     window.history.pushState({}, '', '/playground');
+    setCurrentView('playground');
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+  };
+
+  const navigateToQuiz = () => {
+    setActiveMainView('concept-quizzes');
+    window.history.pushState({}, '', '/quiz');
     setCurrentView('playground');
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
   };
@@ -115,19 +143,24 @@ return (
     {currentView === 'landing' ? (
       <LandingPage
         onEnterPlayground={handleLandingEnterPlayground}
+        onEnterQuiz={navigateToQuiz}
         onOpenEmailModal={handleOpenEmailModal}
       />
     ) : (
       <div className="h-screen w-screen flex flex-col bg-[#0B0E14] text-[#F2F4F8] overflow-hidden font-sans">
         <Navbar onNavigateHome={navigateToLanding} />
-        <div className="flex-1 flex overflow-hidden relative">
-          <CurriculumTree />
-          <main className="flex-1 flex flex-col overflow-hidden relative bg-[#0E131F] border-x border-[#182133]">
-            <CodeEditor />
-            <TestRunnerPanel />
-          </main>
-          <RightDrawer />
-        </div>
+        {activeMainView === 'concept-quizzes' ? (
+          <ConceptQuizHub />
+        ) : (
+          <div className="flex-1 flex overflow-hidden relative">
+            <CurriculumTree />
+            <main className="flex-1 flex flex-col overflow-hidden relative bg-[#0E131F] border-x border-[#182133]">
+              <CodeEditor />
+              <TestRunnerPanel />
+            </main>
+            <RightDrawer />
+          </div>
+        )}
         <CompletionModal />
         <QuizModal />
       </div>

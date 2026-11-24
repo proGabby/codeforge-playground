@@ -7,10 +7,15 @@ interface QuizHeaderProps {
 }
 
 export const QuizHeader: React.FC<QuizHeaderProps> = ({ languageId, onClose }) => {
+  const isConcept = languageId === 'concept';
+  const label = isConcept
+    ? 'ENGINEERING CONCEPT MILESTONE'
+    : `SECTION MILESTONE / ${languageId.toUpperCase()}`;
+
   return (
     <div className="flex items-center justify-between">
       <span className="text-[11px] font-mono tracking-widest text-[#737F94] uppercase font-semibold">
-        SECTION MILESTONE / {languageId.toUpperCase()}
+        {label}
       </span>
 
       <button

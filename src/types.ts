@@ -166,17 +166,38 @@ export interface QuizQuestion {
   correctOptionId: string;
   explanation: string;
   conceptTag?: string;
+  difficulty?: 'easy' | 'medium' | 'hard';
 }
+
+export type EngineeringDomain =
+  | 'system-design'
+  | 'databases'
+  | 'devops-cloud'
+  | 'networking'
+  | 'concurrency-distributed';
+
+export type ConceptDifficulty = 'beginner' | 'intermediate' | 'advanced';
 
 export interface SectionQuiz {
   id: string;
   topicId: string;
-  languageId: SupportedLanguage;
+  languageId: SupportedLanguage | 'concept';
   title: string;
   description: string;
   passingScorePercent: number; // e.g. 75
   xpReward: number; // e.g. 50
   questions: QuizQuestion[];
+  domain?: EngineeringDomain;
+  domainLabel?: string;
+  difficulty?: ConceptDifficulty;
+  estimatedMinutes?: number;
+}
+
+export interface EngineeringConceptQuiz extends SectionQuiz {
+  domain: EngineeringDomain;
+  domainLabel: string;
+  difficulty: ConceptDifficulty;
+  estimatedMinutes: number;
 }
 
 export interface QuizSubmissionResult {
@@ -195,6 +216,20 @@ export interface QuizSubmissionResult {
     isCorrect: boolean;
     explanation: string;
   }[];
+}
+
+export interface RemediationArticle {
+  articleId: string;
+  questionId: string;
+  quizId: string;
+  title: string;
+  conceptTag: string;
+  topicTitle: string;
+  estimatedReadMinutes: number;
+  markdown: string;
+  keyTakeaways: string[];
+  diagnosticSummary?: string;
+  recommendedNextStep?: string;
 }
 
 export interface ChatMessage {

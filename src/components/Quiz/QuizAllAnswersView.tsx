@@ -1,4 +1,5 @@
 import React from 'react';
+import { Sparkles } from 'lucide-react';
 import type { QuizQuestion, QuizSubmissionResult } from '../../types';
 
 interface QuizAllAnswersViewProps {
@@ -6,6 +7,7 @@ interface QuizAllAnswersViewProps {
   answers: Record<string, string>;
   submissionResult: QuizSubmissionResult;
   onSelectQuestion: (index: number) => void;
+  onOpenRemediation?: (question: QuizQuestion, selectedOptionId: string) => void;
 }
 
 export const QuizAllAnswersView: React.FC<QuizAllAnswersViewProps> = ({
@@ -13,6 +15,7 @@ export const QuizAllAnswersView: React.FC<QuizAllAnswersViewProps> = ({
   answers,
   submissionResult,
   onSelectQuestion,
+  onOpenRemediation,
 }) => {
   const totalQuestions = questions.length;
 
@@ -78,8 +81,21 @@ export const QuizAllAnswersView: React.FC<QuizAllAnswersViewProps> = ({
               })}
             </div>
 
-            <div className="bg-[#090D15] rounded-lg p-3 text-xs text-[#99A3B5] leading-relaxed border border-[#171E2D]">
-              {qResult?.explanation || q.explanation}
+            <div className="bg-[#090D15] rounded-lg p-3 text-xs text-[#99A3B5] leading-relaxed border border-[#171E2D] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <span>{qResult?.explanation || q.explanation}</span>
+              {!isCorrect && onOpenRemediation && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenRemediation(q, answers[q.id] || '');
+                  }}
+                  className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#121620] hover:bg-[#1E2536] border border-[#1E2536] text-[11px] text-[#F2F4F8] hover:text-[#3B82F6] transition-colors cursor-pointer"
+                >
+                  <Sparkles className="w-3 h-3 text-[#3B82F6]" />
+                  <span>Concept Guide</span>
+                </button>
+              )}
             </div>
           </div>
         );

@@ -5,11 +5,13 @@ import type { SupportedLanguage } from '../../types';
 
 interface LandingNavProps {
   onEnterPlayground: (lang?: SupportedLanguage) => void;
+  onEnterQuiz?: () => void;
   onOpenEmailModal: () => void;
 }
 
 export const LandingNav: React.FC<LandingNavProps> = ({
   onEnterPlayground,
+  onEnterQuiz,
   onOpenEmailModal,
 }) => {
   const { setSelectedLanguage, userEmail } = useApp();
@@ -75,7 +77,13 @@ export const LandingNav: React.FC<LandingNavProps> = ({
             TypeScript
           </button>
           <button
-            onClick={() => handleNavClick('features')}
+            onClick={() => {
+              if (onEnterQuiz) {
+                onEnterQuiz();
+              } else {
+                handleNavClick('features');
+              }
+            }}
             className="hover:text-[#F2F4F8] transition-colors cursor-pointer"
           >
             Quizzes
