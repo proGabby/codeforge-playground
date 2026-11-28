@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, ArrowRight, ChevronDown, Flame, User, Code2, BookOpen } from 'lucide-react';
+import { Play, ArrowRight, ChevronDown, Flame, User, Code2, BookOpen, RotateCcw } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { StreakPopover } from './Streak/StreakPopover';
 import { getLocalDateString, getCalendarDayDiff } from '../utils/streakUtils';
@@ -20,6 +20,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateHome }) => {
     activeTopic,
     runCode,
     submitCode,
+    resetExerciseCode,
     isExecuting,
   } = useApp();
 
@@ -235,6 +236,21 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateHome }) => {
 
         {activeMainView === 'playground' && (
           <>
+            {/* Reset Button */}
+            <button
+              onClick={() => {
+                if (window.confirm('Reset code to starter template? All current changes will be discarded.')) {
+                  resetExerciseCode();
+                }
+              }}
+              disabled={isExecuting}
+              className="flex items-center space-x-1.5 px-2.5 py-1 rounded-[8px] bg-[#121620] hover:bg-[#182030] text-[#737F94] hover:text-[#F2F4F8] text-xs font-medium transition-all disabled:opacity-50 cursor-pointer"
+              title="Reset code to original starter template"
+            >
+              <RotateCcw className="w-3 h-3 text-[#737F94]" />
+              <span className="hidden sm:inline">Reset</span>
+            </button>
+
             {/* Run Button */}
             <button
               onClick={runCode}

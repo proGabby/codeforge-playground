@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import type {
   ExecutionResult,
   Exercise,
@@ -43,6 +43,7 @@ interface AppContextType {
   setSelectedLineNumber: (line: number | null) => void;
   runCode: () => Promise<void>;
   submitCode: () => Promise<void>;
+  resetExerciseCode: () => Promise<void>;
   explainSelectedLine: (lineNum?: number) => Promise<void>;
   showCompletionModal: boolean;
   setShowCompletionModal: (show: boolean) => void;
@@ -335,6 +336,51 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await handleSetUserEmail(email, setUserProgress);
   };
 
+  const resetExerciseCode = useCallback(async () => {
+    if (!activeExercise) return;
+
+    const isTs = activeExercise.languageId === 'typescript';
+    const isJs = activeExercise.languageId === 'javascript';
+    const isPy = activeExercise.languageId === 'python';
+    const defaultFileName = isTs ? 'main.ts' : isJs ? 'main.js' : isPy ? 'main.py' : 'main.go';
+
+    // 1. Reset files in editor to starter code / starter files
+    if (activeExercise.starterFiles && Object.keys(activeExercise.starterFiles).length > 0) {
+      setFiles(activeExercise.starterFiles, defaultFileName);
+    } else {
+      setFiles({ [defaultFileName]: activeExercise.starterCode }, defaultFileName);
+    }
+    setCode(activeExercise.starterCode);
+
+    // 2. Remove from local savedSolutions state
+    setSavedSolutions((prev) => {
+      const updated = { ...prev };
+      delete updated[activeExercise.id];
+      return updated;
+    });
+
+    // 3. Reset execution and AI guidance states
+    resetExecutionState();
+    resetExerciseAiState();
+
+    // 4. If logged in with email, persist the reset draft to Turso so future reloads use the fresh starter code
+    if (userEmail) {
+      try {
+        await fetch('/api/user/exercise-draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: userEmail,
+            exerciseId: activeExercise.id,
+            code: activeExercise.starterCode,
+          }),
+        });
+      } catch (err) {
+        console.error('Failed to reset draft on server:', err);
+      }
+    }
+  }, [activeExercise, userEmail, setFiles, setCode, setSavedSolutions, resetExecutionState, resetExerciseAiState]);
+
   return (
     <AppContext.Provider
       value={{
@@ -362,6 +408,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setSelectedLineNumber,
         runCode,
         submitCode,
+        resetExerciseCode,
         explainSelectedLine,
         showCompletionModal,
         setShowCompletionModal,

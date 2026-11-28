@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import Editor, { type OnMount } from '@monaco-editor/react';
-import { Check, X, Plus } from 'lucide-react';
+import { Check, X, Plus, RotateCcw } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export const CodeEditor: React.FC = () => {
@@ -19,6 +19,7 @@ export const CodeEditor: React.FC = () => {
     activeTopic,
     selectedLanguage,
     setSelectedLineNumber,
+    resetExerciseCode,
   } = useApp();
 
   const isTs = activeExercise?.languageId === 'typescript' || selectedLanguage === 'typescript' || activeFileName.endsWith('.ts');
@@ -311,14 +312,28 @@ def test_negative_values():
           <span className="text-xs font-mono font-bold text-[#3B82F6]">{exerciseLabel}</span>
           <span className="text-xs font-bold text-[#F2F4F8]">{exerciseTitle}</span>
         </div>
-        <div className="text-[11px] font-mono text-[#737F94]">
-          {isTs
-            ? 'TypeScript 5.x · Node 22'
-            : isJs
-              ? 'Node.js 22 · UTF-8'
-              : isPy
-                ? 'Python 3.12 · UTF-8'
-                : 'Go 1.22 · UTF-8'}
+        <div className="flex items-center space-x-3">
+          <div className="text-[11px] font-mono text-[#737F94]">
+            {isTs
+              ? 'TypeScript 5.x · Node 22'
+              : isJs
+                ? 'Node.js 22 · UTF-8'
+                : isPy
+                  ? 'Python 3.12 · UTF-8'
+                  : 'Go 1.22 · UTF-8'}
+          </div>
+          <button
+            onClick={() => {
+              if (window.confirm('Reset code to starter template? All current changes will be discarded.')) {
+                resetExerciseCode();
+              }
+            }}
+            className="flex items-center space-x-1 px-2 py-0.5 rounded-[6px] text-xs text-[#737F94] hover:text-[#F2F4F8] hover:bg-[#182133] transition-colors cursor-pointer"
+            title="Reset code to original starter template"
+          >
+            <RotateCcw className="w-3 h-3" />
+            <span>Reset</span>
+          </button>
         </div>
       </div>
 
