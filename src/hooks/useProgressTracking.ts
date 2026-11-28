@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { UserProgress, SupportedLanguage } from '../types';
 import { evaluateStreakStatus } from '../utils/streakUtils';
 
@@ -32,9 +32,16 @@ export function useProgressTracking(userEmail: string | null, selectedLanguage: 
 
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [weakConcepts, setWeakConcepts] = useState<string[]>([]);
+  const prevEmailRef = useRef(userEmail);
 
   // Update localStorage & Turso on progress changes
   useEffect(() => {
+    // If userEmail changed, wait for cloud identify/merge to complete before auto-saving
+    if (prevEmailRef.current !== userEmail) {
+      prevEmailRef.current = userEmail;
+      return;
+    }
+
     localStorage.setItem('codeforge_progress', JSON.stringify(userProgress));
 
     // Sync to Turso persistent store

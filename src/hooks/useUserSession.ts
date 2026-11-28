@@ -30,17 +30,31 @@ export function useUserSession() {
         if (data.progress && onProgressLoaded) {
           onProgressLoaded((prev) => {
             const mergedCompleted = Array.from(
-              new Set([...prev.completedExerciseIds, ...(data.progress.completedExerciseIds || [])])
+              new Set([...(prev.completedExerciseIds || []), ...(data.progress.completedExerciseIds || [])])
             );
             const mergedUnlocked = Array.from(
-              new Set([...prev.unlockedTopicIds, ...(data.progress.unlockedTopicIds || [])])
+              new Set([...(prev.unlockedTopicIds || []), ...(data.progress.unlockedTopicIds || [])])
             );
-            return {
+            const mergedCompletedQuizzes = Array.from(
+              new Set([...(prev.completedQuizIds || []), ...(data.progress.completedQuizIds || [])])
+            );
+            const mergedScores = { ...(prev.quizScores || {}), ...(data.progress.quizScores || {}) };
+
+            const mergedProgress: UserProgress = {
               ...prev,
               ...data.progress,
               completedExerciseIds: mergedCompleted,
               unlockedTopicIds: mergedUnlocked,
+              completedQuizIds: mergedCompletedQuizzes,
+              quizScores: mergedScores,
+              streakDays: Math.max(prev.streakDays || 1, data.progress.streakDays || 1),
+              xp: Math.max(prev.xp || 0, data.progress.xp || 0),
             };
+
+            // Immediately persist merged progress to localStorage so local storage is warm
+            localStorage.setItem('codeforge_progress', JSON.stringify(mergedProgress));
+
+            return mergedProgress;
           });
         }
 
